@@ -1,7 +1,6 @@
 import { GameObject, Player, Enemy, Npc, GameState } from "../types/gameState";
 
 export function mapPlayers(players: any[]): Player[] {
-  console.log("Mapping players:", players);
   return players.map((p): Player => ({
     id: p.playerId,
     name: p.username,

@@ -9,20 +9,20 @@ interface SocketStore {
   socket: Socket | null;
   isConnected: boolean;
   gameState: GameState | null;
-  ingame: boolean; // Indicates if the user is in-game
+  inGame: boolean; // Indicates if the user is in-game
   setSocket: (socket: Socket | null) => void;
   setIsConnected: (state: boolean) => void;
   setGameState: (state: GameState) => void;
-  setIngame: (state: boolean) => void; // Setter for ingame
+  setinGame: (state: boolean) => void; // Setter for inGame
 }
 
 export const useSocketStore = create<SocketStore>((set) => ({
   socket: null,
   isConnected: false,
   gameState: null,
-  ingame: false, // Default value for ingame
+  inGame: false, // Default value for inGame
   setSocket: (socket) => set({ socket }),
   setIsConnected: (isConnected) => set({ isConnected }),
   setGameState: (gameState) => set({ gameState }),
-  setIngame: (ingame) => set({ ingame }), // Implementation of setIngame
+  setinGame: (inGame) => set({ inGame }), // Implementation of setinGame
 }));

@@ -1,60 +1,138 @@
 import React, { useState, useRef, useEffect, MouseEvent } from "react";
 import { useSocketStore } from "../store/socketStore";
-import Inventory from "../components/inventory/Inventory";
 import ClickMarker from "../components/ui/ClickMarker";
 import GameObjectTooltip from "../components/ui/GameObjectTooltip";
 import { handleClick as externalClickHandler } from "../utils/handleClick";
-import { useGameObjects } from "../hooks/useGameObjects";
+import { useGameObjects } from "../hooks/useGameobjects";
 
 const ConnectedOverlay = () => {
   const socket = useSocketStore((state) => state.socket);
   const isConnected = useSocketStore((state) => state.isConnected);
-  const gameState = useSocketStore((state) => state.gameState); // assume this is kept up-to-date
-  
-  console.log("Game state in overlay:", gameState);
-  const gameObjects = useGameObjects(gameState);
+  const gameState = useSocketStore((state) => state.gameState);
 
+  const gameObjects = useGameObjects(gameState);
 
   const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
   const [hovered, setHovered] = useState<{ name: string; x: number; y: number } | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null!);
 
-  const handleClick = (e: MouseEvent) =>
-    externalClickHandler(e, socket, isConnected, setMarker, timeoutRef);
+  const [containerSize, setContainerSize] = useState({ width: 1, height: 1 });
 
-  const handleMouseMove = (e: MouseEvent) => {
-    const container = e.currentTarget as HTMLDivElement;
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.clientWidth;
+        const height = containerRef.current.clientHeight;
+
+        if (width > 1 && height > 1) {
+          setContainerSize({ width, height });
+          console.log("✅ Container size updated:", width, height);
+        } else {
+          console.warn("⚠️ Container size too small or not ready yet.");
+        }
+      } else {
+        console.warn("⚠️ containerRef.current is null");
+      }
+    };
+
+    const observer = new ResizeObserver(() => updateSize());
+
+    const interval = setInterval(() => {
+      if (containerRef.current) {
+        updateSize();
+        observer.observe(containerRef.current);
+        clearInterval(interval);
+      }
+    }, 50); // Wait until it's mounted
+
+    return () => {
+      clearInterval(interval);
+      if (containerRef.current) observer.unobserve(containerRef.current);
+      observer.disconnect();
+    };
+  }, []);
+
+  const setTargetEnemy = (enemyId: string) => {
+    socket?.emit("setTargetEnemy", { enemyId });
+  };
+
+  const handleClick = (e: MouseEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
     const bounds = container.getBoundingClientRect();
 
-    // Mouse position within iframe (actual pixels)
     const rawX = e.clientX - bounds.left;
     const rawY = e.clientY - bounds.top;
 
-    // Scale to 1920x1080 virtual space
     const scaleX = 1920 / bounds.width;
     const scaleY = 1080 / bounds.height;
 
     const mouseX = rawX * scaleX;
     const mouseY = rawY * scaleY;
 
+    const clickedObject = gameObjects.find((obj) => {
+      const hitbox = obj.hitbox;
+      const xOffsetRatio = hitbox.xOffsetRatio ?? 0;
+      const yOffsetRatio = hitbox.yOffsetRatio ?? 0;
+
+      const hitboxX = hitbox.x - hitbox.width * xOffsetRatio;
+      const hitboxY = hitbox.y - hitbox.height * yOffsetRatio;
+
+      return (
+        mouseX >= hitboxX &&
+        mouseX <= hitboxX + hitbox.width &&
+        mouseY >= hitboxY &&
+        mouseY <= hitboxY + hitbox.height
+      );
+    });
+
+    if (
+      clickedObject &&
+      "type" in clickedObject &&
+      clickedObject.type === "enemy" &&
+      clickedObject.id
+    ) {
+      setTargetEnemy(clickedObject.id);
+    } else {
+      externalClickHandler(e, socket, isConnected, setMarker, timeoutRef, containerRef);
+    }
+  };
+
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const bounds = container.getBoundingClientRect();
+
+    const rawX = e.clientX - bounds.left;
+    const rawY = e.clientY - bounds.top;
+
+    const scaleX = 1920 / bounds.width;
+    const scaleY = 1080 / bounds.height;
+
+    const mouseX = rawX * scaleX;
+    const mouseY = rawY * scaleY;
 
     const hoveredObject = gameObjects.find((obj) => {
-      const { hitbox } = obj;
+      const hitbox = obj.hitbox;
+      const xOffsetRatio = hitbox.xOffsetRatio ?? 0;
+      const yOffsetRatio = hitbox.yOffsetRatio ?? 0;
+
+      const hitboxX = hitbox.x - hitbox.width * xOffsetRatio;
+      const hitboxY = hitbox.y - hitbox.height * yOffsetRatio;
+
       return (
-        mouseX >= hitbox.x &&
-        mouseX <= hitbox.x + hitbox.width &&
-        mouseY >= hitbox.y &&
-        mouseY <= hitbox.y + hitbox.height
+        mouseX >= hitboxX &&
+        mouseX <= hitboxX + hitbox.width &&
+        mouseY >= hitboxY &&
+        mouseY <= hitboxY + hitbox.height
       );
     });
 
     if (hoveredObject) {
-      setHovered({ name: hoveredObject.name, x: rawX, y: rawY }); // use rawX/Y for tooltip position
+      setHovered({ name: hoveredObject.name, x: rawX, y: rawY });
       container.style.cursor = "pointer";
     } else {
       setHovered(null);
       container.style.cursor = "default";
-      console.log(mouseX, mouseY);
     }
   };
 
@@ -66,15 +144,51 @@ const ConnectedOverlay = () => {
 
   if (!isConnected) return <div>Connecting socket...</div>;
 
+  const scaleX = containerSize.width / 1920;
+  const scaleY = containerSize.height / 1080;
+
   return (
     <div
+      ref={containerRef}
       onClick={handleClick}
       onMouseMove={handleMouseMove}
-      style={{ position: "relative", padding: 20, height: "100vh" }}
+      style={{ position: "absolute", height: "100%", width: "100%" }}
     >
-      <h2>Overlay</h2>
-      <Inventory />
+      <h2>Overlay2</h2>
+
       {marker && <ClickMarker x={marker.x} y={marker.y} />}
+
+      {gameObjects.map((obj, index) => {
+        const hitbox = obj.hitbox;
+        const xOffsetRatio = hitbox.xOffsetRatio ?? 0;
+        const yOffsetRatio = hitbox.yOffsetRatio ?? 0;
+
+        const hitboxX = hitbox.x - hitbox.width * xOffsetRatio;
+        const hitboxY = hitbox.y - hitbox.height * yOffsetRatio;
+
+        return (
+          <div
+            key={index}
+            style={{
+              position: "absolute",
+              left: hitboxX * scaleX,
+              top: hitboxY * scaleY,
+              width: hitbox.width * scaleX,
+              height: hitbox.height * scaleY,
+              border: "2px dashed red",
+              backgroundColor: "rgba(255, 0, 0, 0.1)",
+              pointerEvents: "none",
+              zIndex: 1000,
+              fontSize: 8,
+              color: "red",
+            }}
+            title={obj.name}
+          >
+            <span>{`${Math.round(hitboxX)},${Math.round(hitboxY)}`}</span>
+          </div>
+        );
+      })}
+
       {hovered && <GameObjectTooltip name={hovered.name} x={hovered.x} y={hovered.y} />}
     </div>
   );

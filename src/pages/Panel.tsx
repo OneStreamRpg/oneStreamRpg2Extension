@@ -4,7 +4,7 @@ import Inventory from '../components/inventory/Inventory'
 
 const Panel = () => {
   return (
-    <div style={{ padding: 20 }}>
+    <div>
       <h2>Panel</h2>
       <Inventory />
     </div>
