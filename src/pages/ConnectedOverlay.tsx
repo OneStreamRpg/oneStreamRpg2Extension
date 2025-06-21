@@ -4,6 +4,7 @@ import ClickMarker from "../components/ui/ClickMarker";
 import GameObjectTooltip from "../components/ui/GameObjectTooltip";
 import { handleClick as externalClickHandler } from "../utils/handleClick";
 import { useGameObjects } from "../hooks/useGameobjects";
+import ResizableFrame from '../components/ui/Frame/ResizableFrame';
 
 const ConnectedOverlay = () => {
   const socket = useSocketStore((state) => state.socket);
@@ -155,6 +156,10 @@ const ConnectedOverlay = () => {
       style={{ position: "absolute", height: "100%", width: "100%" }}
     >
       <h2>Overlay2</h2>
+
+      <ResizableFrame width={128} height={150}>
+        <p style={{ margin: 0 }}>👾 Welcome, Hero!</p>
+      </ResizableFrame>
 
       {marker && <ClickMarker x={marker.x} y={marker.y} />}
 
