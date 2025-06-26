@@ -1,7 +1,6 @@
 // src/pages/Overlay.tsx
-import React from "react";
 import TwitchAuthGate from "../components/ui/TwitchAuthGate";
-import ConnectedOverlay from "./ConnectedOverlay"
+import ConnectedOverlay from "./ConnectedOverlay";
 
 const Overlay = () => {
   return (

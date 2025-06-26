@@ -11,8 +11,8 @@
     "preview": "vite preview",
     "dev:overlay": "vite --mode overlay",
     "dev:panel": "vite --mode panel",
-    "build:overlay": "vite build --mode overlay --outDir dist/overlay",
-    "build:panel": "vite build --mode panel --outDir dist/panel"
+    "build:overlay": "tsc -b && vite build --mode overlay --outDir dist/overlay",
+    "build:panel": "tsc -b && vite build --mode panel --outDir dist/panel"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

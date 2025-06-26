@@ -1,6 +1,5 @@
 // src/pages/Panel.tsx
-import React from 'react'
-import Inventory from '../components/inventory/Inventory'
+import Inventory from "../components/inventory/Inventory";
 
 const Panel = () => {
   return (
@@ -8,7 +7,7 @@ const Panel = () => {
       <h2>Panel</h2>
       <Inventory />
     </div>
-  )
-}
+  );
+};
 
-export default Panel
+export default Panel;

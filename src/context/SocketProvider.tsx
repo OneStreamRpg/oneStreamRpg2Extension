@@ -8,8 +8,13 @@ interface Props {
   children: React.ReactNode;
 }
 
-export const SocketProvider: React.FC<Props> = ({ token, channelId, children }) => {
-  const { setSocket, setIsConnected, setGameState, setinGame, setPing } = useSocketStore();
+export const SocketProvider: React.FC<Props> = ({
+  token,
+  channelId,
+  children,
+}) => {
+  const { setSocket, setIsConnected, setGameState, setinGame, setPing } =
+    useSocketStore();
 
   const streamDelayRef = useRef(0);
   const activeTimeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -23,13 +28,16 @@ export const SocketProvider: React.FC<Props> = ({ token, channelId, children }) 
       });
     }
 
-    const socketInstance: Socket = io("https://germany.pauledevelopment.com:5321", {
-      path: "/socket.io",
-      auth: {
-        token,
-        channelId,
-      },
-    });
+    const socketInstance: Socket = io(
+      "https://germany.pauledevelopment.com:5321",
+      {
+        path: "/socket.io",
+        auth: {
+          token,
+          channelId,
+        },
+      }
+    );
 
     setSocket(socketInstance);
 
@@ -84,10 +92,14 @@ export const SocketProvider: React.FC<Props> = ({ token, channelId, children }) 
                   if (command.player) players.push(command.player);
                   break;
                 case "destroyEnemy":
-                  enemies = enemies.filter(e => e.enemyId !== command.enemyId);
+                  enemies = enemies.filter(
+                    (e) => e.enemyId !== command.enemyId
+                  );
                   break;
                 case "kickPlayer":
-                  players = players.filter(p => p.playerId !== command.playerId);
+                  players = players.filter(
+                    (p) => p.playerId !== command.playerId
+                  );
                   break;
               }
             });
@@ -103,7 +115,7 @@ export const SocketProvider: React.FC<Props> = ({ token, channelId, children }) 
             enemies,
             npcs,
           });
-        }, 500 + streamDelayRef.current * 1000 - (pingToStreamer/2) + ((useSocketStore.getState().ping ?? 0)/2));
+        }, 500 + streamDelayRef.current * 1000 - pingToStreamer / 2 + (useSocketStore.getState().ping ?? 0) / 2);
 
         activeTimeouts.current.push(timeoutId);
       }
@@ -134,8 +146,8 @@ export const SocketProvider: React.FC<Props> = ({ token, channelId, children }) 
     players: Array<{ playerId: string; [key: string]: any }>,
     previousPlayers: Array<{ playerId: string; [key: string]: any }>
   ) => {
-    const playerMap = new Map(previousPlayers.map(p => [p.playerId, p]));
-    players.forEach(playerUpdate => {
+    const playerMap = new Map(previousPlayers.map((p) => [p.playerId, p]));
+    players.forEach((playerUpdate) => {
       const existingPlayer = playerMap.get(playerUpdate.playerId);
       if (existingPlayer) {
         Object.assign(existingPlayer, playerUpdate);
@@ -148,8 +160,8 @@ export const SocketProvider: React.FC<Props> = ({ token, channelId, children }) 
     enemies: Array<{ enemyId: string; [key: string]: any }>,
     previousEnemies: Array<{ enemyId: string; [key: string]: any }>
   ) => {
-    const enemyMap = new Map(previousEnemies.map(e => [e.enemyId, e]));
-    enemies.forEach(enemyUpdate => {
+    const enemyMap = new Map(previousEnemies.map((e) => [e.enemyId, e]));
+    enemies.forEach((enemyUpdate) => {
       const existingEnemy = enemyMap.get(enemyUpdate.enemyId);
       if (existingEnemy) {
         Object.assign(existingEnemy, enemyUpdate);
@@ -162,8 +174,8 @@ export const SocketProvider: React.FC<Props> = ({ token, channelId, children }) 
     npcs: Array<{ npcId: string; [key: string]: any }>,
     previousNpcs: Array<{ npcId: string; [key: string]: any }>
   ) => {
-    const npcMap = new Map(previousNpcs.map(n => [n.npcId, n]));
-    npcs.forEach(npcUpdate => {
+    const npcMap = new Map(previousNpcs.map((n) => [n.npcId, n]));
+    npcs.forEach((npcUpdate) => {
       const existingNpc = npcMap.get(npcUpdate.npcId);
       if (existingNpc) {
         Object.assign(existingNpc, npcUpdate);
