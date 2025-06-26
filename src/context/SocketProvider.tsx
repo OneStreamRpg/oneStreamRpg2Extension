@@ -9,7 +9,7 @@ interface Props {
 }
 
 const { VITE_SOCKET_URL } = import.meta.env;
-console.log(`Connecting to socket.io server at: ${VITE_SOCKET_URL}`);
+
 export const SocketProvider: React.FC<Props> = ({
   token,
   channelId,
