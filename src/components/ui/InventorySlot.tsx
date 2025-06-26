@@ -1,27 +1,27 @@
 // src/components/ui/InventorySlot.tsx
-import { useDroppable } from "@dnd-kit/core";
-import React from "react";
-import styles from "./InventorySlot.module.css";
+import React from 'react'
+import { useDroppable } from '@dnd-kit/core'
+import styles from './InventorySlot.module.css'
 
 type Props = {
-  id: string;
-  children?: React.ReactNode;
-};
+  id: string
+  children?: React.ReactNode
+}
 
 const InventorySlot = ({ id, children }: Props) => {
-  const { setNodeRef, isOver } = useDroppable({ id });
+  const { setNodeRef, isOver } = useDroppable({ id })
 
   return (
     <div
       ref={setNodeRef}
       className={styles.slot}
       style={{
-        backgroundColor: isOver ? "#f00" : undefined,
+        backgroundColor: isOver ? '#f00' : undefined,
       }}
     >
       {children}
     </div>
-  );
-};
+  )
+}
 
-export default InventorySlot;
+export default InventorySlot

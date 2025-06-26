@@ -10,7 +10,7 @@ const TwitchAuthGate: React.FC<Props> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [channelId, setChannelId] = useState<string | null>(null);
-  // const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (import.meta.env.DEV) {
@@ -18,7 +18,7 @@ const TwitchAuthGate: React.FC<Props> = ({ children }) => {
       setIsAuthenticated(true);
       setToken("dev-fake-jwt-token");
       setChannelId("dev-fake-channel-id");
-      // setUserId("dev-fake-user-id");
+      setUserId("dev-fake-user-id");
       return;
     }
 
@@ -27,7 +27,7 @@ const TwitchAuthGate: React.FC<Props> = ({ children }) => {
         console.log("Authorized payload:", auth);
         setToken(auth.token);
         setChannelId(auth.channelId);
-        // setUserId(auth.userId);
+        setUserId(auth.userId);
 
         const isLinked = window.Twitch.ext.viewer?.isLinked;
         console.log("Twitch isLinked:", isLinked);

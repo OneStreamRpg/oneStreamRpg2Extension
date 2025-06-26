@@ -1,4 +1,4 @@
-import { Enemy, GameObject, GameState, Npc, Player } from "../types/gameState";
+import { GameObject, Player, Enemy, Npc, GameState } from "../types/gameState";
 
 export function mapPlayers(players: any[]): Player[] {
   return players.map((p): Player => ({
@@ -41,7 +41,7 @@ export function mapGameObjects(gameState: GameState | null | undefined): GameObj
 }
 
 // For future delta updates
-export function applyGameStateDelta(objects: GameObject[]): GameObject[] {
+export function applyGameStateDelta(objects: GameObject[], delta: Partial<GameState>): GameObject[] {
   // Implement delta merging logic here
   return objects; // For now just return unchanged
 }

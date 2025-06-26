@@ -1,21 +1,18 @@
-import "./ResizableFrame.css";
+import React from 'react';
+import './ResizableFrame.css';
 
 // Import the frame parts
-import frameBL from "./assets/frameBL.png";
-import frameBM from "./assets/frameBM.png";
-import frameBR from "./assets/frameBR.png";
-import frameML from "./assets/frameML.png";
-import frameMM from "./assets/frameMM.png";
-import frameMR from "./assets/frameMR.png";
-import frameTL from "./assets/frameTL.png";
-import frameTM from "./assets/frameTM.png";
-import frameTR from "./assets/frameTR.png";
+import frameTL from './assets/frameTL.png';
+import frameTM from './assets/frameTM.png';
+import frameTR from './assets/frameTR.png';
+import frameML from './assets/frameML.png';
+import frameMM from './assets/frameMM.png';
+import frameMR from './assets/frameMR.png';
+import frameBL from './assets/frameBL.png';
+import frameBM from './assets/frameBM.png';
+import frameBR from './assets/frameBR.png';
 
-export default function ResizableFrame({
-  width = 200,
-  height = 100,
-  children,
-}: any) {
+export default function ResizableFrame({ width = 200, height = 100, children }) {
   const cornerSize = 32; // change if your corners aren't 16px
   const contentWidth = width - 2 * cornerSize;
   const contentHeight = height - 2 * cornerSize;

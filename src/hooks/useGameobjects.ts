@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { mapGameObjects } from "../services/gameObjects";
 import { GameObject } from "../types/gameState";
+import { mapGameObjects } from "../services/gameObjects";
 
 export function useGameObjects(gameState: any): GameObject[] {
   return useMemo(() => {

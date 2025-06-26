@@ -1,10 +1,10 @@
-import { MouseEvent, useEffect, useRef, useState } from "react";
-import ClickMarker from "../components/ui/ClickMarker";
-import ResizableFrame from "../components/ui/Frame/ResizableFrame";
-import GameObjectTooltip from "../components/ui/GameObjectTooltip";
-import { useGameObjects } from "../hooks/useGameobjects";
+import React, { useState, useRef, useEffect, MouseEvent } from "react";
 import { useSocketStore } from "../store/socketStore";
+import ClickMarker from "../components/ui/ClickMarker";
+import GameObjectTooltip from "../components/ui/GameObjectTooltip";
 import { handleClick as externalClickHandler } from "../utils/handleClick";
+import { useGameObjects } from "../hooks/useGameobjects";
+import ResizableFrame from '../components/ui/Frame/ResizableFrame';
 
 const ConnectedOverlay = () => {
   const socket = useSocketStore((state) => state.socket);
@@ -14,11 +14,7 @@ const ConnectedOverlay = () => {
   const gameObjects = useGameObjects(gameState);
 
   const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
-  const [hovered, setHovered] = useState<{
-    name: string;
-    x: number;
-    y: number;
-  } | null>(null);
+  const [hovered, setHovered] = useState<{ name: string; x: number; y: number } | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null!);
 
@@ -99,14 +95,7 @@ const ConnectedOverlay = () => {
     ) {
       setTargetEnemy(clickedObject.id);
     } else {
-      externalClickHandler(
-        e,
-        socket,
-        isConnected,
-        setMarker,
-        timeoutRef,
-        containerRef
-      );
+      externalClickHandler(e, socket, isConnected, setMarker, timeoutRef, containerRef);
     }
   };
 
@@ -205,9 +194,7 @@ const ConnectedOverlay = () => {
         );
       })}
 
-      {hovered && (
-        <GameObjectTooltip name={hovered.name} x={hovered.x} y={hovered.y} />
-      )}
+      {hovered && <GameObjectTooltip name={hovered.name} x={hovered.x} y={hovered.y} />}
     </div>
   );
 };
