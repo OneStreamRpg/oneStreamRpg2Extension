@@ -1,26 +1,26 @@
 // src/components/inventory/Inventory.tsx
-import React, { useState } from 'react'
-import { DndContext } from '@dnd-kit/core'
-import InventorySlot from '../ui/InventorySlot'
-import DraggableItem from '../ui/DraggableItem'
+import { DndContext } from "@dnd-kit/core";
+import { useState } from "react";
+import DraggableItem from "../ui/DraggableItem";
+import InventorySlot from "../ui/InventorySlot";
 
 const Inventory = () => {
-  const [itemIndex, setItemIndex] = useState(13)
+  const [itemIndex, setItemIndex] = useState(13);
 
   const handleDragEnd = (event: any) => {
-    const { active, over } = event
+    const { over } = event;
     if (over) {
-      const index = parseInt(over.id)
-      setItemIndex(index)
+      const index = parseInt(over.id);
+      setItemIndex(index);
     }
-  }
+  };
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(6, 24px)',
+          display: "grid",
+          gridTemplateColumns: "repeat(6, 24px)",
           gap: 4,
           padding: 10,
         }}
@@ -32,7 +32,7 @@ const Inventory = () => {
         ))}
       </div>
     </DndContext>
-  )
-}
+  );
+};
 
-export default Inventory
+export default Inventory;
