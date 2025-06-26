@@ -1,4 +1,3 @@
-// src/components/ui/InventorySlot.tsx
 import { useDroppable } from "@dnd-kit/core";
 import React from "react";
 import styles from "./InventorySlot.module.css";

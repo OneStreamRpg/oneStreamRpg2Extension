@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
     readonly VITE_EXT_TYPE: string
+    readonly VITE_SOCKET_URL: string
 }
 
 interface ImportMeta {

@@ -8,6 +8,8 @@ interface Props {
   children: React.ReactNode;
 }
 
+const { VITE_SOCKET_URL } = import.meta.env;
+
 export const SocketProvider: React.FC<Props> = ({
   token,
   channelId,
@@ -28,16 +30,13 @@ export const SocketProvider: React.FC<Props> = ({
       });
     }
 
-    const socketInstance: Socket = io(
-      "https://germany.pauledevelopment.com:5321",
-      {
-        path: "/socket.io",
-        auth: {
-          token,
-          channelId,
-        },
-      }
-    );
+    const socketInstance: Socket = io(VITE_SOCKET_URL, {
+      path: "/socket.io",
+      auth: {
+        token,
+        channelId,
+      },
+    });
 
     setSocket(socketInstance);
 
