@@ -28,16 +28,13 @@ export const SocketProvider: React.FC<Props> = ({
       });
     }
 
-    const socketInstance: Socket = io(
-      "https://germany.pauledevelopment.com:5321",
-      {
-        path: "/socket.io",
-        auth: {
-          token,
-          channelId,
-        },
-      }
-    );
+    const socketInstance: Socket = io(import.meta.env.VITE_SOCKET_URL, {
+      path: "/socket.io",
+      auth: {
+        token,
+        channelId,
+      },
+    });
 
     setSocket(socketInstance);
 
