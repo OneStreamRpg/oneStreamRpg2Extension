@@ -1,6 +1,5 @@
 import { useDroppable } from "@dnd-kit/core";
 import React from "react";
-import styles from "./InventorySlot.module.css";
 
 type Props = {
   id: string;
@@ -13,7 +12,6 @@ const InventorySlot = ({ id, children }: Props) => {
   return (
     <div
       ref={setNodeRef}
-      className={styles.slot}
       style={{
         backgroundColor: isOver ? "#f00" : undefined,
       }}

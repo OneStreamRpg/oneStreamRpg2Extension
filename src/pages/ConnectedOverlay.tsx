@@ -1,6 +1,5 @@
 import { MouseEvent, useEffect, useRef, useState } from "react";
 import ClickMarker from "../components/ui/ClickMarker";
-import ResizableFrame from "../components/ui/Frame/ResizableFrame";
 import GameObjectTooltip from "../components/ui/GameObjectTooltip";
 import { useGameObjects } from "../hooks/useGameobjects";
 import { useSocketStore } from "../store/socketStore";
@@ -168,9 +167,9 @@ const ConnectedOverlay = () => {
     >
       <h2>Overlay2</h2>
 
-      <ResizableFrame width={128} height={150}>
+      <div style={{ width: 128, height: 150 }}>
         <p style={{ margin: 0 }}>👾 Welcome, Hero!</p>
-      </ResizableFrame>
+      </div>
 
       {marker && <ClickMarker x={marker.x} y={marker.y} />}
 
