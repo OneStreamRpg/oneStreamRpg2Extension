@@ -1,51 +1,98 @@
-# .github/workflows/ci.yml
+# This workflow is named "CI" and will appear in the GitHub Actions tab.
 name: CI
 
+# This section defines the events that trigger the workflow.
 on:
+  # Run the workflow on push events to the "main" branch and release branches.
   push:
     branches:
       - main
       - "release/**"
+  # Run the workflow on pull request events targeting the "main" branch.
   pull_request:
     branches:
       - main
 
+# A workflow is composed of one or more jobs that can run in parallel or sequentially.
 jobs:
-  lint:
-    name: Lint
+  # This job installs dependencies and caches them for other jobs.
+  install:
+    # The job will run on the latest version of an Ubuntu virtual machine.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Step 1: Check out your repository's code so the workflow can access it.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up the pnpm package manager.
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
           run_install: false
-      - name: Setup Node.js
+
+      # Step 3: Set up a Node.js environment.
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: "pnpm"
+
+      # Step 4: Install the project dependencies using pnpm.
       - name: Install dependencies
         run: pnpm install
+
+      # Step 5: Upload the node_modules directory as an artifact.
+      # This allows other jobs to download and use it without reinstalling.
+      - name: Upload dependencies artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules/
+
+  # This job runs the linter and depends on the 'install' job.
+  lint:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Download dependencies artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules/
       - name: Run ESLint
         run: pnpm run lint
 
+  # This job builds the overlay and depends on the 'install' job.
   build-overlay:
-    name: Build Overlay
+    needs: install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
           version: 10
-          run_install: false
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: "pnpm"
-      - name: Install dependencies
-        run: pnpm install
+      - name: Download dependencies artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules/
       - name: Build Overlay
         run: pnpm run build:overlay
       - name: Upload Overlay Artifact
@@ -54,21 +101,26 @@ jobs:
           name: overlay-dist
           path: dist/overlay
 
+  # This job builds the panel and also depends on the 'install' job.
   build-panel:
-    name: Build Panel
+    needs: install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
           version: 10
-          run_install: false
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: "pnpm"
-      - name: Install dependencies
-        run: pnpm install
+      - name: Download dependencies artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules/
       - name: Build Panel
         run: pnpm run build:panel
       - name: Upload Panel Artifact
@@ -76,3 +128,4 @@ jobs:
         with:
           name: panel-dist
           path: dist/panel
+
