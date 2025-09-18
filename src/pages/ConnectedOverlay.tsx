@@ -153,7 +153,7 @@ const ConnectedOverlay = () => {
     };
   }, []);
 
-  if (!isConnected) return <div>Connecting socket...</div>;
+  if (!isConnected) return <div className="text-red-800 animate-pulse ">Connecting socket...</div>;
 
   const scaleX = containerSize.width / 1920;
   const scaleY = containerSize.height / 1080;
