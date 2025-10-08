@@ -29,7 +29,7 @@ export const SocketProvider: React.FC<Props> = ({
         }
       });
     }
-
+    console.log("🌍 Connecting to socket.io server at", VITE_SOCKET_URL);
     const socketInstance: Socket = io(VITE_SOCKET_URL, {
       path: "/socket.io",
       auth: {
@@ -51,7 +51,7 @@ export const SocketProvider: React.FC<Props> = ({
     });
 
     socketInstance.on("connect_error", (err) => {
-      console.error("⚠️ Connection error:", err.message);
+      console.error("⚠️ Connection error:", err);
     });
 
     socketInstance.on("gameState", (data) => {
@@ -92,12 +92,12 @@ export const SocketProvider: React.FC<Props> = ({
                   break;
                 case "destroyEnemy":
                   enemies = enemies.filter(
-                    (e) => e.enemyId !== command.enemyId
+                    (e) => e.id !== command.id
                   );
                   break;
                 case "kickPlayer":
                   players = players.filter(
-                    (p) => p.playerId !== command.playerId
+                    (p) => p.id !== command.id
                   );
                   break;
               }
@@ -142,12 +142,12 @@ export const SocketProvider: React.FC<Props> = ({
   }, [token, channelId, setSocket, setIsConnected, setGameState]);
 
   const updatePlayersState = (
-    players: Array<{ playerId: string; [key: string]: any }>,
-    previousPlayers: Array<{ playerId: string; [key: string]: any }>
+    players: Array<{ id: string; [key: string]: any }>,
+    previousPlayers: Array<{ id: string; [key: string]: any }>
   ) => {
-    const playerMap = new Map(previousPlayers.map((p) => [p.playerId, p]));
+    const playerMap = new Map(previousPlayers.map((p) => [p.id, p]));
     players.forEach((playerUpdate) => {
-      const existingPlayer = playerMap.get(playerUpdate.playerId);
+      const existingPlayer = playerMap.get(playerUpdate.id);
       if (existingPlayer) {
         Object.assign(existingPlayer, playerUpdate);
       }
@@ -156,12 +156,12 @@ export const SocketProvider: React.FC<Props> = ({
   };
 
   const updateEnemiesState = (
-    enemies: Array<{ enemyId: string; [key: string]: any }>,
-    previousEnemies: Array<{ enemyId: string; [key: string]: any }>
+    enemies: Array<{ id: string; [key: string]: any }>,
+    previousEnemies: Array<{ id: string; [key: string]: any }>
   ) => {
-    const enemyMap = new Map(previousEnemies.map((e) => [e.enemyId, e]));
+    const enemyMap = new Map(previousEnemies.map((e) => [e.id, e]));
     enemies.forEach((enemyUpdate) => {
-      const existingEnemy = enemyMap.get(enemyUpdate.enemyId);
+      const existingEnemy = enemyMap.get(enemyUpdate.id);
       if (existingEnemy) {
         Object.assign(existingEnemy, enemyUpdate);
       }
@@ -170,16 +170,16 @@ export const SocketProvider: React.FC<Props> = ({
   };
 
   const updateNpcsState = (
-    npcs: Array<{ npcId: string; [key: string]: any }>,
-    previousNpcs: Array<{ npcId: string; [key: string]: any }>
+    npcs: Array<{ id: string; [key: string]: any }>,
+    previousNpcs: Array<{ id: string; [key: string]: any }>
   ) => {
-    const npcMap = new Map(previousNpcs.map((n) => [n.npcId, n]));
+    const npcMap = new Map(previousNpcs.map((n) => [n.id, n]));
     npcs.forEach((npcUpdate) => {
-      const existingNpc = npcMap.get(npcUpdate.npcId);
+      const existingNpc = npcMap.get(npcUpdate.id);
       if (existingNpc) {
         Object.assign(existingNpc, npcUpdate);
       } else {
-        npcMap.set(npcUpdate.npcId, npcUpdate);
+        npcMap.set(npcUpdate.id, npcUpdate);
       }
     });
     return Array.from(npcMap.values());
