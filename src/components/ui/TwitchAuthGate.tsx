@@ -1,39 +1,36 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { SocketProvider } from "../../context/SocketProvider";
+import { useAuthStore } from "../../hooks/useAuthStore";
 
-interface Props {
+type Props = {
   children: React.ReactNode;
 }
 
 const TwitchAuthGate: React.FC<Props> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [channelId, setChannelId] = useState<string | null>(null);
-  // const [userId, setUserId] = useState<string | null>(null);
+  const { isAuthenticated, token, channelId, setAuth, setLoggedOut } = useAuthStore();
 
   useEffect(() => {
-    if (import.meta.env.DEV && false) {
-      console.log("Development mode: skipping auth");
-      setIsAuthenticated(true);
-      setToken("dev-fake-jwt-token");
-      setChannelId("dev-fake-channel-id");
-      // setUserId("dev-fake-user-id");
-      return;
-    }
-
     if (window.Twitch && window.Twitch.ext) {
       window.Twitch.ext.onAuthorized((auth) => {
-        console.log("Authorized payload:", auth);
-        setToken(auth.token);
-        setChannelId(auth.channelId);
-        // setUserId(auth.userId);
+        console.log(TwitchAuthGate.name, "onAuthorized", { auth });
+        const isLinked = !!window.Twitch.ext.viewer?.isLinked;
 
-        const isLinked = window.Twitch.ext.viewer?.isLinked;
-        console.log("Twitch isLinked:", isLinked);
-        setIsAuthenticated(!!isLinked);
+        setAuth({
+          token: auth.token,
+          channelId: auth.channelId,
+          isLinked: isLinked,
+        });
+      });
+
+      window.Twitch.ext.onContext(() => {
+        const isNowLinked = !!window.Twitch.ext.viewer?.isLinked;
+        if (!isNowLinked) {
+          setLoggedOut();
+        }
       });
     }
-  }, []);
+  }, [setAuth, setLoggedOut]);
+
 
   const handleShare = () => {
     console.log("Requesting ID share...");
