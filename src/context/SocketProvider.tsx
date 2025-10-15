@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { useSocketStore } from "../store/socketStore";
+import { usePersonalChannel } from "../hooks/usePersonalChannel";
 
 interface Props {
   token: string;
@@ -15,8 +16,15 @@ export const SocketProvider: React.FC<Props> = ({
   channelId,
   children,
 }) => {
-  const { setSocket, setIsConnected, setGameState, setinGame, setPing } =
+  const { socket, isConnected, setSocket, setIsConnected, setGameState, setinGame, setPing } =
     useSocketStore();
+
+  // Initialize personal channel
+  usePersonalChannel({
+    socket,
+    isConnected,
+    enabled: true,
+  });
 
   const streamDelayRef = useRef(0);
   const activeTimeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -43,6 +51,10 @@ export const SocketProvider: React.FC<Props> = ({
     socketInstance.on("connect", () => {
       console.log("✅ Connected to socket.io server");
       setIsConnected(true);
+    });
+
+    socketInstance.on("authenticated", () => {
+      console.log("✅ Authenticated with server");
     });
 
     socketInstance.on("disconnect", () => {

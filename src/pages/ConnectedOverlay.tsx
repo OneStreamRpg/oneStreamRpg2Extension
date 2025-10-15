@@ -4,8 +4,12 @@ import GameObjectTooltip from "../components/ui/GameObjectTooltip";
 import { useGameObjects } from "../hooks/useGameobjects";
 import { useSocketStore } from "../store/socketStore";
 import { handleClick as externalClickHandler } from "../utils/handleClick";
+import MockPersonalChannelDemo from "../components/inventory/MockPersonalChannelDemo";
+import { usePersonalChannelDebug } from "../hooks/usePersonalChannelDebug";
 
 const ConnectedOverlay = () => {
+  // Enable debug tools in development
+  usePersonalChannelDebug();
   const socket = useSocketStore((state) => state.socket);
   const isConnected = useSocketStore((state) => state.isConnected);
   const gameState = useSocketStore((state) => state.gameState);
@@ -165,6 +169,24 @@ const ConnectedOverlay = () => {
       onMouseMove={handleMouseMove}
       style={{ position: "absolute", height: "100%", width: "100%" }}
     >
+      {/* Personal Channel Demo - positioned in top right */}
+      <div
+        style={{
+          position: "absolute",
+          top: 10,
+          right: 10,
+          maxWidth: "400px",
+          maxHeight: "90vh",
+          overflow: "auto",
+          backgroundColor: "rgba(0, 0, 0, 0.9)",
+          borderRadius: "8px",
+          border: "2px solid rgba(255, 255, 255, 0.2)",
+          zIndex: 2000,
+        }}
+      >
+        <MockPersonalChannelDemo />
+      </div>
+
       <h2>Overlay2</h2>
 
       <div style={{ width: 128, height: 150 }}>
