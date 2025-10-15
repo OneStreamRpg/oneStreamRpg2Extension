@@ -1,4 +1,3 @@
-// src/pages/Overlay.tsx
 import TwitchAuthGate from "../components/ui/TwitchAuthGate";
 import ConnectedOverlay from "./ConnectedOverlay";
 

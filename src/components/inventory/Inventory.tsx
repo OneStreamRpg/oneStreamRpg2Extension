@@ -1,4 +1,3 @@
-// src/components/inventory/Inventory.tsx
 import { DndContext } from "@dnd-kit/core";
 import { useState } from "react";
 import DraggableItem from "../ui/DraggableItem";

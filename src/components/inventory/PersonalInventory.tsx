@@ -1,4 +1,3 @@
-// src/components/inventory/PersonalInventory.tsx
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";

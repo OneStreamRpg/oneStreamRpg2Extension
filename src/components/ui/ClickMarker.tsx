@@ -1,4 +1,3 @@
-// src/components/ui/ClickMarker.tsx
 import React from "react";
 
 type ClickMarkerProps = {

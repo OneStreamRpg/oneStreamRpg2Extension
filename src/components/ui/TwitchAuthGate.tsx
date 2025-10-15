@@ -1,4 +1,3 @@
-// components/ui/TwitchAuthGate.tsx
 import React, { useEffect, useState } from "react";
 import { SocketProvider } from "../../context/SocketProvider";
 

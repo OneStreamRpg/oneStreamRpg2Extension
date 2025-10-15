@@ -1,4 +1,3 @@
-// src/utils/handleClick.ts
 import { MutableRefObject, RefObject } from "react";
 
 export const handleClick = (

@@ -1,4 +1,3 @@
-// src/pages/Panel.tsx
 import Inventory from "../components/inventory/Inventory";
 
 const Panel = () => {

@@ -1,4 +1,3 @@
-// src/App.tsx
 import Overlay from "./pages/Overlay";
 import Panel from "./pages/Panel";
 

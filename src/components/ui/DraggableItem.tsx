@@ -1,4 +1,3 @@
-// src/components/ui/DraggableItem.tsx
 import { useDraggable } from "@dnd-kit/core";
 import React from "react";
 
