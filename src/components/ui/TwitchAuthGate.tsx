@@ -6,8 +6,8 @@ type Props = {
   children: React.ReactNode;
 }
 
-const TwitchAuthGate: React.FC<Props> = ({ children }) => {
-  const { isAuthenticated, token, channelId, setAuth, setLoggedOut } = useAuthStore();
+export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
+  const { isAuthenticated, setAuth, setLoggedOut, token, channelId } = useAuthStore();
 
   useEffect(() => {
     if (window.Twitch && window.Twitch.ext) {
@@ -53,11 +53,8 @@ const TwitchAuthGate: React.FC<Props> = ({ children }) => {
     return <div>Loading...</div>;
   }
 
-  return (
-    <SocketProvider token={token} channelId={channelId}>
-      {children}
-    </SocketProvider>
-  );
+  return <SocketProvider token={token} channelId={channelId}>
+    {children}
+  </SocketProvider>;
 };
 
-export default TwitchAuthGate;

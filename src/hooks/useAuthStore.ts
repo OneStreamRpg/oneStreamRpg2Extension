@@ -21,3 +21,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     setLoggedOut: () => set({ isAuthenticated: false }),
 }))
+
+export const useAuthCredentials = () => useAuthStore((state) => ({
+    token: state.token,
+    channelId: state.channelId,
+    isAuthenticated: state.isAuthenticated,
+}));

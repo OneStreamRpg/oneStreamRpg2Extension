@@ -1,4 +1,4 @@
-import TwitchAuthGate from "./components/ui/TwitchAuthGate";
+import { TwitchAuthGate } from "./components/ui/TwitchAuthGate";
 import Overlay from "./pages/Overlay";
 import Panel from "./pages/Panel";
 
