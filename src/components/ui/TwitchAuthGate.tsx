@@ -12,7 +12,7 @@ const TwitchAuthGate: React.FC<Props> = ({ children }) => {
   // const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV && false) {
       console.log("Development mode: skipping auth");
       setIsAuthenticated(true);
       setToken("dev-fake-jwt-token");
