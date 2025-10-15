@@ -4,8 +4,12 @@ import Panel from "./pages/Panel";
 const extType = import.meta.env.VITE_EXT_TYPE;
 
 function App() {
-  if (extType === "panel") return <Panel />;
-  return <Overlay />;
+  if (extType === "panel")
+    return <Panel />;
+  else if (extType === "overlay")
+    return <Overlay />;
+  else
+    throw new Error("No valid extension type specified in .env");
 }
 
 export default App;
