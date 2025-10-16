@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { SocketProvider } from "../../context/SocketProvider";
 import { useAuthStore } from "../../hooks/useAuthStore";
 
 type Props = {
@@ -53,8 +52,6 @@ export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
     return <div>Loading...</div>;
   }
 
-  return <SocketProvider token={token} channelId={channelId}>
-    {children}
-  </SocketProvider>;
+  return children
 };
 

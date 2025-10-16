@@ -13,17 +13,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     channelId: null,
     isAuthenticated: null,
 
-    setAuth: (authData) => set({
-        token: authData.token,
-        channelId: authData.channelId,
-        isAuthenticated: authData.isLinked,
-    }),
+    setAuth: (authData) => {
+        set({
+            token: authData.token,
+            channelId: authData.channelId,
+            isAuthenticated: authData.isLinked,
+        });
+    },
 
-    setLoggedOut: () => set({ isAuthenticated: false }),
-}))
-
-export const useAuthCredentials = () => useAuthStore((state) => ({
-    token: state.token,
-    channelId: state.channelId,
-    isAuthenticated: state.isAuthenticated,
+    setLoggedOut: () => {
+        set({ isAuthenticated: false });
+    },
 }));

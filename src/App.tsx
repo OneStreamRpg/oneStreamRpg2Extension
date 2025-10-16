@@ -1,4 +1,6 @@
 import { TwitchAuthGate } from "./components/ui/TwitchAuthGate";
+import { SocketProvider } from "./context/SocketProvider";
+import { useAuthStore } from "./hooks/useAuthStore";
 import Overlay from "./pages/Overlay";
 import Panel from "./pages/Panel";
 
@@ -10,10 +12,15 @@ export const App: React.FC = () => {
     console.error("No valid extension type specified in .env");
   }
 
+
+  const { token, channelId, isAuthenticated } = useAuthStore()
+
   return (
     <TwitchAuthGate>
-      {extType === "overlay" && <Overlay />}
-      {extType === "panel" && <Panel />}
+      {isAuthenticated && token && channelId ? (<SocketProvider token={token} channelId={channelId}>
+        {extType === "overlay" && <Overlay />}
+        {extType === "panel" && <Panel />}
+      </SocketProvider>) : <div>Preparing your session...</div>}
     </TwitchAuthGate>
   )
 }
