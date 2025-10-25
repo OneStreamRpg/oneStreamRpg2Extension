@@ -49,7 +49,7 @@ export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
   }
 
   if (isAuthenticated === null || !token || !channelId) {
-    return <div>Loading...</div>;
+    return <div>Authentication in progress...</div>;
   }
 
   return children
