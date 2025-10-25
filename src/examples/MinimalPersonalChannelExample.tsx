@@ -1,13 +1,13 @@
 /**
  * Quick Start Example - Personal Player Channel
- * 
+ *
  * This file shows a minimal working example of the personal channel system.
  * Copy this pattern to integrate into your existing components.
  */
 
-import { useSocketStore } from "../store/socketStore";
-import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
+import { usePersonalChannelStore } from "../store/personalChannelStore";
+import { useSocketStore } from "../store/socketStore";
 
 export function MinimalPersonalChannelExample() {
   // 1. Get socket from your existing socket store
@@ -37,7 +37,9 @@ export function MinimalPersonalChannelExample() {
       {/* Display player stats */}
       <div>
         <h2>Level {displayedState.stats.level}</h2>
-        <p>HP: {displayedState.stats.hp}/{displayedState.stats.maxHp}</p>
+        <p>
+          HP: {displayedState.stats.hp}/{displayedState.stats.maxHp}
+        </p>
         <p>Gold: {displayedState.currency.gold}</p>
       </div>
 
@@ -46,10 +48,10 @@ export function MinimalPersonalChannelExample() {
         <h3>Inventory</h3>
         {displayedState.inventory.items.map((item) => (
           <div key={item.slotNumber}>
-            <span>{item.name} x{item.quantity}</span>
-            <button onClick={() => equipItem(item.slotNumber)}>
-              Equip
-            </button>
+            <span>
+              {item.name} x{item.quantity}
+            </span>
+            <button onClick={() => equipItem(item.slotNumber!)}>Equip</button>
           </div>
         ))}
       </div>
@@ -59,10 +61,10 @@ export function MinimalPersonalChannelExample() {
         <h3>Equipment</h3>
         {Object.entries(displayedState.equipment).map(([slot, item]) => (
           <div key={slot}>
-            <span>{slot}: {item.name}</span>
-            <button onClick={() => unequipItem(slot)}>
-              Unequip
-            </button>
+            <span>
+              {slot}: {item.name}
+            </span>
+            <button onClick={() => unequipItem(slot)}>Unequip</button>
           </div>
         ))}
       </div>
@@ -72,12 +74,12 @@ export function MinimalPersonalChannelExample() {
 
 /**
  * Integration Steps:
- * 
+ *
  * 1. The SocketProvider already initializes the personal channel automatically
  * 2. Just use the hooks in any component:
  *    - usePersonalChannelStore() for reading state
  *    - usePersonalChannelActions(socket) for actions
- * 
+ *
  * 3. That's it! The system handles:
  *    - Connection management
  *    - State synchronization
@@ -88,9 +90,9 @@ export function MinimalPersonalChannelExample() {
 
 /**
  * Available Actions:
- * 
+ *
  * const actions = usePersonalChannelActions(socket);
- * 
+ *
  * actions.equipItem(slotNumber, targetLocation?)
  * actions.unequipItem(slotName)
  * actions.swapInventorySlots(slot1, slot2)
@@ -100,9 +102,9 @@ export function MinimalPersonalChannelExample() {
 
 /**
  * Available State:
- * 
+ *
  * const state = usePersonalChannelStore();
- * 
+ *
  * state.displayedState          // Current state (includes optimistic updates)
  * state.confirmedState          // Last confirmed state (for rollback)
  * state.isReady                 // Is the channel ready?
