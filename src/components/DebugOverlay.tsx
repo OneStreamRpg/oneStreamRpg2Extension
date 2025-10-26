@@ -3,8 +3,8 @@ import { useUIStore } from "../store/useUIStore";
 import { PagePosition } from "../types/ui";
 
 export const DebugOverlay = () => {
-  const [isOpen, setIsOpen] = useState(true);
-  const [position, setPosition] = useState({ x: 20, y: 20 });
+  const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState({ x: 50, y: 50 });
   const [isDragging, setIsDragging] = useState(false);
 
   const pagePosition = useUIStore((state) => state.pagePosition);
