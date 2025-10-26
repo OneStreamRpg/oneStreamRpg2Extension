@@ -6,8 +6,22 @@ export const PagesNav: React.FC = () => {
   return (
     <nav className="">
       <ul className="gap-2 flex">
-        <li onClick={() => setActivePage(Page.Inventory)}>Inventory</li>
-        <li onClick={() => setActivePage(Page.SkillTree)}>Skill Tree</li>
+        <li>
+          <button
+            className="cursor-pointer"
+            onClick={() => setActivePage(Page.Inventory)}
+          >
+            Inventory
+          </button>
+        </li>
+        <li>
+          <button
+            className="cursor-pointer"
+            onClick={() => setActivePage(Page.SkillTree)}
+          >
+            Skill Tree
+          </button>
+        </li>
       </ul>
     </nav>
   );
