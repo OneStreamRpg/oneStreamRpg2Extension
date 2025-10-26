@@ -1,3 +1,3 @@
 export const AbilitiesNav: React.FC = () => {
-  return <nav className="">Abilities Navigation</nav>;
+  return <nav className="pointer-events-auto">Abilities Navigation</nav>;
 };

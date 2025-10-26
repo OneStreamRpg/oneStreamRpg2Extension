@@ -4,7 +4,7 @@ import { Page } from "../types/ui";
 export const PagesNav: React.FC = () => {
   const setActivePage = useUIStore((state) => state.setActivePage);
   return (
-    <nav className="">
+    <nav className="pointer-events-auto">
       <ul className="gap-2 flex">
         <li>
           <button

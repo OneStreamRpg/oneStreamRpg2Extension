@@ -1,3 +1,3 @@
 export const ProfileNav: React.FC = () => {
-  return <nav className="">Profile Navigation</nav>;
+  return <nav className="pointer-events-auto">Profile Navigation</nav>;
 };

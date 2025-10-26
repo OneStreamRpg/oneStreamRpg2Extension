@@ -13,15 +13,17 @@ export const PageLayout: React.FC<{ children: React.ReactNode }> = ({
         pagePosition === PagePosition.RIGHT && "ml-auto"
       }`}
     >
-      <nav className="flex">
-        <button
-          className="cursor-pointer ml-auto"
-          onClick={() => closeActivePage()}
-        >
-          Close
-        </button>
-      </nav>
-      {children}
+      <div className="pointer-events-auto">
+        <nav className="flex">
+          <button
+            className="cursor-pointer ml-auto"
+            onClick={() => closeActivePage()}
+          >
+            Close
+          </button>
+        </nav>
+        {children}
+      </div>
     </section>
   );
 };
