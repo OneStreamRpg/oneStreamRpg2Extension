@@ -11,13 +11,16 @@ interface Props {
 
 const { VITE_SOCKET_URL } = import.meta.env;
 
-export const SocketProvider: React.FC<Props> = ({
-  token,
-  channelId,
-  children,
-}) => {
-  const { socket, isConnected, setSocket, setIsConnected, setGameState, setinGame, setPing } =
-    useSocketStore();
+export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
+  const {
+    socket,
+    isConnected,
+    setSocket,
+    setIsConnected,
+    setGameState,
+    setinGame,
+    setPing,
+  } = useSocketStore();
 
   // Initialize personal channel
   usePersonalChannel({
@@ -103,14 +106,10 @@ export const SocketProvider: React.FC<Props> = ({
                   if (command.player) players.push(command.player);
                   break;
                 case "destroyEnemy":
-                  enemies = enemies.filter(
-                    (e) => e.id !== command.id
-                  );
+                  enemies = enemies.filter((e) => e.id !== command.id);
                   break;
                 case "kickPlayer":
-                  players = players.filter(
-                    (p) => p.id !== command.id
-                  );
+                  players = players.filter((p) => p.id !== command.id);
                   break;
               }
             });
@@ -154,8 +153,8 @@ export const SocketProvider: React.FC<Props> = ({
   }, [token, channelId, setSocket, setIsConnected, setGameState]);
 
   const updatePlayersState = (
-    players: Array<{ id: string;[key: string]: any }>,
-    previousPlayers: Array<{ id: string;[key: string]: any }>
+    players: Array<{ id: string; [key: string]: any }>,
+    previousPlayers: Array<{ id: string; [key: string]: any }>
   ) => {
     const playerMap = new Map(previousPlayers.map((p) => [p.id, p]));
     players.forEach((playerUpdate) => {
@@ -168,8 +167,8 @@ export const SocketProvider: React.FC<Props> = ({
   };
 
   const updateEnemiesState = (
-    enemies: Array<{ id: string;[key: string]: any }>,
-    previousEnemies: Array<{ id: string;[key: string]: any }>
+    enemies: Array<{ id: string; [key: string]: any }>,
+    previousEnemies: Array<{ id: string; [key: string]: any }>
   ) => {
     const enemyMap = new Map(previousEnemies.map((e) => [e.id, e]));
     enemies.forEach((enemyUpdate) => {
@@ -182,8 +181,8 @@ export const SocketProvider: React.FC<Props> = ({
   };
 
   const updateNpcsState = (
-    npcs: Array<{ id: string;[key: string]: any }>,
-    previousNpcs: Array<{ id: string;[key: string]: any }>
+    npcs: Array<{ id: string; [key: string]: any }>,
+    previousNpcs: Array<{ id: string; [key: string]: any }>
   ) => {
     const npcMap = new Map(previousNpcs.map((n) => [n.id, n]));
     npcs.forEach((npcUpdate) => {
