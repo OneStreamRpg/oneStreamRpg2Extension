@@ -1,3 +1,4 @@
+import { DebugOverlay } from "../components/DebugOverlay";
 import { UserInterface } from "../components/UserInterface";
 import { WorldInteractionLayer } from "../components/WorldInteractionLayer";
 
@@ -9,6 +10,9 @@ export const Overlay = () => {
       </div>
       <div className="col-start-1 row-start-1 pointer-events-none">
         <UserInterface />
+      </div>
+      <div className="col-start-1 row-start-1 pointer-events-none">
+        <DebugOverlay />
       </div>
     </div>
   );
