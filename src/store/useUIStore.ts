@@ -9,6 +9,7 @@ type UIState = {
 type UIActions = {
     setActivePage: (page: Page) => void;
     closeActivePage: () => void;
+    setPagePosition: (position: PagePosition) => void;
 }
 export const useUIStore = create<UIState & UIActions>((set) => ({
     // State
