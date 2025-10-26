@@ -12,13 +12,21 @@ export const DebugOverlay = () => {
 
   const dragRef = useRef<HTMLDivElement>(null);
   const offsetRef = useRef({ x: 0, y: 0 });
+  const hasDraggedRef = useRef(false);
 
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
+      hasDraggedRef.current = true;
+
+      const newX = e.clientX - offsetRef.current.x;
+      const newY = e.clientY - offsetRef.current.y;
+
+      const constrainedX = Math.max(0, newX);
+
       setPosition({
-        x: e.clientX - offsetRef.current.x,
-        y: e.clientY - offsetRef.current.y,
+        x: constrainedX,
+        y: newY,
       });
     };
     const handlePointerUp = () => setIsDragging(false);
@@ -32,6 +40,7 @@ export const DebugOverlay = () => {
   }, [isDragging]);
 
   const onDragStart = (e: any) => {
+    hasDraggedRef.current = false;
     setIsDragging(true);
     const rect = dragRef.current!.getBoundingClientRect();
     offsetRef.current = {
@@ -40,12 +49,23 @@ export const DebugOverlay = () => {
     };
   };
 
+  const handleOpenClick = () => {
+    if (hasDraggedRef.current) return;
+    setIsOpen(true);
+  };
+
+  const handleCloseClick = () => {
+    if (hasDraggedRef.current) return;
+    setIsOpen(false);
+  };
+
   const style: CSSProperties = {
     position: "fixed",
     top: 0,
     left: 0,
     transform: `translate(${position.x}px, ${position.y}px)`,
     zIndex: 9999,
+    userSelect: "none",
   };
 
   return (
@@ -54,9 +74,9 @@ export const DebugOverlay = () => {
         <div
           ref={dragRef}
           style={style}
-          className="flex items-center justify-center text-xs w-4 h-4 bg-green-500/20 rounded-full cursor-grab text-black/20 pointer-events-auto"
+          className="flex items-center justify-center text-xs w-4 h-4 bg-red-500/20 rounded-full cursor-grab text-black/20 pointer-events-auto"
           onPointerDown={onDragStart}
-          onClick={() => setIsOpen(true)}
+          onClick={handleOpenClick}
         >
           D
         </div>
@@ -73,13 +93,12 @@ export const DebugOverlay = () => {
           >
             <span>Debug Menu</span>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={handleCloseClick}
               className="px-2 py-0 text-xl hover:bg-gray-700"
             >
               &times;
             </button>
           </div>
-
           <div className="p-2 space-y-1">
             <button
               className="flex justify-between w-full p-2 cursor-pointer"
@@ -96,16 +115,6 @@ export const DebugOverlay = () => {
                 {PagePosition.RIGHT === pagePosition ? "Right" : "Left"}
               </div>
             </button>
-
-            {/* <div className="p-2">
-              <label className="block text-sm mb-1">Username</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full p-1 text-sm text-white bg-gray-900 border border-gray-600"
-              />
-            </div> */}
           </div>
         </div>
       )}
