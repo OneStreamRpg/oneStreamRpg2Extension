@@ -5,7 +5,7 @@ import { ProfileNav } from "./ProfileNav";
 
 export const UserInterface: React.FC = () => {
   return (
-    <main className="size-full flex flex-col p-2 pointer-events-none">
+    <main className="size-full flex flex-col pb-12 pt-12 px-2 pointer-events-none">
       <aside className="flex justify-between w-full">
         <ProfileNav />
         <PagesNav />
