@@ -1,8 +1,38 @@
+import { useState } from "react";
+
 export const WorldInteractionLayer: React.FC = () => {
   return (
     <section className="size-full">
-      <p onClick={() => console.log("click")}>World Interaction Layer</p>
-      <p onClick={() => console.log("click")}>World Interaction Layer</p>
+      <ExampleItem />
+
+      <ExampleItem />
+
+      <ExampleItem />
+
+      <ExampleItem />
+
+      <ExampleItem />
     </section>
+  );
+};
+
+export const ExampleItem = () => {
+  const [color, setColor] = useState("red");
+
+  return (
+    <div
+      onClick={() => setColor(color === "red" ? "blue" : "red")}
+      className="pointer-events-auto hover:bg-amber-100"
+      style={{
+        width: 100,
+        height: 100,
+        backgroundColor: color,
+        zIndex: -1,
+        top: 50,
+        left: 20,
+      }}
+    >
+      World Interaction
+    </div>
   );
 };
