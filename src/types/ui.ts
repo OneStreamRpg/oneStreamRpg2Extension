@@ -3,3 +3,8 @@ export enum Page {
     SkillTree,
 }
 
+export enum PagePosition {
+    LEFT,
+    RIGHT,
+}
+

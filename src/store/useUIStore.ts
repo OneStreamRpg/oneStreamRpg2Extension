@@ -1,8 +1,9 @@
 import { create } from 'zustand';
-import { Page } from '../types/ui';
+import { Page, PagePosition } from '../types/ui';
 
 type UIState = {
     activePage: Page | null;
+    pagePosition: PagePosition;
 }
 
 type UIActions = {
@@ -12,6 +13,7 @@ type UIActions = {
 export const useUIStore = create<UIState & UIActions>((set) => ({
     // State
     activePage: null,
+    pagePosition: PagePosition.RIGHT,
 
     // Actions
     setActivePage: (page) => {
@@ -19,5 +21,8 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
     },
     closeActivePage: () => {
         set({ activePage: null });
+    },
+    setPagePosition: (position: PagePosition) => {
+        set({ pagePosition: position });
     }
 }));
