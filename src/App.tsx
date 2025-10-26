@@ -2,7 +2,7 @@ import { GameState } from "./components/GameState";
 import { TwitchAuthGate } from "./components/ui/TwitchAuthGate";
 import { useAuthStore } from "./hooks/useAuthStore";
 import { Overlay } from "./pages/Overlay";
-import Panel from "./pages/Panel";
+import { Panel } from "./pages/Panel";
 
 const extType = import.meta.env.VITE_EXT_TYPE;
 
