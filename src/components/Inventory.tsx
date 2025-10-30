@@ -5,6 +5,8 @@ import { useState } from "react";
 export const Inventory: React.FC = () => {
 
   const [targetId, setTargetId] = useState<string>("")
+  const [activeHelmet, setActiveHelmet] = useState<string>("")
+  const [activeChest, setActiveChest] = useState<string>("")
 
   return <DndContext onDragStart={(event: DragStartEvent) => {
     const targetId = event.active.data.current?.targetId;
@@ -13,17 +15,23 @@ export const Inventory: React.FC = () => {
     }
   }} onDragEnd={(event: DragEndEvent) => {
     setTargetId("")
+    if (event.over && event.over.id) {
+      if (event.over.id === "helmet" && event.active.data.current?.targetId === "helmet") {
+        setActiveHelmet(event.active.id as string)
+      } else if (event.over.id === "chest" && event.active.data.current?.targetId === "chest") {
+        setActiveChest(event.active.id as string)
+      }
+    }
   }}
     onDragCancel={(event: DragCancelEvent) => {
       setTargetId("")
     }}
   >
-    <section>
-      <Slot id="helmet" canDrop={targetId === "helmet"} />
-      <Slot id="chest" canDrop={targetId === "chest"} />
-
+    <section className="grid gap-2 grid-cols-2 mb-4">
+      <Slot id="helmet" canDrop={targetId === "helmet"} >{activeHelmet}</Slot>
+      <Slot id="chest" canDrop={targetId === "chest"} >{activeChest}</Slot>
     </section>
-    <section className="grid gap-2 mt-5 grid-cols-2">
+    <section className="grid gap-2 grid-cols-2">
       <Item id="RedHelmet" targetId="helmet" />
       <Item id="NiceHelmet" targetId="helmet" />
       <Item id="BlueHelmet" targetId="helmet" />
@@ -34,14 +42,16 @@ export const Inventory: React.FC = () => {
   </DndContext>
 }
 
-const Slot: React.FC<{ id: string, canDrop: boolean }> = ({ id, canDrop }) => {
-  const { isOver, setNodeRef } = useDroppable({
+const Slot: React.FC<{ id: string, canDrop: boolean, children: React.ReactNode }> = ({ id, canDrop, children }) => {
+  const { isOver, setNodeRef, active } = useDroppable({
     id
   });
 
+  const isPossibleToDrop = isOver && active?.data.current?.targetId === id;
+
   return (
-    <div ref={setNodeRef} className={`${isOver ? "bg-green-500" : ""} ${canDrop ? "outline-10 outline-green-500" : ""} size-32 bg-blue-500/50`}>
-      Slot {id}
+    <div ref={setNodeRef} className={`${isPossibleToDrop ? "bg-green-500" : ""} ${canDrop ? "outline-10 outline-green-500" : ""} size-32 bg-blue-500/50`}>
+      {id}: {children}
     </div>
   );
 }
