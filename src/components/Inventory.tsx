@@ -1,17 +1,43 @@
+import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
+import { CSS } from '@dnd-kit/utilities';
+
 export const Inventory: React.FC = () => {
-  return <section className="pointer-events-auto">Inventory</section>;
-};
 
-// LEFT
-// helmet: { type: Helmet, property: 'helmet' },
-// chest: { type: Chest, property: 'chest' },
-// pants: { type: Pants, property: 'pants' },
-// boots: { type: Boots, property: 'boots' },
-//MAIN: mainHand: { type: HoldableItem, property: 'mainHand' },
+  return <DndContext>
+    <Slot />
+    <div className="grid gap-2 mt-5">
+      <Item id="RedHelmet" />
+      <Item id="BlueHelmet" />
+    </div>
 
-// RIGHT
-// amulet: { type: Amulet, property: 'amulet' }
-// gloves: { type: Glove, property: 'gloves' },
-// firstRing: { type: Ring, property: 'firstRing' },
-// secondRing: { type: Ring, property: 'secondRing' },
-//MAIN: offHand: { type: HoldableItem, property: 'offHand' },
+  </DndContext>
+}
+
+const Slot = () => {
+  const { isOver, setNodeRef } = useDroppable({
+    id: 'droppable',
+  });
+
+  return (
+    <div ref={setNodeRef} className={`${isOver && "bg-green-500/50"} size-32 bg-blue-500/50`}>
+      Slot
+    </div>
+  );
+}
+
+
+const Item: React.FC<{ id: string }> = ({ id }) => {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id,
+  });
+  const style = transform ? {
+    transform: CSS.Translate.toString(transform),
+  } : undefined;
+
+
+  return (
+    <button ref={setNodeRef} style={style} className="size-22 bg-red-900/50" {...listeners} {...attributes}>
+      {id}
+    </button>
+  );
+}
