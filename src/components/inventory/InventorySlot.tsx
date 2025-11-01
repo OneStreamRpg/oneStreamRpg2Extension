@@ -21,6 +21,8 @@ export const InventorySlot: React.FC<{ item: Item | null, index: number, activeI
         // If items come from equipment slots, allow placing if types match
         if (isActiveEquipment)
             return isActiveEquipment && item.type === activeItem.type
+
+        // If items come from other slots, allow placing if types match
         return true;
     }, [activeItem]);
 
