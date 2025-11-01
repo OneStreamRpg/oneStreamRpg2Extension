@@ -1,11 +1,11 @@
 import { MouseEvent, useEffect, useRef, useState } from "react";
+import MockPersonalChannelDemo from "../components/_inventory/MockPersonalChannelDemo";
 import ClickMarker from "../components/ui/ClickMarker";
 import GameObjectTooltip from "../components/ui/GameObjectTooltip";
 import { useGameObjects } from "../hooks/useGameobjects";
+import { usePersonalChannelDebug } from "../hooks/usePersonalChannelDebug";
 import { useSocketStore } from "../store/socketStore";
 import { handleClick as externalClickHandler } from "../utils/handleClick";
-import MockPersonalChannelDemo from "../components/inventory/MockPersonalChannelDemo";
-import { usePersonalChannelDebug } from "../hooks/usePersonalChannelDebug";
 
 const ConnectedOverlay = () => {
   // Enable debug tools in development

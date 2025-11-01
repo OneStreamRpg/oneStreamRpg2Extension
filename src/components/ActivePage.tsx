@@ -1,6 +1,6 @@
 import { useUIStore } from "../store/useUIStore";
 import { Page } from "../types/ui";
-import { Inventory } from "./Inventory";
+import { Inventory } from "./inventory/Inventory";
 import { PageLayout } from "./PageLayout";
 import { SkillTree } from "./SkillTree";
 
