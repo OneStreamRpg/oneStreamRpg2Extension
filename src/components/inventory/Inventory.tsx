@@ -174,14 +174,30 @@ export const Inventory: React.FC = () => {
     onDragStart={handleDragStart}
     onDragEnd={handleDragEnd}
   >
-    <div className="grid grid-cols-4">
-      {equipmentSlotKeys.map(slotKey => (
-        <EquipmentSlot
-          key={slotKey}
-          slotKey={slotKey}
-          item={equipmentSlots[slotKey]}
-        />
-      ))}
+    <div className="grid grid-cols-3">
+      <section className="flex flex-col items-center">
+        {equipmentSlotKeys.slice(0, 5).map(slotKey => (
+          <EquipmentSlot
+            key={slotKey}
+            slotKey={slotKey}
+            item={equipmentSlots[slotKey]}
+          />
+        ))}</section>
+      <section className="w-full bg-amber-400 text-center text-xs">
+        Player
+        {Object.values(equipmentSlots).filter(item => item).map(item => (
+          <div key={item!.id}>{item!.name}</div>
+        ))}
+      </section>
+      <section className="flex flex-col items-center">
+        {equipmentSlotKeys.slice(5).map(slotKey => (
+          <EquipmentSlot
+            key={slotKey}
+            slotKey={slotKey}
+            item={equipmentSlots[slotKey]}
+          />
+        ))}
+      </section>
     </div>
 
     <div className="grid grid-cols-4">
