@@ -32,7 +32,7 @@ export const EquipmentSlot: React.FC<{
         return (
             <div>
                 <p className="text-xs">{slotKey}:</p>
-                <div className={`outline-2 ${placeMe ? 'outline-green-500' : isCompatible ? 'outline-green-200' : ''} size-12`} ref={setNodeRef}>
+                <div className={`outline-2 ${placeMe ? 'outline-blue-500' : isCompatible ? 'outline-green-500' : ''} size-12`} ref={setNodeRef}>
                     {item && <DraggableItem item={item} containerId={slotId} />}
                 </div>
             </div>
