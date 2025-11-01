@@ -180,7 +180,6 @@ export const Inventory: React.FC = () => {
           key={slotKey}
           slotKey={slotKey}
           item={equipmentSlots[slotKey]}
-          activeItem={activeItem}
         />
       ))}
     </div>
@@ -188,7 +187,6 @@ export const Inventory: React.FC = () => {
     <div className="grid grid-cols-4">
       {inventoryItems.map((item, index) => (
         <InventorySlot
-          activeItem={activeItem}
           key={index}
           index={index}
           item={item}

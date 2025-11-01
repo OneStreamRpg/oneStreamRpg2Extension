@@ -3,13 +3,15 @@ import { useMemo } from "react";
 import { DraggableItem } from "./DraggableItem";
 import { Item } from "./types";
 
-export const InventorySlot: React.FC<{ item: Item | null, index: number, activeItem: Item | null }> = ({ item, index, activeItem }) => {
+export const InventorySlot: React.FC<{ item: Item | null, index: number }> = ({ item, index }) => {
     const slotId = `inventory-${index}`;
     const { setNodeRef, isOver, active } = useDroppable({
         id: slotId,
     });
 
+
     const isCompatible = useMemo(() => {
+        const activeItem = active?.data.current?.item;
         // Don't display if no item is currently dragged
         if (!activeItem) return false;
 
@@ -24,7 +26,7 @@ export const InventorySlot: React.FC<{ item: Item | null, index: number, activeI
 
         // If items come from other slots, allow placing if types match
         return true;
-    }, [activeItem]);
+    }, [active]);
 
     const placeMe = isOver && isCompatible;
 
