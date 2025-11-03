@@ -36,7 +36,7 @@ export const InventorySlot: React.FC<{ item: Item | null; index: number }> = ({
   return (
     <div
       ref={setNodeRef}
-      className={`border border-dashed size-16 ${
+      className={`border border-dashed size-17 flex items-center justify-center ${
         placeMe
           ? "outline-2 outline-blue-500"
           : isCompatible

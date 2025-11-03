@@ -36,7 +36,7 @@ export const EquipmentSlot: React.FC<{
             : isCompatible
             ? "outline-green-500 outline-2"
             : ""
-        } size-16`}
+        } size-17 flex items-center justify-center`}
         ref={setNodeRef}
       >
         <p className="text-xs -z-10 fixed">{slotKey}</p>

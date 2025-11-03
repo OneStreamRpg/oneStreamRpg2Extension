@@ -175,8 +175,8 @@ export const Inventory: React.FC = () => {
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <section className="grid grid-cols-3">
-        <section className="flex flex-col items-center">
+      <section className="grid grid-cols-[auto_1fr_auto] gap-2 mb-4">
+        <section className="flex flex-col items-center gap-y-2">
           {equipmentSlotKeys.slice(0, 5).map((slotKey) => (
             <EquipmentSlot
               key={slotKey}
@@ -193,7 +193,7 @@ export const Inventory: React.FC = () => {
               <div key={item!.id}>{item!.name}</div>
             ))}
         </section>
-        <section className="flex flex-col items-center">
+        <section className="flex flex-col items-center gap-y-2">
           {equipmentSlotKeys.slice(5).map((slotKey) => (
             <EquipmentSlot
               key={slotKey}
