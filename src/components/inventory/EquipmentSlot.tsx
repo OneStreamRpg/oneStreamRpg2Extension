@@ -1,5 +1,6 @@
 import { useDroppable } from "@dnd-kit/core";
 import { useMemo } from "react";
+import { useUIStore } from "../../store/useUIStore";
 import { DraggableItem } from "./DraggableItem";
 import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
 
@@ -13,6 +14,8 @@ export const EquipmentSlot: React.FC<{
   const { setNodeRef, isOver, active } = useDroppable({
     id: slotId,
   });
+
+  const debugInventoryInfo = useUIStore((state) => state.debugInventoryInfo);
 
   // Check if the currently dragged item is compatible with this slot
   const isCompatible = useMemo(() => {
@@ -36,9 +39,13 @@ export const EquipmentSlot: React.FC<{
             : isCompatible
             ? "outline-green-500 outline-2"
             : ""
-        } size-17 flex items-center justify-center`}
+        } size-17 flex items-center justify-center relative`}
         ref={setNodeRef}
       >
+        {debugInventoryInfo && (
+          <p className="text-xs -z-10 absolute">{slotKey}</p>
+        )}
+
         {item && <DraggableItem item={item} containerId={slotId} />}
       </div>
     </div>

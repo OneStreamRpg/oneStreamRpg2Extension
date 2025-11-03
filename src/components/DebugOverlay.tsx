@@ -9,6 +9,10 @@ export const DebugOverlay = () => {
 
   const pagePosition = useUIStore((state) => state.pagePosition);
   const setPagePosition = useUIStore((state) => state.setPagePosition);
+  const toggleDebugInventoryInfo = useUIStore(
+    (state) => state.toggleDebugInventoryInfo
+  );
+  const debugInventoryInfo = useUIStore((state) => state.debugInventoryInfo);
 
   const dragRef = useRef<HTMLDivElement>(null);
   const offsetRef = useRef({ x: 0, y: 0 });
@@ -113,6 +117,15 @@ export const DebugOverlay = () => {
               <span>Menu Position</span>
               <div className="px-3 py-1 text-sm bg-blue-600 text-white min-w-[60px]">
                 {PagePosition.RIGHT === pagePosition ? "Right" : "Left"}
+              </div>
+            </button>
+            <button
+              className="flex justify-between w-full p-2 cursor-pointer"
+              onClick={() => toggleDebugInventoryInfo()}
+            >
+              <span>Debug Inventory Info</span>
+              <div className="px-3 py-1 text-sm bg-blue-600 text-white min-w-[60px]">
+                {debugInventoryInfo ? "On" : "Off"}
               </div>
             </button>
           </div>
