@@ -39,8 +39,6 @@ export const EquipmentSlot: React.FC<{
         } size-17 flex items-center justify-center`}
         ref={setNodeRef}
       >
-        <p className="text-xs -z-10 fixed">{slotKey}</p>
-
         {item && <DraggableItem item={item} containerId={slotId} />}
       </div>
     </div>
