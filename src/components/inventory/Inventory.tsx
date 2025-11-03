@@ -20,6 +20,30 @@ const testingItems: Item[] = [
     type: "HoldableItem",
     icon: "29_cookies_dish",
   },
+  {
+    id: "item-6",
+    name: "Bat Sword",
+    type: "HoldableItem",
+    icon: "batSword",
+  },
+  {
+    id: "item-7",
+    name: "Emerald Amulet",
+    type: "Amulet",
+    icon: "30_chocolatecake",
+  },
+  {
+    id: "item-9",
+    name: "Silver Gloves",
+    type: "Glove",
+    icon: "27_chocolate_dish",
+  },
+  {
+    id: "item-10",
+    name: "Diamond Pants",
+    type: "Pants",
+    icon: "24_cheesepuff",
+  },
 ];
 
 export const Inventory: React.FC = () => {
