@@ -1,7 +1,7 @@
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { useMemo, useState } from "react";
 import { EquipmentSlot } from "./EquipmentSlot";
-import { isItemCompatible } from "./inventory";
+import { isItemCompatible } from "./inventoryService";
 import { InventorySlot } from "./InventorySlot";
 import { ItemDisplay } from "./ItemDisplay";
 import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
@@ -9,12 +9,12 @@ import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
 const INVENTORY_SIZE = 32;
 
 const testingItems: Item[] = [
-  { id: 'item-1', name: 'Iron Helmet', type: 'Helmet' },
-  { id: 'item-8', name: 'Golden Helmet', type: 'Helmet' },
-  { id: 'item-2', name: 'Steel Chestplate', type: 'Chest' },
-  { id: 'item-3', name: 'Leather Boots', type: 'Boots' },
-  { id: 'item-4', name: 'Ruby Ring', type: 'Ring' },
-  { id: 'item-5', name: 'Broadsword', type: 'HoldableItem' },
+  { id: "item-1", name: "Iron Helmet", type: "Helmet" },
+  { id: "item-8", name: "Golden Helmet", type: "Helmet" },
+  { id: "item-2", name: "Steel Chestplate", type: "Chest" },
+  { id: "item-3", name: "Leather Boots", type: "Boots" },
+  { id: "item-4", name: "Ruby Ring", type: "Ring" },
+  { id: "item-5", name: "Broadsword", type: "HoldableItem" },
 ];
 
 export const Inventory: React.FC = () => {
@@ -27,7 +27,9 @@ export const Inventory: React.FC = () => {
     return initialItems;
   });
 
-  const [equipmentSlots, setEquipmentSlots] = useState<Record<EquipmentSlotKey, Item | null>>({
+  const [equipmentSlots, setEquipmentSlots] = useState<
+    Record<EquipmentSlotKey, Item | null>
+  >({
     helmet: null,
     chest: null,
     pants: null,
@@ -40,11 +42,9 @@ export const Inventory: React.FC = () => {
     offHand: null,
   });
 
-
   // State to hold the item being currently dragged.
   // This is used for highlighting compatible slots and for the DragOverlay.
   const [activeItem, setActiveItem] = useState<Item | null>(null);
-
 
   function handleDragStart(event: any) {
     const { active } = event;
@@ -72,17 +72,17 @@ export const Inventory: React.FC = () => {
       return;
     }
 
-    const isActiveInventory = activeContainerId.startsWith('inventory-');
-    const isOverInventory = overId.startsWith('inventory-');
-    const isActiveEquipment = activeContainerId.startsWith('equipment-');
-    const isOverEquipment = overId.startsWith('equipment-');
+    const isActiveInventory = activeContainerId.startsWith("inventory-");
+    const isOverInventory = overId.startsWith("inventory-");
+    const isActiveEquipment = activeContainerId.startsWith("equipment-");
+    const isOverEquipment = overId.startsWith("equipment-");
 
     // --- LOGIC TREE FOR ALL DRAG-AND-DROP SCENARIOS ---
 
     // Case 1: Inventory -> Inventory (Swap items)
     if (isActiveInventory && isOverInventory) {
-      const activeIndex = parseInt(activeContainerId.split('-')[1]);
-      const overIndex = parseInt(overId.split('-')[1]);
+      const activeIndex = parseInt(activeContainerId.split("-")[1]);
+      const overIndex = parseInt(overId.split("-")[1]);
 
       setInventoryItems((items) => {
         const newItems = [...items];
@@ -95,21 +95,21 @@ export const Inventory: React.FC = () => {
 
     // Case 2: Inventory -> Equipment (Equip item)
     else if (isActiveInventory && isOverEquipment) {
-      const activeIndex = parseInt(activeContainerId.split('-')[1]);
-      const overSlotKey = overId.split('-')[1] as EquipmentSlotKey;
+      const activeIndex = parseInt(activeContainerId.split("-")[1]);
+      const overSlotKey = overId.split("-")[1] as EquipmentSlotKey;
 
       // Check for compatibility
       if (isItemCompatible(activeItem, overSlotKey)) {
         const itemAtOver = equipmentSlots[overSlotKey];
 
         // Update equipment
-        setEquipmentSlots(prev => ({
+        setEquipmentSlots((prev) => ({
           ...prev,
           [overSlotKey]: activeItem,
         }));
 
         // Update inventory (place equipped item back in bag)
-        setInventoryItems(prev => {
+        setInventoryItems((prev) => {
           const newItems = [...prev];
           newItems[activeIndex] = itemAtOver; // Swap
           return newItems;
@@ -119,8 +119,8 @@ export const Inventory: React.FC = () => {
 
     // Case 3: Equipment -> Inventory (Unequip item)
     else if (isActiveEquipment && isOverInventory) {
-      const activeSlotKey = activeContainerId.split('-')[1] as EquipmentSlotKey;
-      const overIndex = parseInt(overId.split('-')[1]);
+      const activeSlotKey = activeContainerId.split("-")[1] as EquipmentSlotKey;
+      const overIndex = parseInt(overId.split("-")[1]);
 
       const itemAtOver = inventoryItems[overIndex];
 
@@ -132,14 +132,14 @@ export const Inventory: React.FC = () => {
       }
 
       // Update inventory
-      setInventoryItems(prev => {
+      setInventoryItems((prev) => {
         const newItems = [...prev];
         newItems[overIndex] = activeItem;
         return newItems;
       });
 
       // Update equipment
-      setEquipmentSlots(prev => ({
+      setEquipmentSlots((prev) => ({
         ...prev,
         [activeSlotKey]: itemAtOver, // Swap
       }));
@@ -147,18 +147,19 @@ export const Inventory: React.FC = () => {
 
     // Case 4: Equipment -> Equipment (Swap equipment)
     else if (isActiveEquipment && isOverEquipment) {
-      const activeSlotKey = activeContainerId.split('-')[1] as EquipmentSlotKey;
-      const overSlotKey = overId.split('-')[1] as EquipmentSlotKey;
+      const activeSlotKey = activeContainerId.split("-")[1] as EquipmentSlotKey;
+      const overSlotKey = overId.split("-")[1] as EquipmentSlotKey;
 
       const itemAtOver = equipmentSlots[overSlotKey];
 
       // Check compatibility for both directions
       const isMovingItemCompatible = isItemCompatible(activeItem, overSlotKey);
-      const isSwappedItemCompatible = !itemAtOver || isItemCompatible(itemAtOver, activeSlotKey);
+      const isSwappedItemCompatible =
+        !itemAtOver || isItemCompatible(itemAtOver, activeSlotKey);
 
       if (isMovingItemCompatible && isSwappedItemCompatible) {
         // Swap
-        setEquipmentSlots(prev => ({
+        setEquipmentSlots((prev) => ({
           ...prev,
           [activeSlotKey]: itemAtOver,
           [overSlotKey]: activeItem,
@@ -167,53 +168,52 @@ export const Inventory: React.FC = () => {
     }
   }
 
-  const equipmentSlotKeys = useMemo(() => Object.keys(EQUIPMENT_SLOT_CONFIG) as EquipmentSlotKey[], []);
+  const equipmentSlotKeys = useMemo(
+    () => Object.keys(EQUIPMENT_SLOT_CONFIG) as EquipmentSlotKey[],
+    []
+  );
 
+  return (
+    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <div className="grid grid-cols-3">
+        <section className="flex flex-col items-center">
+          {equipmentSlotKeys.slice(0, 5).map((slotKey) => (
+            <EquipmentSlot
+              key={slotKey}
+              slotKey={slotKey}
+              item={equipmentSlots[slotKey]}
+            />
+          ))}
+        </section>
+        <section className="w-full bg-amber-400 text-center text-xs">
+          Player
+          {Object.values(equipmentSlots)
+            .filter((item) => item)
+            .map((item) => (
+              <div key={item!.id}>{item!.name}</div>
+            ))}
+        </section>
+        <section className="flex flex-col items-center">
+          {equipmentSlotKeys.slice(5).map((slotKey) => (
+            <EquipmentSlot
+              key={slotKey}
+              slotKey={slotKey}
+              item={equipmentSlots[slotKey]}
+            />
+          ))}
+        </section>
+      </div>
 
-  return <DndContext
-    onDragStart={handleDragStart}
-    onDragEnd={handleDragEnd}
-  >
-    <div className="grid grid-cols-3">
-      <section className="flex flex-col items-center">
-        {equipmentSlotKeys.slice(0, 5).map(slotKey => (
-          <EquipmentSlot
-            key={slotKey}
-            slotKey={slotKey}
-            item={equipmentSlots[slotKey]}
-          />
-        ))}</section>
-      <section className="w-full bg-amber-400 text-center text-xs">
-        Player
-        {Object.values(equipmentSlots).filter(item => item).map(item => (
-          <div key={item!.id}>{item!.name}</div>
+      <div className="grid grid-cols-4">
+        {inventoryItems.map((item, index) => (
+          <InventorySlot key={index} index={index} item={item} />
         ))}
-      </section>
-      <section className="flex flex-col items-center">
-        {equipmentSlotKeys.slice(5).map(slotKey => (
-          <EquipmentSlot
-            key={slotKey}
-            slotKey={slotKey}
-            item={equipmentSlots[slotKey]}
-          />
-        ))}
-      </section>
-    </div>
+      </div>
 
-    <div className="grid grid-cols-4">
-      {inventoryItems.map((item, index) => (
-        <InventorySlot
-          key={index}
-          index={index}
-          item={item}
-        />
-      ))}
-    </div>
-
-    {/* Drag Overlay renders the item "ghost" that follows the mouse */}
-    <DragOverlay>
-      {activeItem ? <ItemDisplay item={activeItem} /> : null}
-    </DragOverlay>
-  </DndContext>
-
-}
+      {/* Drag Overlay renders the item "ghost" that follows the mouse */}
+      <DragOverlay>
+        {activeItem ? <ItemDisplay item={activeItem} /> : null}
+      </DragOverlay>
+    </DndContext>
+  );
+};
