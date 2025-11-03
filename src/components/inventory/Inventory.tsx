@@ -175,7 +175,7 @@ export const Inventory: React.FC = () => {
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-3">
+      <section className="grid grid-cols-3">
         <section className="flex flex-col items-center">
           {equipmentSlotKeys.slice(0, 5).map((slotKey) => (
             <EquipmentSlot
@@ -202,13 +202,12 @@ export const Inventory: React.FC = () => {
             />
           ))}
         </section>
-      </div>
-
-      <div className="grid grid-cols-4">
+      </section>
+      <section className="grid grid-cols-4 gap-2">
         {inventoryItems.map((item, index) => (
           <InventorySlot key={index} index={index} item={item} />
         ))}
-      </div>
+      </section>
 
       {/* Drag Overlay renders the item "ghost" that follows the mouse */}
       <DragOverlay>
