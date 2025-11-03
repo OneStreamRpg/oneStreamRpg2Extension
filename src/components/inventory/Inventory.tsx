@@ -9,12 +9,17 @@ import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
 const INVENTORY_SIZE = 32;
 
 const testingItems: Item[] = [
-  { id: "item-1", name: "Iron Helmet", type: "Helmet" },
-  { id: "item-8", name: "Golden Helmet", type: "Helmet" },
-  { id: "item-2", name: "Steel Chestplate", type: "Chest" },
-  { id: "item-3", name: "Leather Boots", type: "Boots" },
-  { id: "item-4", name: "Ruby Ring", type: "Ring" },
-  { id: "item-5", name: "Broadsword", type: "HoldableItem" },
+  { id: "item-1", name: "Iron Helmet", type: "Helmet", icon: "16_burger_dish" },
+  { id: "item-8", name: "Golden Helmet", type: "Helmet", icon: "18_burrito" },
+  { id: "item-2", name: "Steel Chestplate", type: "Chest", icon: "20_bagel" },
+  { id: "item-3", name: "Leather Boots", type: "Boots", icon: "22_cheesecake" },
+  { id: "item-4", name: "Ruby Ring", type: "Ring", icon: "26_chocolate" },
+  {
+    id: "item-5",
+    name: "Broadsword",
+    type: "HoldableItem",
+    icon: "29_cookies_dish",
+  },
 ];
 
 export const Inventory: React.FC = () => {
