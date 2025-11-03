@@ -17,7 +17,7 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
   // State
   activePage: null,
   pagePosition: PagePosition.RIGHT,
-  debugInventoryInfo: false,
+  debugInventoryInfo: true,
 
   // Actions
   setActivePage: (page) => {
