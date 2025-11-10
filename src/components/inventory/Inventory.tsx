@@ -4,7 +4,12 @@ import { EquipmentSlot } from "./EquipmentSlot";
 import { isItemCompatible } from "./inventoryService";
 import { InventorySlot } from "./InventorySlot";
 import { ItemDisplay } from "./ItemDisplay";
-import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
+import {
+  EQUIPMENT_SLOT_CONFIG,
+  EquipmentSlotKey,
+  InventoryChangeEvent,
+  Item,
+} from "./types";
 
 const INVENTORY_SIZE = 32;
 
@@ -46,7 +51,9 @@ const testingItems: Item[] = [
   },
 ];
 
-export const Inventory: React.FC = () => {
+export const Inventory: React.FC<{
+  onInventoryChange?: (event: InventoryChangeEvent) => void;
+}> = ({ onInventoryChange }) => {
   const [inventoryItems, setInventoryItems] = useState<(Item | null)[]>(() => {
     // MC: Debug itemss
     const initialItems = Array(INVENTORY_SIZE).fill(null);
@@ -120,6 +127,10 @@ export const Inventory: React.FC = () => {
         newItems[activeIndex] = itemAtOver; // Swap
         return newItems;
       });
+
+      onInventoryChange?.({
+        type: "SWAP",
+      });
     }
 
     // Case 2: Inventory -> Equipment (Equip item)
@@ -142,6 +153,10 @@ export const Inventory: React.FC = () => {
           const newItems = [...prev];
           newItems[activeIndex] = itemAtOver; // Swap
           return newItems;
+        });
+
+        onInventoryChange?.({
+          type: "EQUIP",
         });
       }
     }
@@ -172,6 +187,10 @@ export const Inventory: React.FC = () => {
         ...prev,
         [activeSlotKey]: itemAtOver, // Swap
       }));
+
+      onInventoryChange?.({
+        type: "UNEQUIP",
+      });
     }
 
     // Case 4: Equipment -> Equipment (Swap equipment)
@@ -193,6 +212,10 @@ export const Inventory: React.FC = () => {
           [activeSlotKey]: itemAtOver,
           [overSlotKey]: activeItem,
         }));
+
+        onInventoryChange?.({
+          type: "SWAP_EQUIP",
+        });
       }
     }
   }

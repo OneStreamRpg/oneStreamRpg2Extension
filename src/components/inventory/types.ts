@@ -55,3 +55,8 @@ export const EQUIPMENT_SLOT_CONFIG: Record<
   secondRing: { type: "Ring" },
   offHand: { type: "HoldableItem" },
 };
+
+export type InventoryChangeEvent = {
+  type: "SWAP" | "EQUIP" | "UNEQUIP" | "SWAP_EQUIP";
+  // TODO
+};
