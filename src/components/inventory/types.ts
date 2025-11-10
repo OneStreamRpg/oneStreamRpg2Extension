@@ -57,6 +57,9 @@ export const EQUIPMENT_SLOT_CONFIG: Record<
 };
 
 export type InventoryChangeEvent = {
-  type: "SWAP" | "EQUIP" | "UNEQUIP" | "SWAP_EQUIP";
-  // TODO
+  type: "SWAP" | "EQUIP" | "UNEQUIP" | "SWAP_EQUIP"; // MC: braucht ihr das überhaupt? idk maybe gut für wann spieler sich updaten soll oderso?
+  item: Item; // The item that was dragged
+  sourceId: string; // The ID of the slot it came from
+  destinationId: string; // The ID of the slot it went to
+  swappedItem: Item | null; // The item that was displaced (if any)
 };

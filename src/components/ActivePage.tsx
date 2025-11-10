@@ -9,7 +9,7 @@ export const ActivePage: React.FC = () => {
   const activePage = useUIStore((state) => state.activePage);
 
   const handleInventoryUpdateExample = (event: InventoryChangeEvent) => {
-    console.log("Inventory Updated!", event.type);
+    console.log("Inventory Updated!", event);
   };
   return (
     activePage !== null && (

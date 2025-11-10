@@ -120,16 +120,21 @@ export const Inventory: React.FC<{
       const activeIndex = parseInt(activeContainerId.split("-")[1]);
       const overIndex = parseInt(overId.split("-")[1]);
 
+      let swappedItem: Item | null = null;
       setInventoryItems((items) => {
         const newItems = [...items];
-        const itemAtOver = newItems[overIndex];
+        swappedItem = newItems[overIndex];
         newItems[overIndex] = activeItem;
-        newItems[activeIndex] = itemAtOver; // Swap
+        newItems[activeIndex] = swappedItem; // Swap
         return newItems;
       });
 
       onInventoryChange?.({
         type: "SWAP",
+        item: activeItem,
+        sourceId: activeContainerId,
+        destinationId: overId,
+        swappedItem,
       });
     }
 
@@ -157,6 +162,10 @@ export const Inventory: React.FC<{
 
         onInventoryChange?.({
           type: "EQUIP",
+          item: activeItem,
+          sourceId: activeContainerId,
+          destinationId: overId,
+          swappedItem: itemAtOver,
         });
       }
     }
@@ -190,6 +199,10 @@ export const Inventory: React.FC<{
 
       onInventoryChange?.({
         type: "UNEQUIP",
+        item: activeItem,
+        sourceId: activeContainerId,
+        destinationId: overId,
+        swappedItem: itemAtOver,
       });
     }
 
@@ -215,6 +228,10 @@ export const Inventory: React.FC<{
 
         onInventoryChange?.({
           type: "SWAP_EQUIP",
+          item: activeItem,
+          sourceId: activeContainerId,
+          destinationId: overId,
+          swappedItem: itemAtOver,
         });
       }
     }
