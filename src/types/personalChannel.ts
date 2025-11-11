@@ -23,12 +23,9 @@ export interface InventoryState {
 }
 
 export interface InventoryItem {
-  slotNumber?: number; // Optional - system uses array index as slot position
+  id: string;
   itemId: string;
-  name: string;
-  type: string;
   quantity: number;
-  metadata?: Record<string, any>;
 }
 
 export interface EquipmentState {

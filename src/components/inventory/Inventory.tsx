@@ -1,5 +1,6 @@
 import { DndContext, DragOverlay } from "@dnd-kit/core";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { EquipmentSlot } from "./EquipmentSlot";
 import { isItemCompatible } from "./inventoryService";
 import { InventorySlot } from "./InventorySlot";
@@ -51,9 +52,17 @@ const testingItems: Item[] = [
   },
 ];
 
+const equipmentSlotKeys = Object.keys(
+  EQUIPMENT_SLOT_CONFIG
+) as EquipmentSlotKey[];
+
 export const Inventory: React.FC<{
   onInventoryChange?: (event: InventoryChangeEvent) => void;
 }> = ({ onInventoryChange }) => {
+  // const { socket } = useSocketStore();
+  const { displayedState } = usePersonalChannelStore();
+  console.log("Inventory displayedState:", { displayedState });
+
   const [inventoryItems, setInventoryItems] = useState<(Item | null)[]>(() => {
     // MC: Debug itemss
     const initialItems = Array(INVENTORY_SIZE).fill(null);
@@ -81,6 +90,25 @@ export const Inventory: React.FC<{
   // State to hold the item being currently dragged.
   // This is used for highlighting compatible slots and for the DragOverlay.
   const [activeItem, setActiveItem] = useState<Item | null>(null);
+
+  useEffect(() => {
+    console.log("Inventory useEffect displayedState changed:", {
+      displayedState,
+    });
+    if (!displayedState) return;
+
+    // Update inventory items from displayedState
+    const newInventoryItems: (Item | null)[] = Array(INVENTORY_SIZE).fill(null);
+    displayedState.inventory.items.forEach((invItem, index) => {
+      newInventoryItems[index] = {
+        id: invItem.id,
+        name: `PLACEHOLDER ${invItem.itemId}`, // MC: PLACEHOLDER
+        type: "Ring", // MC: PLACEHOLDER
+        icon: "batSword",
+      };
+    });
+    setInventoryItems(newInventoryItems);
+  }, [displayedState]);
 
   function handleDragStart(event: any) {
     const { active } = event;
@@ -236,11 +264,6 @@ export const Inventory: React.FC<{
       }
     }
   }
-
-  const equipmentSlotKeys = useMemo(
-    () => Object.keys(EQUIPMENT_SLOT_CONFIG) as EquipmentSlotKey[],
-    []
-  );
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
