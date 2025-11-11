@@ -1,6 +1,8 @@
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { useEffect, useState } from "react";
+import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
+import { useSocketStore } from "../../store/socketStore";
 import { EquipmentSlot } from "./EquipmentSlot";
 import { isItemCompatible } from "./inventoryService";
 import { InventorySlot } from "./InventorySlot";
@@ -59,8 +61,11 @@ const equipmentSlotKeys = Object.keys(
 export const Inventory: React.FC<{
   onInventoryChange?: (event: InventoryChangeEvent) => void;
 }> = ({ onInventoryChange }) => {
+  const { socket } = useSocketStore();
+
   // const { socket } = useSocketStore();
   const { displayedState } = usePersonalChannelStore();
+  const { swapInventorySlots } = usePersonalChannelActions(socket);
   console.log("Inventory displayedState:", { displayedState });
 
   const [inventoryItems, setInventoryItems] = useState<(Item | null)[]>(() => {
@@ -156,6 +161,8 @@ export const Inventory: React.FC<{
         newItems[activeIndex] = swappedItem; // Swap
         return newItems;
       });
+
+      swapInventorySlots(activeIndex, overIndex);
 
       onInventoryChange?.({
         type: "SWAP",

@@ -167,12 +167,12 @@ export function usePersonalChannelActions(socket: Socket | null) {
         "swapInventorySlots",
         { slot1, slot2 } as SwapInventorySlotsParams,
         (state) => {
-          const item1 = state.inventory.items.find((i) => i.slotNumber === slot1);
-          const item2 = state.inventory.items.find((i) => i.slotNumber === slot2);
+          // const item1 = state.inventory.items.find((i) => i.slotNumber === slot1);
+          // const item2 = state.inventory.items.find((i) => i.slotNumber === slot2);
 
-          // Swap slot numbers
-          if (item1) item1.slotNumber = slot2;
-          if (item2) item2.slotNumber = slot1;
+          // // Swap slot numbers
+          // if (item1) item1.slotNumber = slot2;
+          // if (item2) item2.slotNumber = slot1;
 
           return state;
         }
