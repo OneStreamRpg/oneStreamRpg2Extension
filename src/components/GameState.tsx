@@ -32,6 +32,50 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
   const streamDelayRef = useRef(0);
   const activeTimeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
 
+  const updatePlayersState = (
+    players: Array<{ id: string; [key: string]: any }>,
+    previousPlayers: Array<{ id: string; [key: string]: any }>
+  ) => {
+    const playerMap = new Map(previousPlayers.map((p) => [p.id, p]));
+    players.forEach((playerUpdate) => {
+      const existingPlayer = playerMap.get(playerUpdate.id);
+      if (existingPlayer) {
+        Object.assign(existingPlayer, playerUpdate);
+      }
+    });
+    return Array.from(playerMap.values());
+  };
+
+  const updateEnemiesState = (
+    enemies: Array<{ id: string; [key: string]: any }>,
+    previousEnemies: Array<{ id: string; [key: string]: any }>
+  ) => {
+    const enemyMap = new Map(previousEnemies.map((e) => [e.id, e]));
+    enemies.forEach((enemyUpdate) => {
+      const existingEnemy = enemyMap.get(enemyUpdate.id);
+      if (existingEnemy) {
+        Object.assign(existingEnemy, enemyUpdate);
+      }
+    });
+    return Array.from(enemyMap.values());
+  };
+
+  const updateNpcsState = (
+    npcs: Array<{ id: string; [key: string]: any }>,
+    previousNpcs: Array<{ id: string; [key: string]: any }>
+  ) => {
+    const npcMap = new Map(previousNpcs.map((n) => [n.id, n]));
+    npcs.forEach((npcUpdate) => {
+      const existingNpc = npcMap.get(npcUpdate.id);
+      if (existingNpc) {
+        Object.assign(existingNpc, npcUpdate);
+      } else {
+        npcMap.set(npcUpdate.id, npcUpdate);
+      }
+    });
+    return Array.from(npcMap.values());
+  };
+
   useEffect(() => {
     if (window.Twitch && window.Twitch.ext) {
       window.Twitch.ext.onContext((context) => {
@@ -151,50 +195,6 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       setSocket(null);
     };
   }, [token, channelId, setSocket, setIsConnected, setGameState]);
-
-  const updatePlayersState = (
-    players: Array<{ id: string; [key: string]: any }>,
-    previousPlayers: Array<{ id: string; [key: string]: any }>
-  ) => {
-    const playerMap = new Map(previousPlayers.map((p) => [p.id, p]));
-    players.forEach((playerUpdate) => {
-      const existingPlayer = playerMap.get(playerUpdate.id);
-      if (existingPlayer) {
-        Object.assign(existingPlayer, playerUpdate);
-      }
-    });
-    return Array.from(playerMap.values());
-  };
-
-  const updateEnemiesState = (
-    enemies: Array<{ id: string; [key: string]: any }>,
-    previousEnemies: Array<{ id: string; [key: string]: any }>
-  ) => {
-    const enemyMap = new Map(previousEnemies.map((e) => [e.id, e]));
-    enemies.forEach((enemyUpdate) => {
-      const existingEnemy = enemyMap.get(enemyUpdate.id);
-      if (existingEnemy) {
-        Object.assign(existingEnemy, enemyUpdate);
-      }
-    });
-    return Array.from(enemyMap.values());
-  };
-
-  const updateNpcsState = (
-    npcs: Array<{ id: string; [key: string]: any }>,
-    previousNpcs: Array<{ id: string; [key: string]: any }>
-  ) => {
-    const npcMap = new Map(previousNpcs.map((n) => [n.id, n]));
-    npcs.forEach((npcUpdate) => {
-      const existingNpc = npcMap.get(npcUpdate.id);
-      if (existingNpc) {
-        Object.assign(existingNpc, npcUpdate);
-      } else {
-        npcMap.set(npcUpdate.id, npcUpdate);
-      }
-    });
-    return Array.from(npcMap.values());
-  };
 
   return <>{children}</>;
 };
