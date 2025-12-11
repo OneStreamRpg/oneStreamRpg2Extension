@@ -1,5 +1,6 @@
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { useMemo, useState } from "react";
+import { Tooltip } from "react-tooltip";
 import { EquipmentSlot } from "./EquipmentSlot";
 import { isItemCompatible } from "./inventoryService";
 import { InventorySlot } from "./InventorySlot";
@@ -242,46 +243,143 @@ export const Inventory: React.FC<{
     []
   );
 
-  return (
-    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <section className="grid grid-cols-[auto_1fr_auto] gap-2 mb-4">
-        <section className="flex flex-col items-center gap-y-2">
-          {equipmentSlotKeys.slice(0, 5).map((slotKey) => (
-            <EquipmentSlot
-              key={slotKey}
-              slotKey={slotKey}
-              item={equipmentSlots[slotKey]}
-            />
-          ))}
-        </section>
-        <section className="w-full bg-amber-400 text-center text-xs">
-          Player
-          {Object.values(equipmentSlots)
-            .filter((item) => item)
-            .map((item) => (
-              <div key={item!.id}>{item!.name}</div>
-            ))}
-        </section>
-        <section className="flex flex-col items-center gap-y-2">
-          {equipmentSlotKeys.slice(5).map((slotKey) => (
-            <EquipmentSlot
-              key={slotKey}
-              slotKey={slotKey}
-              item={equipmentSlots[slotKey]}
-            />
-          ))}
-        </section>
-      </section>
-      <section className="grid grid-cols-4 gap-2">
-        {inventoryItems.map((item, index) => (
-          <InventorySlot key={index} index={index} item={item} />
-        ))}
-      </section>
+  // Collect all items for tooltip rendering
+  const allItems = useMemo(() => {
+    const items: Item[] = [];
+    // Add inventory items
+    inventoryItems.forEach((item) => {
+      if (item) items.push(item);
+    });
+    // Add equipment items
+    Object.values(equipmentSlots).forEach((item) => {
+      if (item) items.push(item);
+    });
+    return items;
+  }, [inventoryItems, equipmentSlots]);
 
-      {/* Drag Overlay renders the item "ghost" that follows the mouse */}
-      <DragOverlay>
-        {activeItem ? <ItemDisplay item={activeItem} /> : null}
-      </DragOverlay>
-    </DndContext>
+  return (
+    <>
+      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <section className="grid grid-cols-[auto_1fr_auto] gap-2 mb-4">
+          <section className="flex flex-col items-center gap-y-2">
+            {equipmentSlotKeys.slice(0, 5).map((slotKey) => (
+              <EquipmentSlot
+                key={slotKey}
+                slotKey={slotKey}
+                item={equipmentSlots[slotKey]}
+              />
+            ))}
+          </section>
+          <section className="w-full bg-amber-400 text-center text-xs">
+            Player
+            {Object.values(equipmentSlots)
+              .filter((item) => item)
+              .map((item) => (
+                <div key={item!.id}>{item!.name}</div>
+              ))}
+          </section>
+          <section className="flex flex-col items-center gap-y-2">
+            {equipmentSlotKeys.slice(5).map((slotKey) => (
+              <EquipmentSlot
+                key={slotKey}
+                slotKey={slotKey}
+                item={equipmentSlots[slotKey]}
+              />
+            ))}
+          </section>
+        </section>
+        <section className="grid grid-cols-4 gap-2">
+          {inventoryItems.map((item, index) => (
+            <InventorySlot key={index} index={index} item={item} />
+          ))}
+        </section>
+
+        {/* Drag Overlay renders the item "ghost" that follows the mouse */}
+        <DragOverlay>
+          {activeItem ? <ItemDisplay item={activeItem} /> : null}
+        </DragOverlay>
+      </DndContext>
+
+      {/* Tooltips rendered outside of dragging context */}
+      {!activeItem &&
+        allItems.map((item) => (
+          <Tooltip
+            key={`tooltip-${item.id}`}
+            id={`item-tooltip-${item.id}`}
+            place="top"
+            clickable
+            anchorSelect={`[data-item-id="${item.id}"]`}
+          >
+            <div className="p-2">
+              <img
+                src={`https://cdn.onestreamrpg.com/images/items/${item.icon}.png`}
+                alt={item.name}
+                className="size-16 mx-auto mb-2"
+                style={{
+                  imageRendering: "pixelated",
+                }}
+                data-tooltip-id={`item-tooltip-nested-${item.id}`}
+              />
+              <h3 className="font-bold mb-1">{item.name}</h3>
+              <p
+                className="text-sm"
+                data-tooltip-id={`item-type-tooltip-${item.id}`}
+              >
+                Type:{" "}
+                <span className="underline decoration-dotted">{item.type}</span>
+              </p>
+              <p className="text-xs text-gray-400 mt-1">ID: {item.id}</p>
+            </div>
+            <Tooltip
+              id={`item-tooltip-nested-${item.id}`}
+              place="right"
+              clickable
+            >
+              <div className="p-2">
+                <p className="text-xs font-semibold mb-1">Item Details:</p>
+                <p className="text-xs">Icon: {item.icon}</p>
+                <p className="text-xs">Full ID: {item.id}</p>
+              </div>
+            </Tooltip>
+            <Tooltip
+              id={`item-type-tooltip-${item.id}`}
+              place="bottom"
+              clickable
+            >
+              <div className="p-2">
+                <p className="text-xs font-semibold mb-1">Type Information:</p>
+                <p
+                  className="text-xs mb-1"
+                  data-tooltip-id={`item-type-nested-tooltip-${item.id}`}
+                >
+                  Category:{" "}
+                  <span className="underline decoration-dotted">
+                    {item.type}
+                  </span>
+                </p>
+                <p className="text-xs">
+                  Slot:{" "}
+                  {item.type === "HoldableItem" ? "Main/Off Hand" : item.type}
+                </p>
+              </div>
+              <Tooltip
+                id={`item-type-nested-tooltip-${item.id}`}
+                place="right"
+                clickable
+              >
+                <div className="p-2">
+                  <p className="text-xs font-semibold mb-1">Deep Dive:</p>
+                  <p className="text-xs">
+                    Item type '{item.type}' is used for equipment matching
+                  </p>
+                  <p className="text-xs mt-1">
+                    Total characters: {item.type.length}
+                  </p>
+                </div>
+              </Tooltip>
+            </Tooltip>
+          </Tooltip>
+        ))}
+    </>
   );
 };
