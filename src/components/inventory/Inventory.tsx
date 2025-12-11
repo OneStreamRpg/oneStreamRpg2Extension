@@ -308,6 +308,7 @@ export const Inventory: React.FC<{
             id={`item-tooltip-${item.id}`}
             place="bottom"
             clickable
+            delayShow={200}
             anchorSelect={`[data-item-id="${item.id}"]`}
           >
             <div className="p-2">
@@ -334,6 +335,7 @@ export const Inventory: React.FC<{
               id={`item-tooltip-nested-${item.id}`}
               place="right"
               clickable
+              delayShow={100}
             >
               <div className="p-2">
                 <p className="text-xs font-semibold mb-1">Item Details:</p>
@@ -345,6 +347,7 @@ export const Inventory: React.FC<{
               id={`item-type-tooltip-${item.id}`}
               place="bottom"
               clickable
+              delayShow={100}
             >
               <div className="p-2">
                 <p className="text-xs font-semibold mb-1">Type Information:</p>
@@ -366,6 +369,7 @@ export const Inventory: React.FC<{
                 id={`item-type-nested-tooltip-${item.id}`}
                 place="right"
                 clickable
+                delayShow={100}
               >
                 <div className="p-2">
                   <p className="text-xs font-semibold mb-1">Deep Dive:</p>
