@@ -9,7 +9,7 @@ export const PageLayout: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <section
-      className={`h-full bg-red-500/20 w-86 overflow-y-scroll p-4 ${
+      className={`h-full bg-red-500/20 w-86 overflow-y-scroll overflow-x-hidden p-4 ${
         pagePosition === PagePosition.RIGHT && "ml-auto"
       }`}
     >
