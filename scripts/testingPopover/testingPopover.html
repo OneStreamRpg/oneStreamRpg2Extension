@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Native Custom HTML Tooltips</title>
+    <style>
+        /* 1. Page Layout (Just for demo purposes) */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            gap: 50px;
+        }
+
+        /* 2. The Block (Trigger) */
+        .block {
+            position: relative;
+            /* Crucial: Establishes a positioning context for the tooltip */
+            width: 150px;
+            height: 150px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .block:hover {
+            transform: translateY(-5px);
+            border-color: #007bff;
+        }
+
+        /* 3. The Tooltip Container */
+        .tooltip-content {
+            /* Hiding it by default */
+            visibility: hidden;
+            opacity: 0;
+
+            /* Positioning */
+            position: absolute;
+            bottom: 130%;
+            /* Moves it above the block */
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            /* Centers it horizontally + slide effect */
+
+            /* Styling */
+            background-color: #222;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            width: 250px;
+            /* Fixed width for the popup */
+            z-index: 10;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            text-align: left;
+            font-size: 0.9rem;
+
+            /* Animation */
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+        }
+
+        /* 4. The Arrow (Optional Triangle) */
+        .tooltip-content::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            /* At the bottom of the tooltip */
+            left: 50%;
+            margin-left: -8px;
+            border-width: 8px;
+            border-style: solid;
+            border-color: #222 transparent transparent transparent;
+        }
+
+        /* 5. Show Tooltip on Hover */
+        .block:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Custom Content Styling inside tooltips */
+        .tooltip-header {
+            font-weight: bold;
+            color: #4da6ff;
+            margin-bottom: 5px;
+            display: block;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        .tooltip-img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            background-color: #444;
+        }
+
+        .action-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div class="block">
+        <strong>Rich Media</strong>
+
+        <div class="tooltip-content">
+            <span class="tooltip-header">User Profile</span>
+            <div class="tooltip-img" style="background: linear-gradient(45deg, #ff6b6b, #feca57);"></div>
+            <div style="margin-bottom: 5px;">Jane Doe</div>
+            <div style="color: #aaa; font-size: 0.8rem;">Senior Engineer</div>
+            <button class="action-btn">View Profile</button>
+            <div class="block">
+                <strong>Hover Me</strong>
+
+                <div class="tooltip-content">
+                    <span class="tooltip-header">System Status</span>
+                    <p style="margin: 0;">This block contains <em>formatted text</em> and a list:</p>
+                    <ul style="padding-left: 20px; margin: 5px 0;">
+                        <li>Uptime: 99%</li>
+                        <li>Errors: None</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>
