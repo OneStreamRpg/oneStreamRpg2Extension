@@ -21,7 +21,7 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
 
   // Actions
   setActivePage: (page) => {
-    set({ activePage: page });
+    set((state) => ({ activePage: state.activePage === page ? null : page }));
   },
   closeActivePage: () => {
     set({ activePage: null });
