@@ -306,7 +306,7 @@ export const Inventory: React.FC<{
           <Tooltip
             key={`tooltip-${item.id}`}
             id={`item-tooltip-${item.id}`}
-            place="top"
+            place="bottom"
             clickable
             anchorSelect={`[data-item-id="${item.id}"]`}
           >
