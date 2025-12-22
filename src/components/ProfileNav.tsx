@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Tooltip } from "react-tooltip";
+import { WindowContainer } from "./ui/WindowContainer";
 
 interface PlayerProfile {
   name: string;
@@ -43,7 +44,7 @@ export const ProfileNav: React.FC = () => {
 
   return (
     <>
-      <nav className="pointer-events-auto">
+      <WindowContainer className="pointer-events-auto">
         <div className="flex items-center gap-2 p-2 bg-red-500/20 text-xs">
           <div
             className="flex items-center gap-2"
@@ -106,7 +107,7 @@ export const ProfileNav: React.FC = () => {
             </div>
           </div>
         </div>
-      </nav>
+      </WindowContainer>
 
       <Tooltip
         id="player-stats-tooltip"
