@@ -5,7 +5,7 @@ export const WorldInteractionLayer: React.FC = () => {
     <section
       className="size-full bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: 'url(/media/img/layout/game_placeholder.jpg)'
+        backgroundImage: "url(/media/img/layout/game_placeholder.png)",
       }}
     >
       <ExampleItem />
