@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+@font-face {
+  font-family: "Cambria";
+  src: url("/media/fonts/Cambria.woff2") format("woff2"),
+    url("/media/fonts/Cambria.woff") format("woff"),
+    url("/media/fonts/Cambria.otf") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: normal;
+}
+
+@theme {
+  --font-family-sans: "Cambria", ui-sans-serif, system-ui, sans-serif;
+}

@@ -5,6 +5,7 @@ import { Overlay } from "./pages/Overlay";
 import { Panel } from "./pages/Panel";
 
 const extType = import.meta.env.VITE_EXT_TYPE;
+const DISABLE_BACKEND = import.meta.env.VITE_DISABLE_BACKEND;
 
 export const App: React.FC = () => {
   if (extType !== "panel" && extType !== "overlay") {
@@ -14,15 +15,25 @@ export const App: React.FC = () => {
   const { token, channelId, isAuthenticated } = useAuthStore();
 
   return (
-    <TwitchAuthGate>
-      {isAuthenticated && token && channelId ? (
-        <GameState token={token} channelId={channelId}>
-          {extType === "overlay" && <Overlay />}
-          {extType === "panel" && <Panel />}
-        </GameState>
+    <div className="font-family-sans">
+      {DISABLE_BACKEND !== "false" ? (
+        extType === "overlay" ? (
+          <Overlay />
+        ) : (
+          extType === "panel" && <Panel />
+        )
       ) : (
-        <div>Preparing your session...</div>
+        <TwitchAuthGate>
+          {isAuthenticated && token && channelId ? (
+            <GameState token={token} channelId={channelId}>
+              {extType === "overlay" && <Overlay />}
+              {extType === "panel" && <Panel />}
+            </GameState>
+          ) : (
+            <div>Preparing your session...</div>
+          )}
+        </TwitchAuthGate>
       )}
-    </TwitchAuthGate>
+    </div>
   );
 };
