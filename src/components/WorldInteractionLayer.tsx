@@ -30,6 +30,7 @@ export const ExampleItem = () => {
         zIndex: -1,
         top: 50,
         left: 20,
+        opacity: 0.2,
       }}
     >
       World Interaction
