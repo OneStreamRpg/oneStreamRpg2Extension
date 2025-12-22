@@ -10,11 +10,11 @@ export const Overlay = () => {
       <div className="col-start-1 row-start-1">
         <WorldInteractionLayer />
       </div>
-      <div className="col-start-1 row-start-1 pointer-events-none">
+      <div className="col-start-1 row-start-1 pointer-events-none z-10">
         <UserInterface />
       </div>
       {DEBUG_MODE && (
-        <div className="col-start-1 row-start-1 pointer-events-none">
+        <div className="col-start-1 row-start-1 pointer-events-none z-20">
           <DebugOverlay />
         </div>
       )}
