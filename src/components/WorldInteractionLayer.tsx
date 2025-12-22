@@ -2,7 +2,12 @@ import { useState } from "react";
 
 export const WorldInteractionLayer: React.FC = () => {
   return (
-    <section className="size-full">
+    <section
+      className="size-full bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: 'url(/media/img/layout/game_placeholder.jpg)'
+      }}
+    >
       <ExampleItem />
 
       <ExampleItem />
