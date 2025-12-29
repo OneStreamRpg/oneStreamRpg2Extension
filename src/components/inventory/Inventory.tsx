@@ -270,7 +270,7 @@ export const Inventory: React.FC<{
               />
             ))}
           </section>
-          <section className="w-full bg-amber-400 text-center text-xs">
+          <section className="w-full bg-[#1d1d1f] text-center text-xs">
             Player
             {Object.values(equipmentSlots)
               .filter((item) => item)
