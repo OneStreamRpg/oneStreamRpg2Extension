@@ -1,22 +1,25 @@
-import { Item } from "./types";
+import { InventoryItem } from "../../types/personalChannel";
 
-export const ItemDisplay: React.FC<{ item: Item }> = ({ item }) => {
+export const ItemDisplay: React.FC<{ item: InventoryItem }> = ({ item }) => {
   return (
     <div
-      className="text-xs bg-blue-100 size-16 cursor-grab relative"
+      className="text-xs bg-gray-800 text-white size-16 cursor-grab relative"
       data-item-id={item.id}
     >
       <p className="absolute">
-        {item.name} <span className="text-red-500">{item.type}</span>
+        {item.itemId}{" "}
+        <span className="text-red-500">
+          {item.id}: {item.quantity}
+        </span>
       </p>
-      <img
+      {/* <img
         src={`https://cdn.onestreamrpg.com/images/items/${item.icon}.png`}
-        alt={item.name}
+        alt={item.itemId}
         className="size-16 image-re mx-auto"
         style={{
           imageRendering: "pixelated",
         }}
-      />
+      /> */}
     </div>
   );
 };

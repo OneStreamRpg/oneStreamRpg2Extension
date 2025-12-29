@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { Socket } from "socket.io-client";
+import { EquipmentSlotKey } from "../components/inventory/types";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import {
   EquipAbilityParams,
@@ -70,37 +71,29 @@ export function usePersonalChannelActions(socket: Socket | null) {
    * Equip an item from inventory
    */
   const equipItem = useCallback(
-    (slotNumber: number, targetLocation?: string) => {
+    (inventorySlotIndex: number, targetEquipmentSlot: EquipmentSlotKey) => {
+      // TODO MC: Rework key names from backend and state in general
+      const slotNumber = inventorySlotIndex
+      const targetLocation = targetEquipmentSlot;
+
       sendAction(
         "equipItem",
         { slotNumber, targetLocation } as EquipItemParams,
         (state) => {
-          const item = state.inventory.items.find(
-            (i) => i.slotNumber === slotNumber
-          );
+          const item = state.inventory.items[slotNumber]
 
           if (!item) {
-            console.warn("⚠️ Item not found in slot", slotNumber);
-            return state;
+            // MC: This should not happen, we should call error here
+            throw new Error(`⚠️ No item in inventory slot ${slotNumber}`);
           }
 
-          // Determine equipment slot
-          const slot = targetLocation || item.type;
-
           // Move to equipment
-          if (slot in state.equipment) {
-            state.equipment[slot as keyof typeof state.equipment] = {
-              itemId: item.itemId,
-              name: item.name,
-              type: item.type,
-              metadata: item.metadata,
-            };
+          if (targetLocation in state.equipment) {
+            state.equipment[targetLocation] = item;
           }
 
           // Remove from inventory
-          state.inventory.items = state.inventory.items.filter(
-            (i) => i.slotNumber !== slotNumber
-          );
+          state.inventory.items[slotNumber] = null;
 
           return state;
         }
@@ -167,12 +160,12 @@ export function usePersonalChannelActions(socket: Socket | null) {
         "swapInventorySlots",
         { slot1, slot2 } as SwapInventorySlotsParams,
         (state) => {
-          const item1 = state.inventory.items.find((i) => i.slotNumber === slot1);
-          const item2 = state.inventory.items.find((i) => i.slotNumber === slot2);
+          const item1 = state.inventory.items[slot1];
+          const item2 = state.inventory.items[slot2];
 
           // Swap slot numbers
-          if (item1) item1.slotNumber = slot2;
-          if (item2) item2.slotNumber = slot1;
+          if (item1) state.inventory.items[slot2] = item1;
+          if (item2) state.inventory.items[slot1] = item2;
 
           return state;
         }

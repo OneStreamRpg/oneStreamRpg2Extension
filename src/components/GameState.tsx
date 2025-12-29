@@ -11,6 +11,8 @@ interface Props {
 
 const { VITE_SOCKET_URL } = import.meta.env;
 
+// TODO MC: move world interaction layer out here.
+
 export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
   const {
     socket,

@@ -1,11 +1,12 @@
 import { useDroppable } from "@dnd-kit/core";
 import { useMemo } from "react";
 import { useUIStore } from "../../store/useUIStore";
+import { InventoryItem } from "../../types/personalChannel";
 import { DraggableItem } from "./DraggableItem";
-import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
+import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey } from "./types";
 
 export const EquipmentSlot: React.FC<{
-  item: Item | null;
+  item: InventoryItem | null;
   slotKey: EquipmentSlotKey;
 }> = ({ item, slotKey }) => {
   const slotConfig = EQUIPMENT_SLOT_CONFIG[slotKey];
@@ -29,11 +30,12 @@ export const EquipmentSlot: React.FC<{
 
   // MC: what is a fucking good name for that?
   const placeMe = isOver && isCompatible;
+  const hasItem = item && !item.itemId.startsWith("empty");
 
   return (
     <div>
       <div
-        className={`border border-dashed ${
+        className={`border border-dashed bg-amber-100 ${
           placeMe
             ? "outline-blue-500 outline-2"
             : isCompatible
@@ -43,10 +45,10 @@ export const EquipmentSlot: React.FC<{
         ref={setNodeRef}
       >
         {debugInventoryInfo && (
-          <p className="text-xs -z-10 absolute">{slotKey}</p>
+          <p className="text-xs text-red-700 absolute">{slotKey}</p>
         )}
 
-        {item && <DraggableItem item={item} containerId={slotId} />}
+        {hasItem && <DraggableItem item={item} containerId={slotId} />}
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
 // Personal Player Channel Types
 
+import { EquipmentSlotKey } from "../components/inventory/types";
+
 export interface PlayerPersonalState {
   versions: StateVersions;
   inventory: InventoryState;
@@ -18,36 +20,17 @@ export interface StateVersions {
 }
 
 export interface InventoryState {
-  items: InventoryItem[];
+  items: (InventoryItem | null)[];
   maxSize: number;
 }
 
 export interface InventoryItem {
-  slotNumber?: number; // Optional - system uses array index as slot position
+  id: string;
   itemId: string;
-  name: string;
-  type: string;
   quantity: number;
-  metadata?: Record<string, any>;
 }
 
-export interface EquipmentState {
-  helmet?: EquippedItem;
-  chest?: EquippedItem;
-  legs?: EquippedItem;
-  boots?: EquippedItem;
-  mainHand?: EquippedItem;
-  offHand?: EquippedItem;
-  accessory1?: EquippedItem;
-  accessory2?: EquippedItem;
-}
-
-export interface EquippedItem {
-  itemId: string;
-  name: string;
-  type: string;
-  metadata?: Record<string, any>;
-}
+export type EquipmentState = Record<EquipmentSlotKey, InventoryItem | null>
 
 export interface CurrencyState {
   gold: number;

@@ -1,6 +1,14 @@
-import { DndContext, DragOverlay } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+} from "@dnd-kit/core";
 import { useMemo, useState } from "react";
-import { Tooltip } from "react-tooltip";
+import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
+import { usePersonalChannelStore } from "../../store/personalChannelStore";
+import { useSocketStore } from "../../store/socketStore";
+import { InventoryItem } from "../../types/personalChannel";
 import { EquipmentSlot } from "./EquipmentSlot";
 import { isItemCompatible } from "./inventoryService";
 import { InventorySlot } from "./InventorySlot";
@@ -9,87 +17,31 @@ import {
   EQUIPMENT_SLOT_CONFIG,
   EquipmentSlotKey,
   InventoryChangeEvent,
-  Item,
 } from "./types";
-
-const INVENTORY_SIZE = 32;
-
-const testingItems: Item[] = [
-  { id: "item-1", name: "Iron Helmet", type: "Helmet", icon: "16_burger_dish" },
-  { id: "item-8", name: "Golden Helmet", type: "Helmet", icon: "18_burrito" },
-  { id: "item-2", name: "Steel Chestplate", type: "Chest", icon: "20_bagel" },
-  { id: "item-3", name: "Leather Boots", type: "Boots", icon: "22_cheesecake" },
-  { id: "item-4", name: "Ruby Ring", type: "Ring", icon: "26_chocolate" },
-  {
-    id: "item-5",
-    name: "Broadsword",
-    type: "HoldableItem",
-    icon: "29_cookies_dish",
-  },
-  {
-    id: "item-6",
-    name: "Bat Sword",
-    type: "HoldableItem",
-    icon: "batSword",
-  },
-  {
-    id: "item-7",
-    name: "Emerald Amulet",
-    type: "Amulet",
-    icon: "30_chocolatecake",
-  },
-  {
-    id: "item-9",
-    name: "Silver Gloves",
-    type: "Glove",
-    icon: "27_chocolate_dish",
-  },
-  {
-    id: "item-10",
-    name: "Diamond Pants",
-    type: "Pants",
-    icon: "24_cheesepuff",
-  },
-];
 
 export const Inventory: React.FC<{
   onInventoryChange?: (event: InventoryChangeEvent) => void;
 }> = ({ onInventoryChange }) => {
-  const [inventoryItems, setInventoryItems] = useState<(Item | null)[]>(() => {
-    // MC: Debug itemss
-    const initialItems = Array(INVENTORY_SIZE).fill(null);
-    for (let i = 0; i < testingItems.length; i++) {
-      initialItems[i] = testingItems[i];
-    }
-    return initialItems;
-  });
+  // Get current game state
+  const { displayedState } = usePersonalChannelStore();
 
-  const [equipmentSlots, setEquipmentSlots] = useState<
-    Record<EquipmentSlotKey, Item | null>
-  >({
-    helmet: null,
-    chest: null,
-    pants: null,
-    boots: null,
-    mainHand: null,
-    amulet: null,
-    gloves: null,
-    firstRing: null,
-    secondRing: null,
-    offHand: null,
-  });
+  // Access socket and actions
+  const socket = useSocketStore((state) => state.socket);
+  const { swapInventorySlots, equipItem } = usePersonalChannelActions(socket);
+
+  console.log("Inventory displayedState:", { displayedState });
 
   // State to hold the item being currently dragged.
   // This is used for highlighting compatible slots and for the DragOverlay.
-  const [activeItem, setActiveItem] = useState<Item | null>(null);
+  const [activeItem, setActiveItem] = useState<InventoryItem | null>(null);
 
-  function handleDragStart(event: any) {
+  function handleDragStart(event: DragStartEvent) {
     const { active } = event;
     // Store the item being dragged
     setActiveItem(active.data.current?.item ?? null);
   }
 
-  function handleDragEnd(event: any) {
+  function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
     // Clear the active item
@@ -102,7 +54,7 @@ export const Inventory: React.FC<{
 
     const activeContainerId = active.data.current?.containerId;
     const activeItem = active.data.current?.item;
-    const overId = over.id;
+    const overId = over.id as string;
 
     // Don't do anything if we drop on the same slot
     if (activeContainerId === overId) {
@@ -121,22 +73,7 @@ export const Inventory: React.FC<{
       const activeIndex = parseInt(activeContainerId.split("-")[1]);
       const overIndex = parseInt(overId.split("-")[1]);
 
-      let swappedItem: Item | null = null;
-      setInventoryItems((items) => {
-        const newItems = [...items];
-        swappedItem = newItems[overIndex];
-        newItems[overIndex] = activeItem;
-        newItems[activeIndex] = swappedItem; // Swap
-        return newItems;
-      });
-
-      onInventoryChange?.({
-        type: "SWAP",
-        item: activeItem,
-        sourceId: activeContainerId,
-        destinationId: overId,
-        swappedItem,
-      });
+      swapInventorySlots(activeIndex, overIndex);
     }
 
     // Case 2: Inventory -> Equipment (Equip item)
@@ -144,31 +81,32 @@ export const Inventory: React.FC<{
       const activeIndex = parseInt(activeContainerId.split("-")[1]);
       const overSlotKey = overId.split("-")[1] as EquipmentSlotKey;
 
+      equipItem(activeIndex, overSlotKey);
       // Check for compatibility
-      if (isItemCompatible(activeItem, overSlotKey)) {
-        const itemAtOver = equipmentSlots[overSlotKey];
+      //   if (isItemCompatible(activeItem, overSlotKey)) {
+      //     const itemAtOver = equipmentSlots[overSlotKey];
 
-        // Update equipment
-        setEquipmentSlots((prev) => ({
-          ...prev,
-          [overSlotKey]: activeItem,
-        }));
+      //     // Update equipment
+      //     setEquipmentSlots((prev) => ({
+      //       ...prev,
+      //       [overSlotKey]: activeItem,
+      //     }));
 
-        // Update inventory (place equipped item back in bag)
-        setInventoryItems((prev) => {
-          const newItems = [...prev];
-          newItems[activeIndex] = itemAtOver; // Swap
-          return newItems;
-        });
+      //     // Update inventory (place equipped item back in bag)
+      //     // setInventoryItems((prev) => {
+      //     //   const newItems = [...prev];
+      //     //   newItems[activeIndex] = itemAtOver; // Swap
+      //     //   return newItems;
+      //     // });
 
-        onInventoryChange?.({
-          type: "EQUIP",
-          item: activeItem,
-          sourceId: activeContainerId,
-          destinationId: overId,
-          swappedItem: itemAtOver,
-        });
-      }
+      //     onInventoryChange?.({
+      //       type: "EQUIP",
+      //       item: activeItem,
+      //       sourceId: activeContainerId,
+      //       destinationId: overId,
+      //       swappedItem: itemAtOver,
+      //     });
+      //   }
     }
 
     // Case 3: Equipment -> Inventory (Unequip item)
@@ -186,11 +124,11 @@ export const Inventory: React.FC<{
       }
 
       // Update inventory
-      setInventoryItems((prev) => {
-        const newItems = [...prev];
-        newItems[overIndex] = activeItem;
-        return newItems;
-      });
+      //   setInventoryItems((prev) => {
+      //     const newItems = [...prev];
+      //     newItems[overIndex] = activeItem;
+      //     return newItems;
+      //   });
 
       // Update equipment
       setEquipmentSlots((prev) => ({
@@ -244,19 +182,25 @@ export const Inventory: React.FC<{
   );
 
   // Collect all items for tooltip rendering
-  const allItems = useMemo(() => {
-    const items: Item[] = [];
-    // Add inventory items
-    inventoryItems.forEach((item) => {
-      if (item) items.push(item);
-    });
-    // Add equipment items
-    Object.values(equipmentSlots).forEach((item) => {
-      if (item) items.push(item);
-    });
-    return items;
-  }, [inventoryItems, equipmentSlots]);
+  //   const allItems = useMemo(() => {
+  //     const items: Item[] = [];
+  //     // Add inventory items
+  //     inventoryItems.forEach((item) => {
+  //       if (item) items.push(item);
+  //     });
+  //     // Add equipment items
+  //     Object.values(equipmentSlots).forEach((item) => {
+  //       if (item) items.push(item);
+  //     });
+  //     return items;
+  //   }, [inventoryItems, equipmentSlots]);
 
+  if (displayedState === null) {
+    return <div>Loading inventory...</div>;
+  }
+
+  const inventoryItems = displayedState.inventory.items;
+  const equipmentSlots = displayedState.equipment;
   return (
     <>
       <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -275,7 +219,9 @@ export const Inventory: React.FC<{
             {Object.values(equipmentSlots)
               .filter((item) => item)
               .map((item) => (
-                <div key={item!.id}>{item!.name}</div>
+                <div key={item!.id}>
+                  {item!.itemId}: {item!.quantity}
+                </div>
               ))}
           </section>
           <section className="flex flex-col items-center gap-y-2">
@@ -301,7 +247,7 @@ export const Inventory: React.FC<{
       </DndContext>
 
       {/* Tooltips rendered outside of dragging context */}
-      {!activeItem &&
+      {/* {!activeItem &&
         allItems.map((item) => (
           <Tooltip
             key={`tooltip-${item.id}`}
@@ -311,79 +257,9 @@ export const Inventory: React.FC<{
             delayShow={200}
             anchorSelect={`[data-item-id="${item.id}"]`}
           >
-            <div className="p-2">
-              <img
-                src={`https://cdn.onestreamrpg.com/images/items/${item.icon}.png`}
-                alt={item.name}
-                className="size-16 mx-auto mb-2"
-                style={{
-                  imageRendering: "pixelated",
-                }}
-                data-tooltip-id={`item-tooltip-nested-${item.id}`}
-              />
-              <h3 className="font-bold mb-1">{item.name}</h3>
-              <p
-                className="text-sm"
-                data-tooltip-id={`item-type-tooltip-${item.id}`}
-              >
-                Type:{" "}
-                <span className="underline decoration-dotted">{item.type}</span>
-              </p>
-              <p className="text-xs text-gray-400 mt-1">ID: {item.id}</p>
-            </div>
-            <Tooltip
-              id={`item-tooltip-nested-${item.id}`}
-              place="right"
-              clickable
-              delayShow={100}
-            >
-              <div className="p-2">
-                <p className="text-xs font-semibold mb-1">Item Details:</p>
-                <p className="text-xs">Icon: {item.icon}</p>
-                <p className="text-xs">Full ID: {item.id}</p>
-              </div>
-            </Tooltip>
-            <Tooltip
-              id={`item-type-tooltip-${item.id}`}
-              place="bottom"
-              clickable
-              delayShow={100}
-            >
-              <div className="p-2">
-                <p className="text-xs font-semibold mb-1">Type Information:</p>
-                <p
-                  className="text-xs mb-1"
-                  data-tooltip-id={`item-type-nested-tooltip-${item.id}`}
-                >
-                  Category:{" "}
-                  <span className="underline decoration-dotted">
-                    {item.type}
-                  </span>
-                </p>
-                <p className="text-xs">
-                  Slot:{" "}
-                  {item.type === "HoldableItem" ? "Main/Off Hand" : item.type}
-                </p>
-              </div>
-              <Tooltip
-                id={`item-type-nested-tooltip-${item.id}`}
-                place="right"
-                clickable
-                delayShow={100}
-              >
-                <div className="p-2">
-                  <p className="text-xs font-semibold mb-1">Deep Dive:</p>
-                  <p className="text-xs">
-                    Item type '{item.type}' is used for equipment matching
-                  </p>
-                  <p className="text-xs mt-1">
-                    Total characters: {item.type.length}
-                  </p>
-                </div>
-              </Tooltip>
-            </Tooltip>
+            <p>Debug</p>
           </Tooltip>
-        ))}
+        ))} */}
     </>
   );
 };

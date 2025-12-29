@@ -1,12 +1,12 @@
 import { useDroppable } from "@dnd-kit/core";
 import { useMemo } from "react";
+import { InventoryItem } from "../../types/personalChannel";
 import { DraggableItem } from "./DraggableItem";
-import { Item } from "./types";
 
-export const InventorySlot: React.FC<{ item: Item | null; index: number }> = ({
-  item,
-  index,
-}) => {
+export const InventorySlot: React.FC<{
+  item: InventoryItem;
+  index: number;
+}> = ({ item, index }) => {
   const slotId = `inventory-${index}`;
   const { setNodeRef, isOver, active } = useDroppable({
     id: slotId,
@@ -24,14 +24,18 @@ export const InventorySlot: React.FC<{ item: Item | null; index: number }> = ({
       active?.data.current?.containerId.startsWith("equipment-");
 
     // If items come from equipment slots, allow placing if types match
-    if (isActiveEquipment)
-      return isActiveEquipment && item.type === activeItem.type;
+    if (isActiveEquipment) return false;
+    // TODO MC: here we need the item type to check if it's macthing with equipment slot
+    // return isActiveEquipment && item.type === activeItem.type;
 
     // If items come from other slots, allow placing if types match
     return true;
   }, [active]);
 
   const placeMe = isOver && isCompatible;
+
+  // MC: this should be replaced with a null item from backend or something else
+  const hasItem = item && item.itemId !== "emptyItem";
 
   return (
     <div
@@ -44,7 +48,7 @@ export const InventorySlot: React.FC<{ item: Item | null; index: number }> = ({
           : ""
       }`}
     >
-      {item && <DraggableItem item={item} containerId={slotId} />}
+      {hasItem && <DraggableItem item={item} containerId={slotId} />}
     </div>
   );
 };
