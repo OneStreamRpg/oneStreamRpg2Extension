@@ -4,7 +4,7 @@ export const WindowContainer: React.FC<{
 }> = ({ children, className = "" }) => {
   return (
     <div
-      className={`${className}`}
+      className={`pointer-events-auto ${className}`}
       style={{
         color: "white",
         boxShadow: [
@@ -24,7 +24,10 @@ export const WindowContainer: React.FC<{
         borderLeft: "3px solid #28201b",
         borderRight: "3px solid #28201b",
         backgroundColor: "#111011",
-        padding: "8px",
+        paddingTop: "8px",
+        paddingBottom: "8px",
+        paddingLeft: "8px",
+        paddingRight: "0px",
       }}
     >
       {children}
