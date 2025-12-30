@@ -1,0 +1,10 @@
+POST https://germany.pauledevelopment.com:5322/api/lobby
+Content-Type: application/json
+
+{
+    "hostId": "68056832",
+    "lobbyId": "7A8DtJGlrxWx"
+}
+
+### Meta
+GET https://germany.pauledevelopment.com:5322/api/metadata
