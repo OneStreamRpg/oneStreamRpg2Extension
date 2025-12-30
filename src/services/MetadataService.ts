@@ -104,16 +104,46 @@ class MetadataService {
         return data.abilities;
     }
 
-    /**
-     * Get ability by ID
-     */
     async getAbility(abilityId: string): Promise<Ability | undefined> {
         const data = await this.ensureData();
         return data.abilities[abilityId];
     }
 
+    // Synchronous getters
+
+    getItemSync(itemId: string): Item | undefined {
+        return this.data?.items[itemId];
+    }
+
+    getEnemySync(enemyId: string): Enemy | undefined {
+        return this.data?.enemies[enemyId];
+    }
+
+    getNpcSync(npcId: string): NPC | undefined {
+        return this.data?.npcs[npcId];
+    }
+
+    getAbilitySync(abilityId: string): Ability | undefined {
+        return this.data?.abilities[abilityId];
+    }
+
+    getAllItemsSync(): Record<string, Item> | undefined {
+        return this.data?.items;
+    }
+
+    getAllEnemiesSync(): Record<string, Enemy> | undefined {
+        return this.data?.enemies;
+    }
+
+    getAllNpcsSync(): Record<string, NPC> | undefined {
+        return this.data?.npcs;
+    }
+
+    getAllAbilitiesSync(): Record<string, Ability> | undefined {
+        return this.data?.abilities;
+    }
 }
 
-// Export singleton instance and types
+// Access over this singleton
 export const metadataService = MetadataService.getInstance();
 
