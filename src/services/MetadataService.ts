@@ -1,0 +1,119 @@
+/**
+ * MC:
+ * Metadata Service
+ * Fetches game metadata from backend and provides access to items, enemies, NPCs, and abilities.
+ * Data is lazily loaded and cached after first fetch. (singleton)
+ */
+
+type Item = any
+type Enemy = any
+type NPC = any
+type Ability = any
+
+
+type MetadataResponse = {
+    items: Record<string, Item>;
+    enemies: Record<string, Enemy>;
+    npcs: Record<string, NPC>;
+    abilities: Record<string, Ability>;
+}
+
+// Service Implementation
+class MetadataService {
+    private static instance: MetadataService;
+    private data: MetadataResponse | null = null;
+    private fetchPromise: Promise<MetadataResponse> | null = null;
+    private readonly apiUrl = import.meta.env.VITE_SOCKET_URL + "/api/metadata";
+
+    private constructor() { }
+
+    static getInstance(): MetadataService {
+        if (!MetadataService.instance) {
+            MetadataService.instance = new MetadataService();
+        }
+        return MetadataService.instance;
+    }
+
+    async fetchMetadata(): Promise<MetadataResponse> {
+        if (this.data) {
+            return this.data;
+        }
+
+        // Prevent multiple concurrent fetches
+        if (this.fetchPromise) {
+            return this.fetchPromise;
+        }
+
+        this.fetchPromise = fetch(this.apiUrl)
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json() as MetadataResponse;
+                this.data = data;
+                return data;
+            })
+            .finally(() => {
+                this.fetchPromise = null;
+            });
+
+        return this.fetchPromise;
+    }
+
+    private async ensureData(): Promise<MetadataResponse> {
+        if (!this.data) {
+            await this.fetchMetadata();
+        }
+        return this.data!;
+    }
+
+    async getAllItems(): Promise<Record<string, Item>> {
+        const data = await this.ensureData();
+        return data.items;
+    }
+
+
+    async getItem(itemId: string): Promise<Item | undefined> {
+        const data = await this.ensureData();
+        return data.items[itemId];
+    }
+
+    async getAllEnemies(): Promise<Record<string, Enemy>> {
+        const data = await this.ensureData();
+        return data.enemies;
+    }
+
+    async getEnemy(enemyId: string): Promise<Enemy | undefined> {
+        const data = await this.ensureData();
+        return data.enemies[enemyId];
+    }
+
+    async getAllNpcs(): Promise<Record<string, NPC>> {
+        const data = await this.ensureData();
+        return data.npcs;
+    }
+
+    async getNpc(npcId: string): Promise<NPC | undefined> {
+        const data = await this.ensureData();
+        return data.npcs[npcId];
+    }
+
+
+    async getAllAbilities(): Promise<Record<string, Ability>> {
+        const data = await this.ensureData();
+        return data.abilities;
+    }
+
+    /**
+     * Get ability by ID
+     */
+    async getAbility(abilityId: string): Promise<Ability | undefined> {
+        const data = await this.ensureData();
+        return data.abilities[abilityId];
+    }
+
+}
+
+// Export singleton instance and types
+export const metadataService = MetadataService.getInstance();
+
