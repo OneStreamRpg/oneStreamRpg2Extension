@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { usePersonalChannel } from "../hooks/usePersonalChannel";
+import { metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
 
 interface Props {
@@ -79,6 +80,11 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
   };
 
   useEffect(() => {
+    // Pre-fetch game metadata at startup
+    metadataService.fetchMetadata().catch((err) => {
+      console.error("Failed to fetch metadata:", err);
+    });
+
     if (window.Twitch && window.Twitch.ext) {
       window.Twitch.ext.onContext((context) => {
         if (context.hlsLatencyBroadcaster) {
