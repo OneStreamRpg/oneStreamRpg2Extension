@@ -45,25 +45,25 @@ export const Inventory: React.FC = () => {
       return;
     }
 
-    const activeContainerId = active.data.current?.containerId;
-    const activeItem = active.data.current?.item;
+    const activeId = active.data.current?.containerId;
     const overId = over.id as string;
 
     // Don't do anything if we drop on the same slot
-    if (activeContainerId === overId) {
+    if (activeId === overId) {
       return;
     }
 
-    const isActiveInventory = activeContainerId.startsWith("inventory-");
+    const isActiveInventory = activeId.startsWith("inventory-");
     const isOverInventory = overId.startsWith("inventory-");
-    const isActiveEquipment = activeContainerId.startsWith("equipment-");
+    const isActiveEquipment = activeId.startsWith("equipment-");
     const isOverEquipment = overId.startsWith("equipment-");
 
+    const activeItem = active.data.current?.item;
     // --- LOGIC TREE FOR ALL DRAG-AND-DROP SCENARIOS ---
 
     // Case 1: Inventory -> Inventory (Swap items)
     if (isActiveInventory && isOverInventory) {
-      const activeIndex = parseInt(activeContainerId.split("-")[1]);
+      const activeIndex = parseInt(activeId.split("-")[1]);
       const overIndex = parseInt(overId.split("-")[1]);
 
       swapInventorySlots(activeIndex, overIndex);
@@ -71,7 +71,7 @@ export const Inventory: React.FC = () => {
 
     // Case 2: Inventory -> Equipment (Equip item)
     else if (isActiveInventory && isOverEquipment) {
-      const activeIndex = parseInt(activeContainerId.split("-")[1]);
+      const activeIndex = parseInt(activeId.split("-")[1]);
       const overSlotKey = overId.split("-")[1] as EquipmentSlotKey;
 
       //Check for compatibility
@@ -84,7 +84,7 @@ export const Inventory: React.FC = () => {
 
     // Case 3: Equipment -> Inventory (Unequip item)
     else if (isActiveEquipment && isOverInventory) {
-      const activeSlotKey = activeContainerId.split("-")[1] as EquipmentSlotKey;
+      const activeSlotKey = activeId.split("-")[1] as EquipmentSlotKey;
       const overIndex = parseInt(overId.split("-")[1]);
 
       const itemAtOver = inventoryItems[overIndex];
@@ -101,7 +101,7 @@ export const Inventory: React.FC = () => {
 
     // Case 4: Equipment -> Equipment (Swap equipment)
     else if (isActiveEquipment && isOverEquipment) {
-      const activeSlotKey = activeContainerId.split("-")[1] as EquipmentSlotKey;
+      const activeSlotKey = activeId.split("-")[1] as EquipmentSlotKey;
       const overSlotKey = overId.split("-")[1] as EquipmentSlotKey;
 
       const itemAtOver = equipmentSlots[overSlotKey];
