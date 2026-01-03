@@ -87,13 +87,13 @@ export function usePersonalChannelActions(socket: Socket | null) {
             throw new Error(`⚠️ No item in inventory slot ${slotNumber}`);
           }
 
+          const itemInTargetSlot = state.equipment[targetLocation];
+
           // Move to equipment
-          if (targetLocation in state.equipment) {
-            state.equipment[targetLocation] = item;
-          }
+          state.equipment[targetLocation] = item;
 
           // Remove from inventory
-          state.inventory.items[slotNumber] = null;
+          state.inventory.items[slotNumber] = itemInTargetSlot;
 
           return state;
         }
