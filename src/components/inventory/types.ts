@@ -26,7 +26,8 @@ export type ItemType =
   | "HoldableItem"
   | "Amulet"
   | "Glove"
-  | "Ring";
+  | "Ring"
+  | "holdable";
 
 export type EquipmentSlotKey =
   | "helmet"
@@ -48,12 +49,12 @@ export const EQUIPMENT_SLOT_CONFIG: Record<
   chest: { type: "Chest" },
   pants: { type: "Pants" },
   boots: { type: "Boots" },
-  mainHand: { type: "HoldableItem" },
+  mainHand: { type: ["HoldableItem", "holdable"] },
   amulet: { type: "Amulet" },
   gloves: { type: "Glove" },
   firstRing: { type: "Ring" },
   secondRing: { type: "Ring" },
-  offHand: { type: "HoldableItem" },
+  offHand: { type: ["HoldableItem", "holdable"] },
 };
 
 export type InventoryChangeEvent = {

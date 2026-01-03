@@ -22,11 +22,15 @@ export const EquipmentSlot: React.FC<{
   const isCompatible = useMemo(() => {
     const activeItem = active?.data.current?.item;
     if (!activeItem) return false;
+
     const allowedTypes = Array.isArray(slotConfig.type)
       ? slotConfig.type
       : [slotConfig.type];
-    return allowedTypes.includes(activeItem.type);
-  }, [active]);
+
+    return allowedTypes.some((allowedType) =>
+      activeItem.tags.includes(allowedType)
+    );
+  }, [active, slotConfig.type]);
 
   // MC: what is a fucking good name for that?
   const placeMe = isOver && isCompatible;

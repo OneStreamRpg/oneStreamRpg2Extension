@@ -1,13 +1,17 @@
-import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
+import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey } from "./types";
 
 export const isItemCompatible = (
-  item: Item,
+  item: any,
   slotKey: EquipmentSlotKey
 ): boolean => {
   const slotConfig = EQUIPMENT_SLOT_CONFIG[slotKey];
-  if (!slotConfig) return false;
+
   const allowedTypes = Array.isArray(slotConfig.type)
     ? slotConfig.type
     : [slotConfig.type];
-  return allowedTypes.includes(item.type);
+
+  return allowedTypes.some((allowedType) =>
+    item.tags.includes(allowedType)
+  );
+
 };

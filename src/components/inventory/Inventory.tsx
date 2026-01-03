@@ -81,32 +81,12 @@ export const Inventory: React.FC<{
       const activeIndex = parseInt(activeContainerId.split("-")[1]);
       const overSlotKey = overId.split("-")[1] as EquipmentSlotKey;
 
+      //Check for compatibility
+      if (!isItemCompatible(activeItem, overSlotKey)) {
+        return;
+      }
+
       equipItem(activeIndex, overSlotKey);
-      // Check for compatibility
-      //   if (isItemCompatible(activeItem, overSlotKey)) {
-      //     const itemAtOver = equipmentSlots[overSlotKey];
-
-      //     // Update equipment
-      //     setEquipmentSlots((prev) => ({
-      //       ...prev,
-      //       [overSlotKey]: activeItem,
-      //     }));
-
-      //     // Update inventory (place equipped item back in bag)
-      //     // setInventoryItems((prev) => {
-      //     //   const newItems = [...prev];
-      //     //   newItems[activeIndex] = itemAtOver; // Swap
-      //     //   return newItems;
-      //     // });
-
-      //     onInventoryChange?.({
-      //       type: "EQUIP",
-      //       item: activeItem,
-      //       sourceId: activeContainerId,
-      //       destinationId: overId,
-      //       swappedItem: itemAtOver,
-      //     });
-      //   }
     }
 
     // Case 3: Equipment -> Inventory (Unequip item)
@@ -129,20 +109,6 @@ export const Inventory: React.FC<{
       //     newItems[overIndex] = activeItem;
       //     return newItems;
       //   });
-
-      // Update equipment
-      setEquipmentSlots((prev) => ({
-        ...prev,
-        [activeSlotKey]: itemAtOver, // Swap
-      }));
-
-      onInventoryChange?.({
-        type: "UNEQUIP",
-        item: activeItem,
-        sourceId: activeContainerId,
-        destinationId: overId,
-        swappedItem: itemAtOver,
-      });
     }
 
     // Case 4: Equipment -> Equipment (Swap equipment)
