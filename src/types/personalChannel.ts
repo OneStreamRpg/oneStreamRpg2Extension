@@ -1,6 +1,6 @@
 // Personal Player Channel Types
 
-import { EquipmentSlotKey } from "../components/inventory/types";
+import { EquipmentSlotKey, Item } from "../components/inventory/types";
 
 export interface PlayerPersonalState {
   versions: StateVersions;
@@ -20,17 +20,17 @@ export interface StateVersions {
 }
 
 export interface InventoryState {
-  items: (InventoryItem | null)[];
+  items: (Item | null)[];
   maxSize: number;
 }
 
-export interface InventoryItem {
-  id: string;
-  itemId: string;
-  quantity: number;
-}
+// export interface InventoryItem {
+//   id: string;
+//   itemId: string;
+//   quantity: number;
+// }
 
-export type EquipmentState = Record<EquipmentSlotKey, InventoryItem | null>
+export type EquipmentState = Record<EquipmentSlotKey, Item | null>
 
 export interface CurrencyState {
   gold: number;

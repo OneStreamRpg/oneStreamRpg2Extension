@@ -1,10 +1,10 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { InventoryItem } from "../../types/personalChannel";
 import { ItemDisplay } from "./ItemDisplay";
+import { Item } from "./types";
 
 export const DraggableItem: React.FC<{
-  item: InventoryItem;
+  item: Item;
   containerId: string;
 }> = ({ item, containerId }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =

@@ -8,20 +8,13 @@ import { useMemo, useState } from "react";
 import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
-import { InventoryItem } from "../../types/personalChannel";
 import { EquipmentSlot } from "./EquipmentSlot";
 import { isItemCompatible } from "./inventoryService";
 import { InventorySlot } from "./InventorySlot";
 import { ItemDisplay } from "./ItemDisplay";
-import {
-  EQUIPMENT_SLOT_CONFIG,
-  EquipmentSlotKey,
-  InventoryChangeEvent,
-} from "./types";
+import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
 
-export const Inventory: React.FC<{
-  onInventoryChange?: (event: InventoryChangeEvent) => void;
-}> = ({ onInventoryChange }) => {
+export const Inventory: React.FC = () => {
   // Get current game state
   const { displayedState } = usePersonalChannelStore();
 
@@ -33,7 +26,7 @@ export const Inventory: React.FC<{
 
   // State to hold the item being currently dragged.
   // This is used for highlighting compatible slots and for the DragOverlay.
-  const [activeItem, setActiveItem] = useState<InventoryItem | null>(null);
+  const [activeItem, setActiveItem] = useState<Item | null>(null);
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
@@ -103,12 +96,7 @@ export const Inventory: React.FC<{
         return;
       }
 
-      // Update inventory
-      //   setInventoryItems((prev) => {
-      //     const newItems = [...prev];
-      //     newItems[overIndex] = activeItem;
-      //     return newItems;
-      //   });
+      // TODO: Unequip item
     }
 
     // Case 4: Equipment -> Equipment (Swap equipment)
@@ -125,19 +113,7 @@ export const Inventory: React.FC<{
 
       if (isMovingItemCompatible && isSwappedItemCompatible) {
         // Swap
-        setEquipmentSlots((prev) => ({
-          ...prev,
-          [activeSlotKey]: itemAtOver,
-          [overSlotKey]: activeItem,
-        }));
-
-        onInventoryChange?.({
-          type: "SWAP_EQUIP",
-          item: activeItem,
-          sourceId: activeContainerId,
-          destinationId: overId,
-          swappedItem: itemAtOver,
-        });
+        // TODO: Swap items
       }
     }
   }

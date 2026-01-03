@@ -13,11 +13,12 @@
 //MAIN: offHand: { type: HoldableItem, property: 'offHand' },
 
 export type Item = {
-  id: string;
-  name: string;
-  type: ItemType;
-  icon: string;
-};
+  id: string
+  itemId: string
+  quantity: number
+  tags: string[]
+}
+
 export type ItemType =
   | "Helmet"
   | "Chest"
