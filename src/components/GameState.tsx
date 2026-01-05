@@ -189,7 +189,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       socketInstance.emit("ping");
       socketInstance.once("pong", () => {
         const latency = Date.now() - start;
-        console.log(`📡 Ping: ${latency}ms`);
+        // console.log(`📡 Ping: ${latency}ms`);
         if (setPing) setPing(latency);
       });
     }, 3000);

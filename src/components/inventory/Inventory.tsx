@@ -9,7 +9,11 @@ import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
 import { EquipmentSlot } from "./EquipmentSlot";
-import { canEquipInSlot, isEmptyItem } from "./inventoryService";
+import {
+  canEquipInSlot,
+  getItemEquippedSlotTag,
+  isEmptyItem,
+} from "./inventoryService";
 import { InventorySlot } from "./InventorySlot";
 import { ItemDisplay } from "./ItemDisplay";
 import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
@@ -86,23 +90,35 @@ export const Inventory: React.FC = () => {
 
     // Case 3: Equipment -> Inventory (Unequip item)
     else if (isActiveEquipment && isOverInventory) {
-      const activeSlotKey = activeId.split("-")[1] as EquipmentSlotKey;
-      const overIndex = parseInt(overId.split("-")[1]);
+      const equipmentSlotKey = activeId.split("-")[1] as EquipmentSlotKey;
+      const inventoryTargetIndex = parseInt(overId.split("-")[1]);
 
-      const itemAtOver = inventoryItems[overIndex];
-      console.log("Item at over index:", {
-        activeSlotKey,
-        overIndex,
-        itemAtOver,
-      });
-      // We need to check if the item in the inventory (if any)
-      // is compatible with the equipment slot it's being swapped *from*.
-      if (itemAtOver) {
-        // Invalid swap
+      const itemAtOver = inventoryItems[inventoryTargetIndex];
+
+      if (!itemAtOver) {
         return;
       }
 
-      unequipItem(activeSlotKey);
+      // We need to check if the item in the inventory (if any)
+      // is compatible with the equipment slot it's being swapped *from*.
+      if (!isEmptyItem(itemAtOver)) {
+        const itemTag = getItemEquippedSlotTag(itemAtOver);
+        if (itemTag === null) {
+          console.log(
+            "No compatible tag found on item at target inventory slot"
+          );
+          return;
+        }
+        const isMatchingTag = itemTag === getItemEquippedSlotTag(activeItem);
+        if (!isMatchingTag) {
+          console.log(
+            "Incompatible tag found on item at target inventory slot"
+          );
+          return;
+        }
+      }
+
+      unequipItem(equipmentSlotKey, inventoryTargetIndex);
     }
 
     // Case 4: Equipment -> Equipment (Swap equipment)

@@ -4,11 +4,8 @@ import { EquipmentSlotKey } from "../components/inventory/types";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import {
   EquipAbilityParams,
-  EquipItemParams,
   PersonalChannelAction,
   PlayerPersonalState,
-  SwapInventorySlotsParams,
-  UnequipItemParams,
 } from "../types/personalChannel";
 
 /**
@@ -70,31 +67,24 @@ export function usePersonalChannelActions(socket: Socket | null) {
   /**
    * Equip an item from inventory
    */
+  type EquipItemParams = {
+    inventorySlotIndex: number
+    equipmentSlotKey: string
+  }
   const equipItem = useCallback(
-    (inventorySlotIndex: number, targetEquipmentSlot: EquipmentSlotKey) => {
-      // TODO MC: Rework key names from backend and state in general
-      const slotNumber = inventorySlotIndex
-      const targetLocation = targetEquipmentSlot;
-
+    (inventorySlotIndex: number, equipmentSlotKey: EquipmentSlotKey) => {
       sendAction(
         "equipItem",
-        { slotNumber, targetLocation } as EquipItemParams,
+        { inventorySlotIndex, equipmentSlotKey } as EquipItemParams,
         (state) => {
-          const item = state.inventory.items[slotNumber]
-
-          if (!item) {
-            // MC: This should not happen, we should call error here
-            throw new Error(`⚠️ No item in inventory slot ${slotNumber}`);
-          }
-
-          const itemInTargetSlot = state.equipment[targetLocation]!;
+          const item = state.inventory.items[inventorySlotIndex]!
 
           // Move to equipment
-          state.equipment[targetLocation] = item;
+          state.equipment[equipmentSlotKey] = item;
 
-          // TODO MC: At this point there will spawn a default empty items so ignore the swap from equipment
           // Remove from inventory
-          state.inventory.items[slotNumber] = itemInTargetSlot;
+          // MC: Can be set null because backend will place a new empty item here
+          state.inventory.items[inventorySlotIndex] = null;
 
           return state;
         }
@@ -103,11 +93,15 @@ export function usePersonalChannelActions(socket: Socket | null) {
     [sendAction]
   );
 
-  const swapEquipment = useCallback(
+  type SwapEquipmentSlotsParams = {
+    slot1: EquipmentSlotKey
+    slot2: EquipmentSlotKey
+  }
+  const swapEquipmentSlots = useCallback(
     (slot1: EquipmentSlotKey, slot2: EquipmentSlotKey) => {
       sendAction(
-        "swapEquipment",
-        { slot1, slot2 } as { slot1: EquipmentSlotKey; slot2: EquipmentSlotKey },
+        "swapEquipmentSlots",
+        { slot1, slot2 } as SwapEquipmentSlotsParams,
         (state) => {
           // TODO MC: Implement swap logic
           return state
@@ -121,13 +115,24 @@ export function usePersonalChannelActions(socket: Socket | null) {
   /**
    * Unequip an item to inventory
    */
+  type UnequipItemParams = {
+    equipmentSlotKey: string
+    inventoryTargetIndex: number
+  }
   const unequipItem = useCallback(
-    (slotName: string) => {
+    (equipmentSlotKey: EquipmentSlotKey, inventoryTargetIndex: number) => {
       sendAction(
         "unequipItem",
-        { slotName } as UnequipItemParams,
+        { equipmentSlotKey, inventoryTargetIndex } as UnequipItemParams,
         (state) => {
-          // TODO MC: Implement unequip logic
+          const item = state.equipment[equipmentSlotKey]!;
+
+          // Move item to inventory
+          state.inventory.items[inventoryTargetIndex] = item;
+
+          // Remove from equipment
+          // MC: Can be set null because backend will place a new empty item here
+          state.equipment[equipmentSlotKey] = null;
           return state;
         }
       );
@@ -138,6 +143,10 @@ export function usePersonalChannelActions(socket: Socket | null) {
   /**
    * Swap two inventory slots
    */
+  type SwapInventorySlotsParams = {
+    slot1: number
+    slot2: number
+  }
   const swapInventorySlots = useCallback(
     (slot1: number, slot2: number) => {
       sendAction(
@@ -213,7 +222,7 @@ export function usePersonalChannelActions(socket: Socket | null) {
   return {
     equipItem,
     unequipItem,
-    swapEquipment,
+    swapEquipment: swapEquipmentSlots,
     swapInventorySlots,
     equipAbility,
     requestSync,

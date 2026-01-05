@@ -20,7 +20,7 @@ export interface StateVersions {
 }
 
 export interface InventoryState {
-  items: Item[];
+  items: (Item | null)[];
   maxSize: number;
 }
 
@@ -97,10 +97,6 @@ export interface PendingAction {
 export interface EquipItemParams {
   slotNumber: number;
   targetLocation?: string;
-}
-
-export interface UnequipItemParams {
-  slotName: string;
 }
 
 export interface SwapInventorySlotsParams {

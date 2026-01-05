@@ -5,7 +5,7 @@ import { getItemEquippedSlotTag, isEmptyItem } from "./inventoryService";
 import { Item } from "./types";
 
 export const InventorySlot: React.FC<{
-  item: Item;
+  item: Item | null;
   index: number;
 }> = ({ item, index }) => {
   const slotId = `inventory-${index}`;
@@ -17,6 +17,8 @@ export const InventorySlot: React.FC<{
     const activeItem = active?.data.current?.item;
     // Don't display if no item is currently dragged
     if (!activeItem) return false;
+
+    if (!item) return true;
 
     // If there is an emptyItem placed always allow placing
     if (isEmptyItem(item)) return true;
