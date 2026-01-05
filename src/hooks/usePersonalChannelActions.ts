@@ -87,7 +87,7 @@ export function usePersonalChannelActions(socket: Socket | null) {
             throw new Error(`⚠️ No item in inventory slot ${slotNumber}`);
           }
 
-          const itemInTargetSlot = state.equipment[targetLocation];
+          const itemInTargetSlot = state.equipment[targetLocation]!;
 
           // Move to equipment
           state.equipment[targetLocation] = item;
@@ -110,6 +110,7 @@ export function usePersonalChannelActions(socket: Socket | null) {
         { slot1, slot2 } as { slot1: EquipmentSlotKey; slot2: EquipmentSlotKey },
         (state) => {
           // TODO MC: Implement swap logic
+          return state
         }
       );
     },
@@ -126,39 +127,7 @@ export function usePersonalChannelActions(socket: Socket | null) {
         "unequipItem",
         { slotName } as UnequipItemParams,
         (state) => {
-          const equipped = state.equipment[slotName as keyof typeof state.equipment];
-
-          if (!equipped) {
-            console.warn("⚠️ No item equipped in slot", slotName);
-            return state;
-          }
-
-          // Check if inventory has space
-          if (state.inventory.items.length >= state.inventory.maxSize) {
-            console.warn("⚠️ Inventory is full");
-            return state;
-          }
-
-          // Find next available slot
-          const usedSlots = state.inventory.items.map((i) => i.slotNumber);
-          let nextSlot = 0;
-          while (usedSlots.includes(nextSlot)) {
-            nextSlot++;
-          }
-
-          // Add to inventory
-          state.inventory.items.push({
-            slotNumber: nextSlot,
-            itemId: equipped.itemId,
-            name: equipped.name,
-            type: equipped.type,
-            quantity: 1,
-            metadata: equipped.metadata,
-          });
-
-          // Remove from equipment
-          delete state.equipment[slotName as keyof typeof state.equipment];
-
+          // TODO MC: Implement unequip logic
           return state;
         }
       );
