@@ -9,7 +9,7 @@ import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
 import { EquipmentSlot } from "./EquipmentSlot";
-import { canEquipInSlot } from "./inventoryService";
+import { canEquipInSlot, isEmptyItem } from "./inventoryService";
 import { InventorySlot } from "./InventorySlot";
 import { ItemDisplay } from "./ItemDisplay";
 import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
@@ -164,7 +164,7 @@ export const Inventory: React.FC = () => {
           <section className="w-full bg-[#1d1d1f] text-center text-xs">
             Player
             {Object.values(equipmentSlots)
-              .filter((item) => item)
+              .filter((item) => item !== null && !isEmptyItem(item))
               .map((item) => (
                 <div key={item!.id}>
                   {item!.itemId}: {item!.quantity}
