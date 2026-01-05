@@ -5,10 +5,25 @@
  * Data is lazily loaded and cached after first fetch. (singleton)
  */
 
+type AbilitySlotType = "main" | "second" | "ultimate";
+export type CastAnimationPosition = "caster" | "target" | "effect";
+
 type Item = any
 type Enemy = any
 type NPC = any
-type Ability = any
+type Ability = {
+    abilityId: string;
+    name: string;
+    description: string;
+    cooldown: number;
+    effectId: string;
+    type: string;
+    castTime: number; // in ticks
+    slotType: AbilitySlotType;
+    castAnimationId?: string;
+    castAnimationPosition?: CastAnimationPosition; // Where the cast animation appears: "caster" (default), "target", or "effect"
+};
+
 
 
 type MetadataResponse = {
