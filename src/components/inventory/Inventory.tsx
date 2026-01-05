@@ -20,7 +20,8 @@ export const Inventory: React.FC = () => {
 
   // Access socket and actions
   const socket = useSocketStore((state) => state.socket);
-  const { swapInventorySlots, equipItem } = usePersonalChannelActions(socket);
+  const { swapInventorySlots, equipItem, unequipItem, swapEquipment } =
+    usePersonalChannelActions(socket);
 
   console.log("Inventory displayedState:", { displayedState });
 
@@ -59,6 +60,7 @@ export const Inventory: React.FC = () => {
     const isOverEquipment = overId.startsWith("equipment-");
 
     const activeItem = active.data.current?.item;
+
     // --- LOGIC TREE FOR ALL DRAG-AND-DROP SCENARIOS ---
 
     // Case 1: Inventory -> Inventory (Swap items)
@@ -88,15 +90,19 @@ export const Inventory: React.FC = () => {
       const overIndex = parseInt(overId.split("-")[1]);
 
       const itemAtOver = inventoryItems[overIndex];
-
+      console.log("Item at over index:", {
+        activeSlotKey,
+        overIndex,
+        itemAtOver,
+      });
       // We need to check if the item in the inventory (if any)
       // is compatible with the equipment slot it's being swapped *from*.
-      if (itemAtOver && !canEquipInSlot(activeSlotKey, itemAtOver)) {
+      if (itemAtOver) {
         // Invalid swap
         return;
       }
 
-      // TODO: Unequip item
+      unequipItem(activeSlotKey);
     }
 
     // Case 4: Equipment -> Equipment (Swap equipment)
@@ -112,8 +118,7 @@ export const Inventory: React.FC = () => {
         !itemAtOver || canEquipInSlot(activeSlotKey, itemAtOver);
 
       if (isMovingItemCompatible && isSwappedItemCompatible) {
-        // Swap
-        // TODO: Swap items
+        swapEquipment(activeSlotKey, overSlotKey);
       }
     }
   }

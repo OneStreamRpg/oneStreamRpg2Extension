@@ -103,6 +103,20 @@ export function usePersonalChannelActions(socket: Socket | null) {
     [sendAction]
   );
 
+  const swapEquipment = useCallback(
+    (slot1: EquipmentSlotKey, slot2: EquipmentSlotKey) => {
+      sendAction(
+        "swapEquipment",
+        { slot1, slot2 } as { slot1: EquipmentSlotKey; slot2: EquipmentSlotKey },
+        (state) => {
+          // TODO MC: Implement swap logic
+        }
+      );
+    },
+    [sendAction]
+  );
+
+
   /**
    * Unequip an item to inventory
    */
@@ -230,6 +244,7 @@ export function usePersonalChannelActions(socket: Socket | null) {
   return {
     equipItem,
     unequipItem,
+    swapEquipment,
     swapInventorySlots,
     equipAbility,
     requestSync,
