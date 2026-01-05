@@ -5,7 +5,7 @@
  * Data is lazily loaded and cached after first fetch. (singleton)
  */
 
-type AbilitySlotType = "main" | "second" | "ultimate";
+export type AbilitySlotType = "main" | "second" | "ultimate";
 export type CastAnimationPosition = "caster" | "target" | "effect";
 
 type Item = any
@@ -15,7 +15,7 @@ type Ability = {
     abilityId: string;
     name: string;
     description: string;
-    cooldown: number;
+    cooldownMs: number;
     effectId: string;
     type: string;
     castTime: number; // in ticks

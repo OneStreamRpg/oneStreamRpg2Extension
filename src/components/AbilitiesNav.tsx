@@ -2,7 +2,7 @@ import React from "react";
 import { Tooltip } from "react-tooltip";
 import { isEmptyAbility } from "../abilityService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
-import { Abilitiy, Ability } from "./Ability";
+import { Ability } from "./Ability";
 
 export const AbilitiesNav: React.FC = () => {
   const { displayedState } = usePersonalChannelStore();
@@ -19,7 +19,7 @@ export const AbilitiesNav: React.FC = () => {
     <nav className="pointer-events-auto flex gap-2">
       {displayedState.abilities.equipped.map((ability: Ability) =>
         !isEmptyAbility(ability) ? (
-          <Abilitiy key={ability.slot} ability={ability} />
+          <Ability key={ability.slot} ability={ability} />
         ) : (
           <div className="relative size-16 border-2 bg-gray-800"></div>
         )

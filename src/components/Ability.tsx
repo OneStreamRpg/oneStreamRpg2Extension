@@ -1,42 +1,49 @@
 import { useState } from "react";
-import { metadataService } from "../services/MetadataService";
+import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
+import { AbilitySlotType, metadataService } from "../services/MetadataService";
+import { useSocketStore } from "../store/socketStore";
 
 export type Ability = {
-  slot: string;
+  slot: AbilitySlotType;
   abilityId: string;
-  name: string;
-  cooldown: number;
-  lastUsed: number;
-  castTime: number;
 };
 
-// TODO MC: 16 Ticks
+const TICKS_PER_SECOND = 16;
+const MS_PER_TICK = 1000 / TICKS_PER_SECOND;
+const ticksToMs = (ticks: number) => ticks * MS_PER_TICK;
 
-export const Abilitiy: React.FC<{ ability: Ability }> = ({ ability }) => {
+export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
+  const socket = useSocketStore((state) => state.socket);
+  const { castAbility } = usePersonalChannelActions(socket);
   const abilityMetaData = metadataService.getAbilitySync(ability.abilityId)!;
   const [cooldown, setCooldown] = useState(0);
+  const cooldownTime =
+    abilityMetaData.cooldownMs + ticksToMs(abilityMetaData.castTime);
 
-  const handleAbilityClick = (ability: Ability) => {
-    setCooldown(ability.cooldown);
+  const handleAbilityClick = () => {
+    castAbility(ability.slot);
+
+    setCooldown(cooldownTime);
+
     const interval = setInterval(() => {
       setCooldown((prev) => {
         if (prev > 0) {
-          return prev - 1;
+          return prev - 1000;
         } else {
           clearInterval(interval);
           return 0;
         }
       });
-    }, 100);
+    }, 1000);
   };
 
   const isOnCooldown = cooldown > 0;
-  const cooldownPercentage = (cooldown / ability.cooldown) * 100;
+  const cooldownPercentage = (cooldown / cooldownTime) * 100;
 
   return (
     <button
       key={ability.slot}
-      onClick={() => handleAbilityClick(ability)}
+      onClick={() => handleAbilityClick()}
       disabled={isOnCooldown}
       data-tooltip-id="ability-tooltip"
       data-tooltip-content={
@@ -69,7 +76,7 @@ export const Abilitiy: React.FC<{ ability: Ability }> = ({ ability }) => {
           />
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-white text-sm font-bold">
-              {Math.ceil((ability.cooldown - cooldown) / 100)}s
+              {Math.ceil(cooldown / 1000)}s
             </span>
           </div>
         </>

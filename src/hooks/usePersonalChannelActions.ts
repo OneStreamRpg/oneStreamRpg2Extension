@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { Socket } from "socket.io-client";
 import { EquipmentSlotKey } from "../components/inventory/types";
+import { AbilitySlotType } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import {
   EquipAbilityParams,
@@ -173,6 +174,17 @@ export function usePersonalChannelActions(socket: Socket | null) {
     [sendAction]
   );
 
+
+  const castAbility = useCallback((slotType: AbilitySlotType) => {
+    sendAction(
+      "castAbility",
+      { slotType } as { slotType: AbilitySlotType },
+      (state) => {
+        return state;
+      }
+    );
+  }, [sendAction])
+
   /**
    * Equip an ability to hotbar
    */
@@ -232,5 +244,6 @@ export function usePersonalChannelActions(socket: Socket | null) {
     swapInventorySlots,
     equipAbility,
     requestSync,
+    castAbility
   };
 }
