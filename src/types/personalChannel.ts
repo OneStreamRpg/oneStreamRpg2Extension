@@ -7,7 +7,7 @@ export interface PlayerPersonalState {
   inventory: InventoryState;
   equipment: EquipmentState;
   currency: CurrencyState;
-  abilities: AbilitiesState;
+  abilities: any;
   stats: StatsState;
 }
 
@@ -32,10 +32,11 @@ export interface CurrencyState {
   [key: string]: number | undefined;
 }
 
-export interface AbilitiesState {
-  hotbar: HotbarAbility[];
-  learned: LearnedAbility[];
-}
+// TODO MC: Rework type
+// export interface AbilitiesState {
+//   equipped: HotbarAbility[];
+//   learned: LearnedAbility[];
+// }
 
 export interface HotbarAbility {
   slot: number; // 0-3
