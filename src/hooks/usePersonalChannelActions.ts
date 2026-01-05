@@ -92,6 +92,7 @@ export function usePersonalChannelActions(socket: Socket | null) {
           // Move to equipment
           state.equipment[targetLocation] = item;
 
+          // TODO MC: At this point there will spawn a default empty items so ignore the swap from equipment
           // Remove from inventory
           state.inventory.items[slotNumber] = itemInTargetSlot;
 
