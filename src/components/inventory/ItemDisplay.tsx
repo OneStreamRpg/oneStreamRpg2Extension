@@ -1,9 +1,9 @@
 import { metadataService } from "../../services/MetadataService";
-import { InventoryItem } from "../../types/personalChannel";
+import { Item } from "./types";
 
 const DISPLAY_ICON = false;
 
-export const ItemDisplay: React.FC<{ item: InventoryItem }> = ({ item }) => {
+export const ItemDisplay: React.FC<{ item: Item }> = ({ item }) => {
   const itemData = metadataService.getItemSync(item.itemId);
 
   return (

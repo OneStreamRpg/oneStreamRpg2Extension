@@ -1,10 +1,10 @@
 import { useDroppable } from "@dnd-kit/core";
 import { useMemo } from "react";
-import { InventoryItem } from "../../types/personalChannel";
 import { DraggableItem } from "./DraggableItem";
+import { Item } from "./types";
 
 export const InventorySlot: React.FC<{
-  item: InventoryItem;
+  item: Item;
   index: number;
 }> = ({ item, index }) => {
   const slotId = `inventory-${index}`;

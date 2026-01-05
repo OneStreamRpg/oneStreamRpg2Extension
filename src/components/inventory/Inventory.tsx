@@ -9,7 +9,7 @@ import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
 import { EquipmentSlot } from "./EquipmentSlot";
-import { isItemCompatible } from "./inventoryService";
+import { canEquipInSlot } from "./inventoryService";
 import { InventorySlot } from "./InventorySlot";
 import { ItemDisplay } from "./ItemDisplay";
 import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
@@ -75,7 +75,7 @@ export const Inventory: React.FC = () => {
       const overSlotKey = overId.split("-")[1] as EquipmentSlotKey;
 
       //Check for compatibility
-      if (!isItemCompatible(activeItem, overSlotKey)) {
+      if (!canEquipInSlot(overSlotKey, activeItem)) {
         return;
       }
 
@@ -91,7 +91,7 @@ export const Inventory: React.FC = () => {
 
       // We need to check if the item in the inventory (if any)
       // is compatible with the equipment slot it's being swapped *from*.
-      if (itemAtOver && !isItemCompatible(itemAtOver, activeSlotKey)) {
+      if (itemAtOver && !canEquipInSlot(activeSlotKey, itemAtOver)) {
         // Invalid swap
         return;
       }
@@ -107,9 +107,9 @@ export const Inventory: React.FC = () => {
       const itemAtOver = equipmentSlots[overSlotKey];
 
       // Check compatibility for both directions
-      const isMovingItemCompatible = isItemCompatible(activeItem, overSlotKey);
+      const isMovingItemCompatible = canEquipInSlot(overSlotKey, activeItem);
       const isSwappedItemCompatible =
-        !itemAtOver || isItemCompatible(itemAtOver, activeSlotKey);
+        !itemAtOver || canEquipInSlot(activeSlotKey, itemAtOver);
 
       if (isMovingItemCompatible && isSwappedItemCompatible) {
         // Swap

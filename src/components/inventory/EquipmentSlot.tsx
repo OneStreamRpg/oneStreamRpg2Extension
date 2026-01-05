@@ -1,15 +1,13 @@
 import { useDroppable } from "@dnd-kit/core";
-import { useMemo } from "react";
 import { useUIStore } from "../../store/useUIStore";
-import { InventoryItem } from "../../types/personalChannel";
 import { DraggableItem } from "./DraggableItem";
-import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey } from "./types";
+import { canEquipInSlot, isEmptyItem } from "./inventoryService";
+import { EquipmentSlotKey, Item } from "./types";
 
 export const EquipmentSlot: React.FC<{
-  item: InventoryItem | null;
+  item: Item | null;
   slotKey: EquipmentSlotKey;
 }> = ({ item, slotKey }) => {
-  const slotConfig = EQUIPMENT_SLOT_CONFIG[slotKey];
   const slotId = `equipment-${slotKey}`;
 
   const { setNodeRef, isOver, active } = useDroppable({
@@ -19,28 +17,16 @@ export const EquipmentSlot: React.FC<{
   const debugInventoryInfo = useUIStore((state) => state.debugInventoryInfo);
 
   // Check if the currently dragged item is compatible with this slot
-  const isCompatible = useMemo(() => {
-    const activeItem = active?.data.current?.item;
-    if (!activeItem) return false;
+  const isCompatible = canEquipInSlot(slotKey, active?.data.current?.item);
 
-    const allowedTypes = Array.isArray(slotConfig.type)
-      ? slotConfig.type
-      : [slotConfig.type];
-
-    return allowedTypes.some((allowedType) =>
-      activeItem.tags.includes(allowedType)
-    );
-  }, [active, slotConfig.type]);
-
-  // MC: what is a fucking good name for that?
-  const placeMe = isOver && isCompatible;
-  const hasItem = item && !item.itemId.startsWith("empty");
+  const canPlaceHere = isOver && isCompatible;
+  const hasItem = item && !isEmptyItem(item);
 
   return (
     <div>
       <div
         className={`border border-dashed bg-amber-100 ${
-          placeMe
+          canPlaceHere
             ? "outline-blue-500 outline-2"
             : isCompatible
             ? "outline-green-500 outline-2"

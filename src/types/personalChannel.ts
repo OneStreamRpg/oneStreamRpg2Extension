@@ -24,12 +24,6 @@ export interface InventoryState {
   maxSize: number;
 }
 
-// export interface InventoryItem {
-//   id: string;
-//   itemId: string;
-//   quantity: number;
-// }
-
 export type EquipmentState = Record<EquipmentSlotKey, Item | null>
 
 export interface CurrencyState {
