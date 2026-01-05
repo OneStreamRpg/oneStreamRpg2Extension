@@ -194,29 +194,6 @@ export function usePersonalChannelActions(socket: Socket | null) {
         "equipAbility",
         { slotIndex, abilityId } as EquipAbilityParams,
         (state) => {
-          const hotbarSlot = state.abilities.hotbar.find(
-            (h) => h.slot === slotIndex
-          );
-
-          if (!hotbarSlot) {
-            console.warn("⚠️ Invalid hotbar slot", slotIndex);
-            return state;
-          }
-
-          // Find ability in learned abilities
-          const learned = state.abilities.learned.find(
-            (l) => l.abilityId === abilityId
-          );
-
-          if (!learned) {
-            console.warn("⚠️ Ability not learned", abilityId);
-            return state;
-          }
-
-          // Update hotbar
-          hotbarSlot.abilityId = abilityId;
-          hotbarSlot.name = learned.name;
-
           return state;
         }
       );
