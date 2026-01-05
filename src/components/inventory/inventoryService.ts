@@ -1,4 +1,4 @@
-import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
+import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item, ItemRequiredTagForEquipment } from "./types";
 
 /**
  * Checks whether an item can be placed into the given equipment slot
@@ -14,3 +14,12 @@ export const canEquipInSlot = (
 };
 
 export const isEmptyItem = (item: Item) => item.itemId.startsWith("empty")
+
+export const getItemEquippedSlotTag = (item: Item): ItemRequiredTagForEquipment | null => {
+  for (const config of Object.values(EQUIPMENT_SLOT_CONFIG)) {
+    if (item.tags.includes(config.requiredTag)) {
+      return config.requiredTag;
+    }
+  }
+  return null;
+};
