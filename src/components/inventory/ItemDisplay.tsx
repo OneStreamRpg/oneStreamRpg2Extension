@@ -1,10 +1,13 @@
 import { metadataService } from "../../services/MetadataService";
+import { getItemEquippedSlotTag } from "./inventoryService";
 import { Item } from "./types";
 
 const DISPLAY_ICON = false;
 
 export const ItemDisplay: React.FC<{ item: Item }> = ({ item }) => {
   const itemData = metadataService.getItemSync(item.itemId);
+
+  const itemEquipmentSlotTag = getItemEquippedSlotTag(item);
 
   return (
     <div
@@ -24,8 +27,9 @@ export const ItemDisplay: React.FC<{ item: Item }> = ({ item }) => {
       ) : (
         <>
           <p>{itemData.name}</p>
-          <p className="">{itemData.type}</p>
-          <p className="">{itemData.rarity}</p>
+          {itemEquipmentSlotTag && (
+            <p className="text-xs italic opacity-50">{itemEquipmentSlotTag}</p>
+          )}
         </>
       )}
       {item.quantity > 1 && (
