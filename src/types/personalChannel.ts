@@ -20,7 +20,7 @@ export interface StateVersions {
 }
 
 export interface InventoryState {
-  items: (Item | null)[];
+  items: Item[];
   maxSize: number;
 }
 
