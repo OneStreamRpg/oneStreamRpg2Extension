@@ -123,19 +123,21 @@ export const Inventory: React.FC = () => {
 
     // Case 4: Equipment -> Equipment (Swap equipment)
     else if (isActiveEquipment && isOverEquipment) {
-      const activeSlotKey = activeId.split("-")[1] as EquipmentSlotKey;
-      const overSlotKey = overId.split("-")[1] as EquipmentSlotKey;
+      const activeEquipmentSlotKey = activeId.split("-")[1] as EquipmentSlotKey;
+      const overEquipmentSlotKey = overId.split("-")[1] as EquipmentSlotKey;
 
-      const itemAtOver = equipmentSlots[overSlotKey];
+      const itemAtOver = equipmentSlots[overEquipmentSlotKey];
 
       // Check compatibility for both directions
-      const isMovingItemCompatible = canEquipInSlot(overSlotKey, activeItem);
+      const isMovingItemCompatible = canEquipInSlot(
+        overEquipmentSlotKey,
+        activeItem
+      );
+      if (!isMovingItemCompatible) return;
       const isSwappedItemCompatible =
-        !itemAtOver || canEquipInSlot(activeSlotKey, itemAtOver);
-
-      if (isMovingItemCompatible && isSwappedItemCompatible) {
-        swapEquipment(activeSlotKey, overSlotKey);
-      }
+        !itemAtOver || canEquipInSlot(activeEquipmentSlotKey, itemAtOver);
+      if (!isSwappedItemCompatible) return;
+      swapEquipment(activeEquipmentSlotKey, overEquipmentSlotKey);
     }
   }
 
