@@ -103,7 +103,13 @@ export function usePersonalChannelActions(socket: Socket | null) {
         "swapEquipmentSlots",
         { slot1, slot2 } as SwapEquipmentSlotsParams,
         (state) => {
-          // TODO MC: Implement swap logic
+          const item1 = state.equipment[slot1]!;
+          const item2 = state.equipment[slot2]!;
+
+          // Swap slot numbers
+          state.equipment[slot2] = item1;
+          state.equipment[slot1] = item2;
+
           return state
         }
       );
