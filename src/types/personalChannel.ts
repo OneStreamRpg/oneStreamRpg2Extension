@@ -68,7 +68,7 @@ export interface PlayerStateDelta {
   inventory?: InventoryState;
   equipment?: EquipmentState;
   currency?: CurrencyState;
-  abilities?: AbilitiesState;
+  abilities?: any;
   stats?: StatsState;
 }
 
