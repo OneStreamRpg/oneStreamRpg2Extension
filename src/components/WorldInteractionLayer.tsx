@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { Tooltip } from "react-tooltip";
 import { useGameObjects } from "../hooks/useGameobjects";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
+import { metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
 import ClickMarker from "./ui/ClickMarker";
 
@@ -13,7 +14,6 @@ export const WorldInteractionLayer: React.FC = () => {
   const socket = useSocketStore((state) => state.socket);
   const gameState = useSocketStore((state) => state.gameState);
   const gameObjects = useGameObjects(gameState);
-
   const { movePlayer } = usePersonalChannelActions(socket);
 
   const movePlayerRef = useRef(movePlayer);
@@ -57,25 +57,42 @@ export const WorldInteractionLayer: React.FC = () => {
       {marker && <ClickMarker x={marker.x} y={marker.y} />}
       <Tooltip id="game-object-tooltip" />
 
-      {gameObjects.map((obj) => (
-        <div
-          data-tooltip-id="game-object-tooltip"
-          data-tooltip-content={obj.name + ": " + obj.type}
-          data-tooltip-place="top"
-          key={obj.id}
-          onClick={(e) => {
-            e.stopPropagation();
-            console.log("Clicked game object:", obj);
-          }}
-          className="absolute pointer-events-auto cursor-pointer hover:bg-white/20 border border-white/30"
-          style={{
-            left: `${(obj.hitbox.x / 1920) * 100}%`,
-            top: `${(obj.hitbox.y / 1080) * 100}%`,
-            width: `${(obj.hitbox.width / 1920) * 100}%`,
-            height: `${(obj.hitbox.height / 1080) * 100}%`,
-          }}
-        />
-      ))}
+      {gameObjects.map((obj) => {
+        let metadata = null;
+        if (obj.type === "npc") {
+          metadata = metadataService.getNpcSync(obj.npcId);
+        } else if (obj.type === "enemy") {
+          metadata = metadataService.getEnemySync(obj.enemyId);
+        } else if (obj.type === "player") {
+          metadata = obj;
+        }
+
+        return (
+          <div
+            data-tooltip-id="game-object-tooltip"
+            data-tooltip-content={
+              metadata
+                ? "obj.id" + JSON.stringify(metadata)
+                : "no_meta: " + obj.name
+            }
+            data-tooltip-place="top"
+            key={obj.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log("Clicked game object:", { obj, metadata });
+            }}
+            className={`absolute pointer-events-auto cursor-pointer hover:bg-white/20 border border-white/30 ${
+              !obj.id ? "bg-red-500" : ""
+            }`}
+            style={{
+              left: `${(obj.hitbox.x / 1920) * 100}%`,
+              top: `${(obj.hitbox.y / 1080) * 100}%`,
+              width: `${(obj.hitbox.width / 1920) * 100}%`,
+              height: `${(obj.hitbox.height / 1080) * 100}%`,
+            }}
+          />
+        );
+      })}
     </section>
   );
 };
