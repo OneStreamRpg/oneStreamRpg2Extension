@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { Tooltip } from "react-tooltip";
 import { useGameObjects } from "../hooks/useGameobjects";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
 import { useSocketStore } from "../store/socketStore";
@@ -54,9 +55,13 @@ export const WorldInteractionLayer: React.FC = () => {
       }
     >
       {marker && <ClickMarker x={marker.x} y={marker.y} />}
+      <Tooltip id="game-object-tooltip" />
 
       {gameObjects.map((obj) => (
         <div
+          data-tooltip-id="game-object-tooltip"
+          data-tooltip-content={obj.name + ": " + obj.type}
+          data-tooltip-place="top"
           key={obj.id}
           onClick={(e) => {
             e.stopPropagation();
@@ -69,7 +74,6 @@ export const WorldInteractionLayer: React.FC = () => {
             width: `${(obj.hitbox.width / 1920) * 100}%`,
             height: `${(obj.hitbox.height / 1080) * 100}%`,
           }}
-          title={obj.name}
         />
       ))}
     </section>
