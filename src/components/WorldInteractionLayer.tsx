@@ -1,10 +1,17 @@
 import { useCallback, useRef, useState } from "react";
+import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
+import { useSocketStore } from "../store/socketStore";
 import ClickMarker from "./ui/ClickMarker";
 
 export const WorldInteractionLayer: React.FC = () => {
   const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
+
+  const socket = useSocketStore((state) => state.socket);
+  const { movePlayer } = usePersonalChannelActions(socket);
+
+  const movePlayerRef = useRef(movePlayer);
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
     const section = sectionRef.current;
@@ -22,8 +29,8 @@ export const WorldInteractionLayer: React.FC = () => {
     const scaledX = rawX * scaleX;
     const scaledY = rawY * scaleY;
 
-    // TODO MC: Send to backend via personalChannel hook
     console.log("Scaled coords for backend:", { x: scaledX, y: scaledY });
+    movePlayerRef.current(scaledX, scaledY);
 
     // Display marker for 5000ms
     if (timeoutRef.current) clearTimeout(timeoutRef.current);

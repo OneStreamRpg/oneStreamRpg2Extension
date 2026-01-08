@@ -185,6 +185,17 @@ export function usePersonalChannelActions(socket: Socket | null) {
     );
   }, [sendAction])
 
+  const movePlayer = useCallback((x: number, y: number) => {
+    sendAction(
+      "movePlayer",
+      { x, y } as { x: number, y: number },
+      (state) => {
+        return state;
+      }
+    );
+  }, [sendAction])
+
+
   /**
    * Equip an ability to hotbar
    */
@@ -221,6 +232,7 @@ export function usePersonalChannelActions(socket: Socket | null) {
     swapInventorySlots,
     equipAbility,
     requestSync,
+    movePlayer,
     castAbility
   };
 }
