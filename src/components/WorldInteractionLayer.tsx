@@ -1,23 +1,53 @@
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import ClickMarker from "./ui/ClickMarker";
 
 export const WorldInteractionLayer: React.FC = () => {
+  const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  const handleClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const bounds = section.getBoundingClientRect();
+
+    // Raw coordinates for screen display (marker position)
+    const rawX = e.clientX - bounds.left;
+    const rawY = e.clientY - bounds.top;
+
+    // Scaled coordinates for backend (1920x1080)
+    const scaleX = 1920 / bounds.width;
+    const scaleY = 1080 / bounds.height;
+    const scaledX = rawX * scaleX;
+    const scaledY = rawY * scaleY;
+
+    // TODO MC: Send to backend via personalChannel hook
+    console.log("Scaled coords for backend:", { x: scaledX, y: scaledY });
+
+    // Display marker for 5000ms
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setMarker({ x: rawX, y: rawY });
+    timeoutRef.current = setTimeout(() => setMarker(null), 5000);
+  }, []);
+
   return (
     <section
-      className="size-full bg-cover bg-center bg-no-repeat bg-gray-500"
+      ref={sectionRef}
+      onClick={handleClick}
+      className="size-full bg-cover bg-center bg-no-repeat bg-gray-500 relative cursor-crosshair"
       style={
         {
           // backgroundImage: "url(/media/img/layout/game_placeholder.png)",
         }
       }
     >
-      <ExampleItem />
+      {marker && <ClickMarker x={marker.x} y={marker.y} />}
 
       <ExampleItem />
-
       <ExampleItem />
-
       <ExampleItem />
-
+      <ExampleItem />
       <ExampleItem />
     </section>
   );
@@ -28,8 +58,11 @@ export const ExampleItem = () => {
 
   return (
     <div
-      onClick={() => setColor(color === "red" ? "blue" : "red")}
-      className="pointer-events-auto hover:bg-amber-100"
+      onClick={(e) => {
+        e.stopPropagation();
+        setColor(color === "red" ? "blue" : "red");
+      }}
+      className="pointer-events-auto hover:bg-amber-100 cursor-default"
       style={{
         width: 100,
         height: 100,
