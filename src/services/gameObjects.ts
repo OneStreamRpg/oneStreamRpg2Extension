@@ -1,4 +1,4 @@
-import { Enemy, GameObject, GameState, Npc, Player } from "../types/gameState";
+import { Enemy, GameObject, GameState, NPC, Player } from "../types/gameState";
 
 export function mapPlayers(players: any[]): Player[] {
   return players.map((p): Player => ({
@@ -14,8 +14,8 @@ export function mapEnemies(enemies: any[]): Enemy[] {
   }));
 }
 
-export function mapNpcs(npcs: any[]): Npc[] {
-  return npcs.map((npc): Npc => ({
+export function mapNpcs(npcs: any[]): NPC[] {
+  return npcs.map((npc): NPC => ({
     ...npc,
     type: "npc",
   }));

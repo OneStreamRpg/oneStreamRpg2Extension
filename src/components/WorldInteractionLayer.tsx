@@ -47,7 +47,7 @@ export const WorldInteractionLayer: React.FC = () => {
     <section
       ref={sectionRef}
       onClick={handleClick}
-      className="size-full bg-cover bg-center bg-no-repeat bg-gray-500 relative cursor-crosshair"
+      className="size-full bg-cover bg-center bg-no-repeat relative cursor-crosshair"
       style={
         {
           // backgroundImage: "url(/media/img/layout/game_placeholder.png)",
@@ -72,8 +72,8 @@ export const WorldInteractionLayer: React.FC = () => {
             data-tooltip-id="game-object-tooltip"
             data-tooltip-content={
               metadata
-                ? "obj.id" + JSON.stringify(metadata)
-                : "no_meta: " + obj.name
+                ? JSON.stringify(metadata)
+                : "No metadata found for: " + obj.id
             }
             data-tooltip-place="top"
             key={obj.id}
@@ -85,8 +85,16 @@ export const WorldInteractionLayer: React.FC = () => {
               !obj.id ? "bg-red-500" : ""
             }`}
             style={{
-              left: `${(obj.hitbox.x / 1920) * 100}%`,
-              top: `${(obj.hitbox.y / 1080) * 100}%`,
+              left: `${
+                ((obj.hitbox.x - obj.hitbox.width * obj.hitbox.xOffsetRatio) /
+                  1920) *
+                100
+              }%`,
+              top: `${
+                ((obj.hitbox.y - obj.hitbox.height * obj.hitbox.yOffsetRatio) /
+                  1080) *
+                100
+              }%`,
               width: `${(obj.hitbox.width / 1920) * 100}%`,
               height: `${(obj.hitbox.height / 1080) * 100}%`,
             }}
