@@ -6,7 +6,7 @@ import { metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
 import ClickMarker from "./ui/ClickMarker";
 
-const DEBUG = true;
+const DEBUG = false;
 
 export const WorldInteractionLayer: React.FC = () => {
   const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
