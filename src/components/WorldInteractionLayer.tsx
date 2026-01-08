@@ -6,6 +6,8 @@ import { metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
 import ClickMarker from "./ui/ClickMarker";
 
+const DEBUG = true;
+
 export const WorldInteractionLayer: React.FC = () => {
   const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -60,20 +62,27 @@ export const WorldInteractionLayer: React.FC = () => {
       {gameObjects.map((obj) => {
         let metadata = null;
         if (obj.type === "npc") {
-          metadata = metadataService.getNpcSync(obj.npcId);
+          const npc = metadataService.getNpcSync(obj.npcId);
+          metadata = `${
+            npc ? npc.name + " (NPC)" : "Unknown NPC, npcId is: " + obj.npcId
+          }`;
         } else if (obj.type === "enemy") {
-          metadata = metadataService.getEnemySync(obj.enemyId);
+          const enemy = metadataService.getEnemySync(obj.enemyId);
+
+          metadata = `${
+            enemy
+              ? enemy.name + " (Enemy)"
+              : "Unknown Enemy, enemyId is: " + obj.enemyId
+          }`;
         } else if (obj.type === "player") {
-          metadata = obj;
+          metadata = `Player: ${obj.username}`;
         }
 
         return (
           <div
             data-tooltip-id="game-object-tooltip"
             data-tooltip-content={
-              metadata
-                ? JSON.stringify(metadata)
-                : "No metadata found for: " + obj.id
+              metadata ? metadata : "No metadata found for: " + obj.id
             }
             data-tooltip-place="top"
             key={obj.id}
@@ -81,9 +90,9 @@ export const WorldInteractionLayer: React.FC = () => {
               e.stopPropagation();
               console.log("Clicked game object:", { obj, metadata });
             }}
-            className={`absolute pointer-events-auto cursor-pointer hover:bg-white/20 border border-white/30 ${
-              !obj.id ? "bg-red-500" : ""
-            }`}
+            className={`absolute pointer-events-auto cursor-pointer ${
+              DEBUG ? "hover:bg-white/20 border border-white/30" : ""
+            } ${!obj.id ? "bg-red-500" : ""}`}
             style={{
               left: `${
                 ((obj.hitbox.x - obj.hitbox.width * obj.hitbox.xOffsetRatio) /
