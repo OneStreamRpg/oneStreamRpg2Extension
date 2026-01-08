@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { useGameObjects } from "../hooks/useGameobjects";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
 import { useSocketStore } from "../store/socketStore";
 import ClickMarker from "./ui/ClickMarker";
@@ -9,6 +10,9 @@ export const WorldInteractionLayer: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
 
   const socket = useSocketStore((state) => state.socket);
+  const gameState = useSocketStore((state) => state.gameState);
+  const gameObjects = useGameObjects(gameState);
+
   const { movePlayer } = usePersonalChannelActions(socket);
 
   const movePlayerRef = useRef(movePlayer);
@@ -51,36 +55,23 @@ export const WorldInteractionLayer: React.FC = () => {
     >
       {marker && <ClickMarker x={marker.x} y={marker.y} />}
 
-      <ExampleItem />
-      <ExampleItem />
-      <ExampleItem />
-      <ExampleItem />
-      <ExampleItem />
+      {gameObjects.map((obj) => (
+        <div
+          key={obj.id}
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log("Clicked game object:", obj);
+          }}
+          className="absolute pointer-events-auto cursor-pointer hover:bg-white/20 border border-white/30"
+          style={{
+            left: `${(obj.hitbox.x / 1920) * 100}%`,
+            top: `${(obj.hitbox.y / 1080) * 100}%`,
+            width: `${(obj.hitbox.width / 1920) * 100}%`,
+            height: `${(obj.hitbox.height / 1080) * 100}%`,
+          }}
+          title={obj.name}
+        />
+      ))}
     </section>
-  );
-};
-
-export const ExampleItem = () => {
-  const [color, setColor] = useState("red");
-
-  return (
-    <div
-      onClick={(e) => {
-        e.stopPropagation();
-        setColor(color === "red" ? "blue" : "red");
-      }}
-      className="pointer-events-auto hover:bg-amber-100 cursor-default"
-      style={{
-        width: 100,
-        height: 100,
-        backgroundColor: color,
-        zIndex: -1,
-        top: 50,
-        left: 20,
-        opacity: 0.2,
-      }}
-    >
-      World Interaction
-    </div>
   );
 };
