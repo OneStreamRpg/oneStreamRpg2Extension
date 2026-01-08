@@ -122,6 +122,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     });
 
     socketInstance.on("gameState", (data) => {
+      console.log("Instance called gameState hook", data);
       if (data.gameState) {
         setGameState(data.gameState);
       }
