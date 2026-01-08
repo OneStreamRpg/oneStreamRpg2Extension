@@ -6,7 +6,7 @@ import { metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
 import ClickMarker from "./ui/ClickMarker";
 
-const DEBUG = false;
+const DEBUG = true;
 
 export const WorldInteractionLayer: React.FC = () => {
   const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
@@ -16,7 +16,7 @@ export const WorldInteractionLayer: React.FC = () => {
   const socket = useSocketStore((state) => state.socket);
   const gameState = useSocketStore((state) => state.gameState);
   const gameObjects = useGameObjects(gameState);
-  const { movePlayer } = usePersonalChannelActions(socket);
+  const { movePlayer, setTargetEnemy } = usePersonalChannelActions(socket);
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
@@ -50,7 +50,7 @@ export const WorldInteractionLayer: React.FC = () => {
     <section
       ref={sectionRef}
       onClick={handleClick}
-      className="size-full bg-cover bg-center bg-no-repeat relative cursor-crosshair"
+      className="size-full bg-cover bg-center bg-no-repeat relative"
       style={
         {
           // backgroundImage: "url(/media/img/layout/game_placeholder.png)",
@@ -90,10 +90,20 @@ export const WorldInteractionLayer: React.FC = () => {
             onClick={(e) => {
               e.stopPropagation();
               console.log("Clicked game object:", { obj, metadata });
+
+              if (obj.type === "enemy") {
+                setTargetEnemy(obj.id);
+              }
             }}
-            className={`absolute pointer-events-auto cursor-pointer ${
-              DEBUG ? "hover:bg-white/20 border border-white/30" : ""
-            } ${!obj.id ? "bg-red-500" : ""}`}
+            className={`absolute pointer-events-auto ${
+              obj.type === "enemy"
+                ? "cursor-crosshair"
+                : obj.type === "npc"
+                ? "cursor-help"
+                : "cursor-pointer"
+            } ${DEBUG ? "hover:bg-white/20 border border-white/30" : ""} ${
+              !obj.id ? "bg-red-500" : ""
+            }`}
             style={{
               left: `${
                 ((obj.hitbox.x - obj.hitbox.width * obj.hitbox.xOffsetRatio) /

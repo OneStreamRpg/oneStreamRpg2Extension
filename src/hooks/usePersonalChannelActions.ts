@@ -195,6 +195,16 @@ export function usePersonalChannelActions(socket: Socket | null) {
     );
   }, [sendAction])
 
+  const setTargetEnemy = useCallback((id: string) => {
+    sendAction(
+      "setTargetEnemy",
+      { id } as { id: string },
+      (state) => {
+        return state;
+      }
+    );
+  }, [sendAction])
+
 
   /**
    * Equip an ability to hotbar
@@ -233,6 +243,7 @@ export function usePersonalChannelActions(socket: Socket | null) {
     equipAbility,
     requestSync,
     movePlayer,
-    castAbility
+    castAbility,
+    setTargetEnemy
   };
 }
