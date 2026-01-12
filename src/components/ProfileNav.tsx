@@ -1,4 +1,5 @@
 import { Tooltip } from "react-tooltip";
+import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { WindowContainer } from "./ui/WindowContainer";
 
@@ -23,10 +24,11 @@ export const ProfileNav: React.FC = () => {
   }
 
   const playerProfile: PlayerProfile = {
-    name: "MISSING",
+    name: displayedState.profile.username,
     level: displayedState.stats.level,
     currentXp: displayedState.stats.xp,
-    requiredXp: 10000,
+    requiredXp:
+      metadataService.getXpForNextLevelSync(displayedState.stats.level) ?? -1,
     hp: displayedState.stats.hp,
     maxHp: displayedState.stats.maxHp,
     mana: displayedState.stats.mana,
@@ -36,8 +38,10 @@ export const ProfileNav: React.FC = () => {
   // Mock full stats - to be fetched from backend on hover
   const fullStats = displayedState.stats;
 
-  const xpPercentage =
-    (playerProfile.currentXp / playerProfile.requiredXp) * 100;
+  const currentLevelRequiredXp =
+    metadataService.getXpRequirementsSync()![playerProfile.level - 1];
+  const currentLevelXp = playerProfile.currentXp - currentLevelRequiredXp;
+  const xpPercentage = (currentLevelXp / playerProfile.requiredXp) * 100;
   const hpPercentage = (playerProfile.hp / playerProfile.maxHp) * 100;
   const manaPercentage = (playerProfile.mana / playerProfile.maxMana) * 100;
 

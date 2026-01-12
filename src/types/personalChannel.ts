@@ -9,6 +9,7 @@ export interface PlayerPersonalState {
   currency: CurrencyState;
   abilities: any;
   stats: StatsState;
+  profile: any
 }
 
 export interface StateVersions {

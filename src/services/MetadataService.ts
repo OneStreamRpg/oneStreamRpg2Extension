@@ -31,6 +31,7 @@ type MetadataResponse = {
     enemies: Record<string, Enemy>;
     npcs: Record<string, NPC>;
     abilities: Record<string, Ability>;
+    xpRequirements: Record<number, number>;
 }
 
 // Service Implementation
@@ -124,6 +125,11 @@ class MetadataService {
         return data.abilities[abilityId];
     }
 
+    async getXpRequirements(): Promise<Record<number, number>> {
+        const data = await this.ensureData();
+        return data.xpRequirements;
+    }
+
     // Synchronous getters
 
     getItemSync(itemId: string): Item | undefined {
@@ -157,8 +163,25 @@ class MetadataService {
     getAllAbilitiesSync(): Record<string, Ability> | undefined {
         return this.data?.abilities;
     }
-}
 
+    getXpRequirementsSync(): Record<number, number> | undefined {
+        return this.data?.xpRequirements;
+    }
+
+    // Special getters
+    getXpForNextLevelSync(level: number): number | undefined {
+        const xpRequirements = this.data?.xpRequirements;
+        if (!xpRequirements) return undefined;
+
+        const currentXp = xpRequirements[level];
+        const nextXp = xpRequirements[level + 1];
+
+        if (nextXp === undefined) return 0;  // max level
+        if (currentXp === undefined) return undefined;  // invalid level
+
+        return nextXp - currentXp;
+    }
+}
 // Access over this singleton
 export const metadataService = MetadataService.getInstance();
 
