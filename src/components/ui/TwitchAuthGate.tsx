@@ -1,18 +1,30 @@
 import React, { useEffect } from "react";
 import { useAuthStore } from "../../hooks/useAuthStore";
+import { fetchTwitchUser } from "../../services/TwitchService";
 
 type Props = {
   children: React.ReactNode;
-}
+};
 
 export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
-  const { isAuthenticated, setAuth, setLoggedOut, token, channelId } = useAuthStore();
+  const { isAuthenticated, setAuth, setLoggedOut, setProfile, token, channelId } =
+    useAuthStore();
 
   useEffect(() => {
     if (window.Twitch && window.Twitch.ext) {
-      window.Twitch.ext.onAuthorized((auth) => {
+      window.Twitch.ext.onAuthorized(async (auth) => {
         console.log(TwitchAuthGate.name, "onAuthorized", { auth });
         const isLinked = !!window.Twitch.ext.viewer?.isLinked;
+
+        const user = await fetchTwitchUser({
+          userId: auth.channelId,
+          helixToken: auth.helixToken,
+          clientId: auth.clientId,
+        });
+
+        if (user) {
+          setProfile(user);
+        }
 
         setAuth({
           token: auth.token,
@@ -28,8 +40,7 @@ export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
         }
       });
     }
-  }, [setAuth, setLoggedOut]);
-
+  }, [setAuth, setLoggedOut, setProfile]);
 
   const handleShare = () => {
     console.log("Requesting ID share...");
@@ -52,6 +63,5 @@ export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
     return <div>Authentication in progress...</div>;
   }
 
-  return children
+  return children;
 };
-

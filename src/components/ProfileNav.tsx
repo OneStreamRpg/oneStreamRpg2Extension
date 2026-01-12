@@ -1,4 +1,5 @@
 import { Tooltip } from "react-tooltip";
+import { useAuthStore } from "../hooks/useAuthStore";
 import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { WindowContainer } from "./ui/WindowContainer";
@@ -18,8 +19,8 @@ interface PlayerProfile {
 
 export const ProfileNav: React.FC = () => {
   const { displayedState } = usePersonalChannelStore();
-
-  if (!displayedState) {
+  const { profile } = useAuthStore();
+  if (!displayedState || !profile) {
     return <div>Loading...</div>;
   }
 
@@ -35,16 +36,13 @@ export const ProfileNav: React.FC = () => {
     maxMana: displayedState.stats.maxMana,
   };
 
-  // Mock full stats - to be fetched from backend on hover
   const fullStats = displayedState.stats;
-
   const currentLevelRequiredXp =
-    metadataService.getXpRequirementsSync()![playerProfile.level - 1];
+    metadataService.getXpRequirementsSync()![playerProfile.level];
   const currentLevelXp = playerProfile.currentXp - currentLevelRequiredXp;
   const xpPercentage = (currentLevelXp / playerProfile.requiredXp) * 100;
   const hpPercentage = (playerProfile.hp / playerProfile.maxHp) * 100;
   const manaPercentage = (playerProfile.mana / playerProfile.maxMana) * 100;
-
   return (
     <>
       <WindowContainer className="pointer-events-auto">
@@ -53,10 +51,11 @@ export const ProfileNav: React.FC = () => {
             className="flex items-center gap-2"
             data-tooltip-id="player-stats-tooltip"
           >
-            <div className="w-12 h-12 border flex items-center justify-center">
-              <span>👤</span>
-            </div>
-
+            <img
+              className="w-12 h-12 border flex items-center justify-center"
+              src={profile.profile_image_url}
+              alt={`${playerProfile.name}'s profile`}
+            />
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between gap-4">
                 <span>{playerProfile.name}</span>
