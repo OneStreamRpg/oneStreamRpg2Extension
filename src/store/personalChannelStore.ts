@@ -299,6 +299,7 @@ function applyActionToState(
   state: PlayerPersonalState
 ): PlayerPersonalState {
   const newState = structuredClone(state);
+  console.log({ action })
   // TODO MC: Removed due to outdated code.
   return newState;
 }
