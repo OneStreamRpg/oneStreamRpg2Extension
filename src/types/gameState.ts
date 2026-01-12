@@ -7,30 +7,32 @@ export interface Hitbox {
   yOffsetRatio: number;
 }
 
-export interface GameEntityBase {
+export interface BaseEntity {
   id: string;
-  name: string;
   hitbox: Hitbox;
-  type: "player" | "enemy" | "npc";
-}
-
-export interface Player extends GameEntityBase {
-  type: "player";
-  twitchId: string;
-  username: string;
-}
-
-export interface Enemy extends GameEntityBase {
-  type: "enemy";
   level: number;
   hp: number;
+  maxHp: number;
 }
 
-export interface Npc extends GameEntityBase {
+export interface Player extends BaseEntity {
+  username: string;
+  type: "player";
+}
+
+export interface Enemy extends BaseEntity {
+  enemyId: string;
+  name: string;
+  type: "enemy";
+}
+
+export interface NPC extends BaseEntity {
+  npcId: string;
+  name: string;
   type: "npc";
 }
 
-export type GameObject = Player | Enemy | Npc;
+export type GameObject = Player | Enemy | NPC;
 
 export interface GameState {
   players: any[]; // original API data

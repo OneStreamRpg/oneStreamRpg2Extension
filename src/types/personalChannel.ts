@@ -1,11 +1,13 @@
 // Personal Player Channel Types
 
+import { EquipmentSlotKey, Item } from "../components/inventory/types";
+
 export interface PlayerPersonalState {
   versions: StateVersions;
   inventory: InventoryState;
   equipment: EquipmentState;
   currency: CurrencyState;
-  abilities: AbilitiesState;
+  abilities: any;
   stats: StatsState;
 }
 
@@ -18,36 +20,11 @@ export interface StateVersions {
 }
 
 export interface InventoryState {
-  items: InventoryItem[];
+  items: (Item | null)[];
   maxSize: number;
 }
 
-export interface InventoryItem {
-  slotNumber?: number; // Optional - system uses array index as slot position
-  itemId: string;
-  name: string;
-  type: string;
-  quantity: number;
-  metadata?: Record<string, any>;
-}
-
-export interface EquipmentState {
-  helmet?: EquippedItem;
-  chest?: EquippedItem;
-  legs?: EquippedItem;
-  boots?: EquippedItem;
-  mainHand?: EquippedItem;
-  offHand?: EquippedItem;
-  accessory1?: EquippedItem;
-  accessory2?: EquippedItem;
-}
-
-export interface EquippedItem {
-  itemId: string;
-  name: string;
-  type: string;
-  metadata?: Record<string, any>;
-}
+export type EquipmentState = Record<EquipmentSlotKey, Item | null>
 
 export interface CurrencyState {
   gold: number;
@@ -55,10 +32,11 @@ export interface CurrencyState {
   [key: string]: number | undefined;
 }
 
-export interface AbilitiesState {
-  hotbar: HotbarAbility[];
-  learned: LearnedAbility[];
-}
+// TODO MC: Rework type
+// export interface AbilitiesState {
+//   equipped: HotbarAbility[];
+//   learned: LearnedAbility[];
+// }
 
 export interface HotbarAbility {
   slot: number; // 0-3
@@ -90,7 +68,7 @@ export interface PlayerStateDelta {
   inventory?: InventoryState;
   equipment?: EquipmentState;
   currency?: CurrencyState;
-  abilities?: AbilitiesState;
+  abilities?: any;
   stats?: StatsState;
 }
 
@@ -120,10 +98,6 @@ export interface PendingAction {
 export interface EquipItemParams {
   slotNumber: number;
   targetLocation?: string;
-}
-
-export interface UnequipItemParams {
-  slotName: string;
 }
 
 export interface SwapInventorySlotsParams {

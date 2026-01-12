@@ -1,5 +1,4 @@
 import { MouseEvent, useEffect, useRef, useState } from "react";
-import MockPersonalChannelDemo from "../components/_inventory/MockPersonalChannelDemo";
 import ClickMarker from "../components/ui/ClickMarker";
 import GameObjectTooltip from "../components/ui/GameObjectTooltip";
 import { useGameObjects } from "../hooks/useGameobjects";
@@ -157,7 +156,10 @@ const ConnectedOverlay = () => {
     };
   }, []);
 
-  if (!isConnected) return <div className="text-red-800 animate-pulse ">Connecting socket...</div>;
+  if (!isConnected)
+    return (
+      <div className="text-red-800 animate-pulse ">Connecting socket...</div>
+    );
 
   const scaleX = containerSize.width / 1920;
   const scaleY = containerSize.height / 1080;
@@ -169,24 +171,6 @@ const ConnectedOverlay = () => {
       onMouseMove={handleMouseMove}
       style={{ position: "absolute", height: "100%", width: "100%" }}
     >
-      {/* Personal Channel Demo - positioned in top right */}
-      <div
-        style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          maxWidth: "400px",
-          maxHeight: "90vh",
-          overflow: "auto",
-          backgroundColor: "rgba(0, 0, 0, 0.9)",
-          borderRadius: "8px",
-          border: "2px solid rgba(255, 255, 255, 0.2)",
-          zIndex: 2000,
-        }}
-      >
-        <MockPersonalChannelDemo />
-      </div>
-
       <h2>Overlay2</h2>
 
       <div style={{ width: 128, height: 150 }}>

@@ -1,13 +1,12 @@
 import { useCallback } from "react";
 import { Socket } from "socket.io-client";
+import { EquipmentSlotKey } from "../components/inventory/types";
+import { AbilitySlotType } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import {
   EquipAbilityParams,
-  EquipItemParams,
   PersonalChannelAction,
   PlayerPersonalState,
-  SwapInventorySlotsParams,
-  UnequipItemParams,
 } from "../types/personalChannel";
 
 /**
@@ -69,38 +68,24 @@ export function usePersonalChannelActions(socket: Socket | null) {
   /**
    * Equip an item from inventory
    */
+  type EquipItemParams = {
+    inventorySlotIndex: number
+    equipmentSlotKey: string
+  }
   const equipItem = useCallback(
-    (slotNumber: number, targetLocation?: string) => {
+    (inventorySlotIndex: number, equipmentSlotKey: EquipmentSlotKey) => {
       sendAction(
         "equipItem",
-        { slotNumber, targetLocation } as EquipItemParams,
+        { inventorySlotIndex, equipmentSlotKey } as EquipItemParams,
         (state) => {
-          const item = state.inventory.items.find(
-            (i) => i.slotNumber === slotNumber
-          );
-
-          if (!item) {
-            console.warn("⚠️ Item not found in slot", slotNumber);
-            return state;
-          }
-
-          // Determine equipment slot
-          const slot = targetLocation || item.type;
+          const item = state.inventory.items[inventorySlotIndex]!
 
           // Move to equipment
-          if (slot in state.equipment) {
-            state.equipment[slot as keyof typeof state.equipment] = {
-              itemId: item.itemId,
-              name: item.name,
-              type: item.type,
-              metadata: item.metadata,
-            };
-          }
+          state.equipment[equipmentSlotKey] = item;
 
           // Remove from inventory
-          state.inventory.items = state.inventory.items.filter(
-            (i) => i.slotNumber !== slotNumber
-          );
+          // MC: Can be set null because backend will place a new empty item here
+          state.inventory.items[inventorySlotIndex] = null;
 
           return state;
         }
@@ -109,48 +94,52 @@ export function usePersonalChannelActions(socket: Socket | null) {
     [sendAction]
   );
 
+  type SwapEquipmentSlotsParams = {
+    slot1: EquipmentSlotKey
+    slot2: EquipmentSlotKey
+  }
+  const swapEquipmentSlots = useCallback(
+    (slot1: EquipmentSlotKey, slot2: EquipmentSlotKey) => {
+      sendAction(
+        "swapEquipmentSlots",
+        { slot1, slot2 } as SwapEquipmentSlotsParams,
+        (state) => {
+          const item1 = state.equipment[slot1]!;
+          const item2 = state.equipment[slot2]!;
+
+          // Swap slot numbers
+          state.equipment[slot2] = item1;
+          state.equipment[slot1] = item2;
+
+          return state
+        }
+      );
+    },
+    [sendAction]
+  );
+
+
   /**
    * Unequip an item to inventory
    */
+  type UnequipItemParams = {
+    equipmentSlotKey: string
+    inventoryTargetIndex: number
+  }
   const unequipItem = useCallback(
-    (slotName: string) => {
+    (equipmentSlotKey: EquipmentSlotKey, inventoryTargetIndex: number) => {
       sendAction(
         "unequipItem",
-        { slotName } as UnequipItemParams,
+        { equipmentSlotKey, inventoryTargetIndex } as UnequipItemParams,
         (state) => {
-          const equipped = state.equipment[slotName as keyof typeof state.equipment];
+          const item = state.equipment[equipmentSlotKey]!;
 
-          if (!equipped) {
-            console.warn("⚠️ No item equipped in slot", slotName);
-            return state;
-          }
-
-          // Check if inventory has space
-          if (state.inventory.items.length >= state.inventory.maxSize) {
-            console.warn("⚠️ Inventory is full");
-            return state;
-          }
-
-          // Find next available slot
-          const usedSlots = state.inventory.items.map((i) => i.slotNumber);
-          let nextSlot = 0;
-          while (usedSlots.includes(nextSlot)) {
-            nextSlot++;
-          }
-
-          // Add to inventory
-          state.inventory.items.push({
-            slotNumber: nextSlot,
-            itemId: equipped.itemId,
-            name: equipped.name,
-            type: equipped.type,
-            quantity: 1,
-            metadata: equipped.metadata,
-          });
+          // Move item to inventory
+          state.inventory.items[inventoryTargetIndex] = item;
 
           // Remove from equipment
-          delete state.equipment[slotName as keyof typeof state.equipment];
-
+          // MC: Can be set null because backend will place a new empty item here
+          state.equipment[equipmentSlotKey] = null;
           return state;
         }
       );
@@ -161,18 +150,22 @@ export function usePersonalChannelActions(socket: Socket | null) {
   /**
    * Swap two inventory slots
    */
+  type SwapInventorySlotsParams = {
+    slot1: number
+    slot2: number
+  }
   const swapInventorySlots = useCallback(
     (slot1: number, slot2: number) => {
       sendAction(
         "swapInventorySlots",
         { slot1, slot2 } as SwapInventorySlotsParams,
         (state) => {
-          const item1 = state.inventory.items.find((i) => i.slotNumber === slot1);
-          const item2 = state.inventory.items.find((i) => i.slotNumber === slot2);
+          const item1 = state.inventory.items[slot1];
+          const item2 = state.inventory.items[slot2];
 
           // Swap slot numbers
-          if (item1) item1.slotNumber = slot2;
-          if (item2) item2.slotNumber = slot1;
+          if (item1) state.inventory.items[slot2] = item1;
+          if (item2) state.inventory.items[slot1] = item2;
 
           return state;
         }
@@ -180,6 +173,38 @@ export function usePersonalChannelActions(socket: Socket | null) {
     },
     [sendAction]
   );
+
+
+  const castAbility = useCallback((slotType: AbilitySlotType) => {
+    sendAction(
+      "castAbility",
+      { slotType } as { slotType: AbilitySlotType },
+      (state) => {
+        return state;
+      }
+    );
+  }, [sendAction])
+
+  const movePlayer = useCallback((x: number, y: number) => {
+    sendAction(
+      "movePlayer",
+      { x, y } as { x: number, y: number },
+      (state) => {
+        return state;
+      }
+    );
+  }, [sendAction])
+
+  const setTargetEnemy = useCallback((id: string) => {
+    sendAction(
+      "setTargetEnemy",
+      { id } as { id: string },
+      (state) => {
+        return state;
+      }
+    );
+  }, [sendAction])
+
 
   /**
    * Equip an ability to hotbar
@@ -190,29 +215,6 @@ export function usePersonalChannelActions(socket: Socket | null) {
         "equipAbility",
         { slotIndex, abilityId } as EquipAbilityParams,
         (state) => {
-          const hotbarSlot = state.abilities.hotbar.find(
-            (h) => h.slot === slotIndex
-          );
-
-          if (!hotbarSlot) {
-            console.warn("⚠️ Invalid hotbar slot", slotIndex);
-            return state;
-          }
-
-          // Find ability in learned abilities
-          const learned = state.abilities.learned.find(
-            (l) => l.abilityId === abilityId
-          );
-
-          if (!learned) {
-            console.warn("⚠️ Ability not learned", abilityId);
-            return state;
-          }
-
-          // Update hotbar
-          hotbarSlot.abilityId = abilityId;
-          hotbarSlot.name = learned.name;
-
           return state;
         }
       );
@@ -236,8 +238,12 @@ export function usePersonalChannelActions(socket: Socket | null) {
   return {
     equipItem,
     unequipItem,
+    swapEquipment: swapEquipmentSlots,
     swapInventorySlots,
     equipAbility,
     requestSync,
+    movePlayer,
+    castAbility,
+    setTargetEnemy
   };
 }

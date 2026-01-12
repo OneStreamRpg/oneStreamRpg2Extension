@@ -1,44 +1,126 @@
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { Tooltip } from "react-tooltip";
+import { useGameObjects } from "../hooks/useGameobjects";
+import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
+import { metadataService } from "../services/MetadataService";
+import { useSocketStore } from "../store/socketStore";
+import ClickMarker from "./ui/ClickMarker";
+
+const DEBUG = false;
 
 export const WorldInteractionLayer: React.FC = () => {
+  const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  const socket = useSocketStore((state) => state.socket);
+  const gameState = useSocketStore((state) => state.gameState);
+  const gameObjects = useGameObjects(gameState);
+  const { movePlayer, setTargetEnemy } = usePersonalChannelActions(socket);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const section = sectionRef.current;
+      if (!section) return;
+
+      const bounds = section.getBoundingClientRect();
+
+      // Raw coordinates for screen display (marker position)
+      const rawX = e.clientX - bounds.left;
+      const rawY = e.clientY - bounds.top;
+
+      // Scaled coordinates for backend (1920x1080)
+      const scaleX = 1920 / bounds.width;
+      const scaleY = 1080 / bounds.height;
+      const scaledX = rawX * scaleX;
+      const scaledY = rawY * scaleY;
+
+      console.log("Scaled coords for backend:", { x: scaledX, y: scaledY });
+      movePlayer(scaledX, scaledY);
+
+      // Display marker for 5000ms
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      setMarker({ x: rawX, y: rawY });
+      timeoutRef.current = setTimeout(() => setMarker(null), 5000);
+    },
+    [movePlayer]
+  );
+
   return (
     <section
-      className="size-full bg-cover bg-center bg-no-repeat"
-      style={{
-        backgroundImage: "url(/media/img/layout/game_placeholder.png)",
-      }}
+      ref={sectionRef}
+      onClick={handleClick}
+      className="size-full bg-cover bg-center bg-no-repeat relative"
+      style={
+        {
+          // backgroundImage: "url(/media/img/layout/game_placeholder.png)",
+        }
+      }
     >
-      <ExampleItem />
+      {marker && <ClickMarker x={marker.x} y={marker.y} />}
+      <Tooltip id="game-object-tooltip" />
 
-      <ExampleItem />
+      {gameObjects.map((obj) => {
+        let metadata = null;
+        if (obj.type === "npc") {
+          const npc = metadataService.getNpcSync(obj.npcId);
+          metadata = `${
+            npc ? npc.name + " (NPC)" : "Unknown NPC, npcId is: " + obj.npcId
+          }`;
+        } else if (obj.type === "enemy") {
+          const enemy = metadataService.getEnemySync(obj.enemyId);
 
-      <ExampleItem />
+          metadata = `${
+            enemy
+              ? enemy.name + " (Enemy)"
+              : "Unknown Enemy, enemyId is: " + obj.enemyId
+          }`;
+        } else if (obj.type === "player") {
+          metadata = `Player: ${obj.username}`;
+        }
 
-      <ExampleItem />
+        return (
+          <div
+            data-tooltip-id="game-object-tooltip"
+            data-tooltip-content={
+              metadata ? metadata : "No metadata found for: " + obj.id
+            }
+            data-tooltip-place="top"
+            key={obj.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log("Clicked game object:", { obj, metadata });
 
-      <ExampleItem />
+              if (obj.type === "enemy") {
+                setTargetEnemy(obj.id);
+              }
+            }}
+            className={`absolute pointer-events-auto ${
+              obj.type === "enemy"
+                ? "cursor-crosshair"
+                : obj.type === "npc"
+                ? "cursor-help"
+                : "cursor-pointer"
+            } ${DEBUG ? "hover:bg-white/20 border border-white/30" : ""} ${
+              !obj.id ? "bg-red-500" : ""
+            }`}
+            style={{
+              left: `${
+                ((obj.hitbox.x - obj.hitbox.width * obj.hitbox.xOffsetRatio) /
+                  1920) *
+                100
+              }%`,
+              top: `${
+                ((obj.hitbox.y - obj.hitbox.height * obj.hitbox.yOffsetRatio) /
+                  1080) *
+                100
+              }%`,
+              width: `${(obj.hitbox.width / 1920) * 100}%`,
+              height: `${(obj.hitbox.height / 1080) * 100}%`,
+            }}
+          />
+        );
+      })}
     </section>
-  );
-};
-
-export const ExampleItem = () => {
-  const [color, setColor] = useState("red");
-
-  return (
-    <div
-      onClick={() => setColor(color === "red" ? "blue" : "red")}
-      className="pointer-events-auto hover:bg-amber-100"
-      style={{
-        width: 100,
-        height: 100,
-        backgroundColor: color,
-        zIndex: -1,
-        top: 50,
-        left: 20,
-        opacity: 0.2,
-      }}
-    >
-      World Interaction
-    </div>
   );
 };

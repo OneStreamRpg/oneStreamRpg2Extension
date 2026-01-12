@@ -1,12 +1,13 @@
 import { useDroppable } from "@dnd-kit/core";
 import { useMemo } from "react";
 import { DraggableItem } from "./DraggableItem";
+import { getItemEquippedSlotTag, isEmptyItem } from "./inventoryService";
 import { Item } from "./types";
 
-export const InventorySlot: React.FC<{ item: Item | null; index: number }> = ({
-  item,
-  index,
-}) => {
+export const InventorySlot: React.FC<{
+  item: Item | null;
+  index: number;
+}> = ({ item, index }) => {
   const slotId = `inventory-${index}`;
   const { setNodeRef, isOver, active } = useDroppable({
     id: slotId,
@@ -17,34 +18,41 @@ export const InventorySlot: React.FC<{ item: Item | null; index: number }> = ({
     // Don't display if no item is currently dragged
     if (!activeItem) return false;
 
-    // If there is no item placed always allow placing
     if (!item) return true;
 
-    const isActiveEquipment =
+    // If there is an emptyItem placed always allow placing
+    if (isEmptyItem(item)) return true;
+
+    const isFromEquipmentSlot =
       active?.data.current?.containerId.startsWith("equipment-");
 
     // If items come from equipment slots, allow placing if types match
-    if (isActiveEquipment)
-      return isActiveEquipment && item.type === activeItem.type;
+    if (isFromEquipmentSlot) {
+      const itemTag = getItemEquippedSlotTag(item);
+      if (itemTag === null) return false;
+      const isMatchingTag = itemTag === getItemEquippedSlotTag(activeItem);
+      return isMatchingTag;
+    }
 
     // If items come from other slots, allow placing if types match
     return true;
-  }, [active]);
+  }, [active, item]);
 
-  const placeMe = isOver && isCompatible;
+  const canPlaceHere = isOver && isCompatible;
+  const hasItem = item && !isEmptyItem(item);
 
   return (
     <div
       ref={setNodeRef}
       className={`border border-dashed size-17 flex items-center justify-center ${
-        placeMe
+        canPlaceHere
           ? "outline-2 outline-blue-500"
           : isCompatible
           ? "outline-2 outline-green-500"
           : ""
       }`}
     >
-      {item && <DraggableItem item={item} containerId={slotId} />}
+      {hasItem && <DraggableItem item={item} containerId={slotId} />}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { usePersonalChannel } from "../hooks/usePersonalChannel";
+import { metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
 
 interface Props {
@@ -10,6 +11,8 @@ interface Props {
 }
 
 const { VITE_SOCKET_URL } = import.meta.env;
+
+// TODO MC: move world interaction layer out here.
 
 export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
   const {
@@ -77,6 +80,11 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
   };
 
   useEffect(() => {
+    // Pre-fetch game metadata at startup
+    metadataService.fetchMetadata().catch((err) => {
+      console.error("Failed to fetch metadata:", err);
+    });
+
     if (window.Twitch && window.Twitch.ext) {
       window.Twitch.ext.onContext((context) => {
         if (context.hlsLatencyBroadcaster) {
@@ -114,6 +122,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     });
 
     socketInstance.on("gameState", (data) => {
+      console.log("Instance called gameState hook", data);
       if (data.gameState) {
         setGameState(data.gameState);
       }
@@ -181,7 +190,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       socketInstance.emit("ping");
       socketInstance.once("pong", () => {
         const latency = Date.now() - start;
-        console.log(`📡 Ping: ${latency}ms`);
+        // console.log(`📡 Ping: ${latency}ms`);
         if (setPing) setPing(latency);
       });
     }, 3000);

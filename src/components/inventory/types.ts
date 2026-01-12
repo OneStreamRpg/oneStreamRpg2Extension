@@ -1,32 +1,20 @@
-// LEFT
-// helmet: { type: Helmet, property: 'helmet' },
-// chest: { type: Chest, property: 'chest' },
-// pants: { type: Pants, property: 'pants' },
-// boots: { type: Boots, property: 'boots' },
-//MAIN: mainHand: { type: HoldableItem, property: 'mainHand' },
-
-// RIGHT
-// amulet: { type: Amulet, property: 'amulet' }
-// gloves: { type: Glove, property: 'gloves' },
-// firstRing: { type: Ring, property: 'firstRing' },
-// secondRing: { type: Ring, property: 'secondRing' },
-//MAIN: offHand: { type: HoldableItem, property: 'offHand' },
-
 export type Item = {
-  id: string;
-  name: string;
-  type: ItemType;
-  icon: string;
-};
-export type ItemType =
-  | "Helmet"
-  | "Chest"
-  | "Pants"
-  | "Boots"
-  | "HoldableItem"
-  | "Amulet"
-  | "Glove"
-  | "Ring";
+  id: string
+  itemId: string
+  quantity: number
+  tags: string[]
+}
+
+export type ItemRequiredTagForEquipment =
+  | "helmet"
+  | "chest"
+  | "pants"
+  | "boots"
+  | "holdable"
+  | "amulet"
+  | "gloves"
+  | "ring"
+  | "holdable";
 
 export type EquipmentSlotKey =
   | "helmet"
@@ -42,18 +30,18 @@ export type EquipmentSlotKey =
 
 export const EQUIPMENT_SLOT_CONFIG: Record<
   EquipmentSlotKey,
-  { type: ItemType | ItemType[] }
+  { requiredTag: ItemRequiredTagForEquipment }
 > = {
-  helmet: { type: "Helmet" },
-  chest: { type: "Chest" },
-  pants: { type: "Pants" },
-  boots: { type: "Boots" },
-  mainHand: { type: "HoldableItem" },
-  amulet: { type: "Amulet" },
-  gloves: { type: "Glove" },
-  firstRing: { type: "Ring" },
-  secondRing: { type: "Ring" },
-  offHand: { type: "HoldableItem" },
+  helmet: { requiredTag: "helmet" },
+  chest: { requiredTag: "chest" },
+  pants: { requiredTag: "pants" },
+  boots: { requiredTag: "boots" },
+  mainHand: { requiredTag: "holdable" },
+  amulet: { requiredTag: "amulet" },
+  gloves: { requiredTag: "gloves" },
+  firstRing: { requiredTag: "ring" },
+  secondRing: { requiredTag: "ring" },
+  offHand: { requiredTag: "holdable" },
 };
 
 export type InventoryChangeEvent = {

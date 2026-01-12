@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { Tooltip } from "react-tooltip";
+import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { WindowContainer } from "./ui/WindowContainer";
 
 interface PlayerProfile {
@@ -16,26 +16,25 @@ interface PlayerProfile {
 // MC: I require for the first fetch maxHp, maxMana and requiredXp or maxXpLevel
 
 export const ProfileNav: React.FC = () => {
-  // Mock player profile data - to be replaced with backend data later
-  const [playerProfile] = useState<PlayerProfile>({
-    name: "HeroPlayer",
-    level: 12,
-    currentXp: 3450,
-    requiredXp: 5000,
-    hp: 480,
-    maxHp: 480,
-    mana: 260,
-    maxMana: 260,
-  });
+  const { displayedState } = usePersonalChannelStore();
+
+  if (!displayedState) {
+    return <div>Loading...</div>;
+  }
+
+  const playerProfile: PlayerProfile = {
+    name: "MISSING",
+    level: displayedState.stats.level,
+    currentXp: displayedState.stats.xp,
+    requiredXp: 10000,
+    hp: displayedState.stats.hp,
+    maxHp: displayedState.stats.maxHp,
+    mana: displayedState.stats.mana,
+    maxMana: displayedState.stats.maxMana,
+  };
 
   // Mock full stats - to be fetched from backend on hover
-  const [fullStats] = useState({
-    vitality: 25,
-    strength: 18,
-    armor: 32,
-    physicalDamage: 3.4,
-    magicalDamage: 1.8,
-  });
+  const fullStats = displayedState.stats;
 
   const xpPercentage =
     (playerProfile.currentXp / playerProfile.requiredXp) * 100;
@@ -119,26 +118,14 @@ export const ProfileNav: React.FC = () => {
           <h3>Character Stats</h3>
 
           <div className="mt-2">
-            <div className="flex justify-between">
-              <span>Vitality:</span>
-              <span>{fullStats.vitality}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Strength:</span>
-              <span>{fullStats.strength}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Armor:</span>
-              <span>{fullStats.armor}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Physical Damage:</span>
-              <span>{fullStats.physicalDamage}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Magical Damage:</span>
-              <span>{fullStats.magicalDamage}</span>
-            </div>
+            {Object.entries(fullStats).map(([statName, statValue]) => (
+              <div className="flex justify-between" key={statName}>
+                <span>
+                  {statName.charAt(0).toUpperCase() + statName.slice(1)}:
+                </span>
+                <span>{statValue}</span>
+              </div>
+            ))}
           </div>
         </div>
       </Tooltip>
