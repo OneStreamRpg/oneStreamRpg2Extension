@@ -80,6 +80,11 @@ jobs:
   build-overlay:
     needs: install
     runs-on: ubuntu-latest
+    env:
+      VITE_EXT_TYPE: overlay
+      VITE_SOCKET_URL: ${{ vars.VITE_SOCKET_URL }}
+      VITE_DEVELOPER: true
+      VITE_DISABLE_BACKEND: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -137,4 +142,3 @@ jobs:
         with:
           name: panel-dist
           path: dist/panel
-
