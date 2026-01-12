@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { Socket } from "socket.io-client";
 import { EquipmentSlotKey } from "../components/inventory/types";
+import { logger } from "../services/Logger";
 import { AbilitySlotType } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import {
@@ -8,6 +9,8 @@ import {
   PersonalChannelAction,
   PlayerPersonalState,
 } from "../types/personalChannel";
+
+const TAG = "PersonalChannelActions";
 
 /**
  * Hook for sending actions to the personal channel
@@ -30,7 +33,7 @@ export function usePersonalChannelActions(socket: Socket | null) {
       optimisticStateCalculator: (state: PlayerPersonalState) => PlayerPersonalState
     ) => {
       if (!socket || !isReady || !displayedState) {
-        console.warn("⚠️ Cannot send action: Not ready", {
+        logger.warn(TAG, "Cannot send action: channel not ready", {
           hasSocket: !!socket,
           isReady,
           hasState: !!displayedState,
@@ -59,7 +62,7 @@ export function usePersonalChannelActions(socket: Socket | null) {
       applyOptimisticUpdate(action, optimisticState);
 
       // Send to server
-      console.log("📤 Sending action", action);
+      logger.debug(TAG, `Sending action: type=${action.type}, actionId=${action.actionId}`, action);
       socket.emit("personalChannel:action", action);
     },
     [socket, isReady, displayedState, getNextSequence, applyOptimisticUpdate]
@@ -227,11 +230,11 @@ export function usePersonalChannelActions(socket: Socket | null) {
    */
   const requestSync = useCallback(() => {
     if (!socket) {
-      console.warn("⚠️ Cannot request sync: No socket");
+      logger.warn(TAG, "Cannot request sync: socket not available");
       return;
     }
 
-    console.log("🔄 Requesting full state sync...");
+    logger.info(TAG, "Requesting full state sync from server");
     socket.emit("personalChannel:requestSync");
   }, [socket]);
 

@@ -1,8 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { usePersonalChannel } from "../hooks/usePersonalChannel";
+import { logger } from "../services/Logger";
 import { metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
+
+const TAG = "GameState";
 
 interface Props {
   token: string;
@@ -82,7 +85,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
   useEffect(() => {
     // Pre-fetch game metadata at startup
     metadataService.fetchMetadata().catch((err) => {
-      console.error("Failed to fetch metadata:", err);
+      logger.error(TAG, "Failed to fetch metadata", err);
     });
 
     if (window.Twitch && window.Twitch.ext) {
@@ -92,7 +95,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         }
       });
     }
-    console.log("🌍 Connecting to socket.io server at", VITE_SOCKET_URL);
+    logger.info(TAG, `Connecting to socket.io server at ${VITE_SOCKET_URL}`);
     const socketInstance: Socket = io(VITE_SOCKET_URL, {
       path: "/socket.io",
       auth: {
@@ -104,32 +107,32 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     setSocket(socketInstance);
 
     socketInstance.on("connect", () => {
-      console.log("✅ Connected to socket.io server");
+      logger.info(TAG, "Connected to socket.io server");
       setIsConnected(true);
     });
 
     socketInstance.on("authenticated", () => {
-      console.log("✅ Authenticated with server");
+      logger.info(TAG, "Authenticated with server");
     });
 
     socketInstance.on("disconnect", () => {
-      console.warn("❌ Disconnected from socket.io server");
+      logger.warn(TAG, "Disconnected from socket.io server");
       setIsConnected(false);
     });
 
     socketInstance.on("connect_error", (err) => {
-      console.error("⚠️ Connection error:", err);
+      logger.error(TAG, "Connection error", err);
     });
 
     socketInstance.on("gameState", (data) => {
-      console.log("Instance called gameState hook", data);
+      logger.debug(TAG, "Game state received", { data });
       if (data.gameState) {
         setGameState(data.gameState);
       }
     });
 
     socketInstance.on("inGame", (data) => {
-      console.log("✅ inGame state received:", data);
+      logger.info(TAG, `inGame state changed: ${data}`);
       if (data.inGame) {
         setinGame(data.inGame);
         socketInstance.emit("getGameState");

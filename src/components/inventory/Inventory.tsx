@@ -6,6 +6,7 @@ import {
 } from "@dnd-kit/core";
 import { useMemo, useState } from "react";
 import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
+import { logger } from "../../services/Logger";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
 import { EquipmentSlot } from "./EquipmentSlot";
@@ -18,6 +19,8 @@ import { InventorySlot } from "./InventorySlot";
 import { ItemDisplay } from "./ItemDisplay";
 import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
 
+const TAG = "Inventory";
+
 export const Inventory: React.FC = () => {
   // Get current game state
   const { displayedState } = usePersonalChannelStore();
@@ -27,7 +30,7 @@ export const Inventory: React.FC = () => {
   const { swapInventorySlots, equipItem, unequipItem, swapEquipment } =
     usePersonalChannelActions(socket);
 
-  console.log("Inventory displayedState:", { displayedState });
+  logger.debug(TAG, "Rendering inventory", { displayedState });
 
   // State to hold the item being currently dragged.
   // This is used for highlighting compatible slots and for the DragOverlay.
@@ -104,15 +107,17 @@ export const Inventory: React.FC = () => {
       if (!isEmptyItem(itemAtOver)) {
         const itemTag = getItemEquippedSlotTag(itemAtOver);
         if (itemTag === null) {
-          console.log(
-            "No compatible tag found on item at target inventory slot"
+          logger.debug(
+            TAG,
+            "Unequip blocked: no compatible tag found on item at target inventory slot"
           );
           return;
         }
         const isMatchingTag = itemTag === getItemEquippedSlotTag(activeItem);
         if (!isMatchingTag) {
-          console.log(
-            "Incompatible tag found on item at target inventory slot"
+          logger.debug(
+            TAG,
+            "Unequip blocked: incompatible tag found on item at target inventory slot"
           );
           return;
         }

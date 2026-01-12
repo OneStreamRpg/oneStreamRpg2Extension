@@ -2,10 +2,12 @@ import { useCallback, useRef, useState } from "react";
 import { Tooltip } from "react-tooltip";
 import { useGameObjects } from "../hooks/useGameobjects";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
+import { logger } from "../services/Logger";
 import { metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
 import ClickMarker from "./ui/ClickMarker";
 
+const TAG = "WorldInteraction";
 const DEBUG = false;
 
 export const WorldInteractionLayer: React.FC = () => {
@@ -35,7 +37,12 @@ export const WorldInteractionLayer: React.FC = () => {
       const scaledX = rawX * scaleX;
       const scaledY = rawY * scaleY;
 
-      console.log("Scaled coords for backend:", { x: scaledX, y: scaledY });
+      logger.debug(
+        TAG,
+        `Player move requested: x=${Math.round(scaledX)}, y=${Math.round(
+          scaledY
+        )}`
+      );
       movePlayer(scaledX, scaledY);
 
       // Display marker for 5000ms
@@ -89,7 +96,7 @@ export const WorldInteractionLayer: React.FC = () => {
             key={obj.id}
             onClick={(e) => {
               e.stopPropagation();
-              console.log("Clicked game object:", { obj, metadata });
+              logger.debug(TAG, `Game object clicked: `, { obj, metadata });
 
               if (obj.type === "enemy") {
                 setTargetEnemy(obj.id);

@@ -1,19 +1,28 @@
 import React, { useEffect } from "react";
 import { useAuthStore } from "../../hooks/useAuthStore";
+import { logger } from "../../services/Logger";
 import { fetchTwitchUser } from "../../services/TwitchService";
+
+const TAG = "TwitchAuthGate";
 
 type Props = {
   children: React.ReactNode;
 };
 
 export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
-  const { isAuthenticated, setAuth, setLoggedOut, setProfile, token, channelId } =
-    useAuthStore();
+  const {
+    isAuthenticated,
+    setAuth,
+    setLoggedOut,
+    setProfile,
+    token,
+    channelId,
+  } = useAuthStore();
 
   useEffect(() => {
     if (window.Twitch && window.Twitch.ext) {
       window.Twitch.ext.onAuthorized(async (auth) => {
-        console.log(TwitchAuthGate.name, "onAuthorized", { auth });
+        logger.info(TAG, `onAuthorized: auth=${auth}`);
         const isLinked = !!window.Twitch.ext.viewer?.isLinked;
 
         const user = await fetchTwitchUser({
@@ -43,9 +52,8 @@ export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
   }, [setAuth, setLoggedOut, setProfile]);
 
   const handleShare = () => {
-    console.log("Requesting ID share...");
+    logger.info(TAG, "User requesting ID share");
     window.Twitch?.ext?.actions?.requestIdShare();
-    // No need for anything else — Twitch will re-trigger onAuthorized
   };
 
   if (isAuthenticated === false) {

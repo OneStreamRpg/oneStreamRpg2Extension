@@ -1,3 +1,7 @@
+import { logger } from "./Logger";
+
+const TAG = "TwitchService";
+
 export type TwitchUser = {
     id: string;
     login: string;
@@ -26,7 +30,7 @@ export async function fetchTwitchUser({ userId, helixToken, clientId }: FetchUse
     });
 
     if (!response.ok) {
-        console.error("fetchTwitchUser", "Failed to fetch user data", response.status);
+        logger.error(TAG, `Failed to fetch user data: status=${response.status}, userId=${userId}`);
         return null;
     }
 

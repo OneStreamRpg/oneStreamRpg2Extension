@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { logger } from "../services/Logger";
 import {
   PendingAction,
   PersonalChannelAction,
@@ -6,6 +7,8 @@ import {
   PlayerStateDelta,
   StateVersions,
 } from "../types/personalChannel";
+
+const TAG = "PersonalChannelStore";
 
 interface PersonalChannelStore {
   // Connection state
@@ -62,7 +65,7 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
 
     // Initialize state from server
     setInitialState: (state) => {
-      console.log("🎯 Personal Channel: Initial state received", state);
+      logger.info(TAG, "Initial state set", { state });
       set({
         confirmedState: state,
         displayedState: structuredClone(state),
@@ -78,7 +81,7 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
       const { versions, displayedState } = get();
 
       if (!displayedState || !versions) {
-        console.warn("⚠️ Cannot apply delta: No state initialized");
+        logger.warn(TAG, "Cannot apply delta: state not initialized");
         return;
       }
 
@@ -91,9 +94,9 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
             versions[domain as keyof StateVersions] !== undefined
           ) {
             if (version < versions[domain as keyof StateVersions]) {
-              console.warn(`⚠️ Rejecting stale delta for domain: ${domain}`, {
-                received: version,
-                current: versions[domain as keyof StateVersions],
+              logger.warn(TAG, `Rejecting stale delta for domain: ${domain}`, {
+                receivedVersion: version,
+                currentVersion: versions[domain as keyof StateVersions],
               });
               isStale = true;
             }
@@ -142,7 +145,7 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
         }
       }
 
-      console.log("📦 Personal Channel: Delta applied", delta);
+      logger.debug(TAG, "Delta applied to state", { delta });
       set({
         displayedState: newState,
         confirmedState: structuredClone(newState),
@@ -155,7 +158,7 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
       const { confirmedState, pendingActions } = get();
 
       if (!confirmedState) {
-        console.warn("⚠️ Cannot apply optimistic update: No confirmed state");
+        logger.warn(TAG, "Cannot apply optimistic update: no confirmed state");
         return;
       }
 
@@ -169,10 +172,7 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
       const newPendingActions = new Map(pendingActions);
       newPendingActions.set(action.actionId, pendingAction);
 
-      console.log("⚡ Optimistic update applied", {
-        actionId: action.actionId,
-        type: action.type,
-      });
+      logger.debug(TAG, `Optimistic update applied: type=${action.type}, actionId=${action.actionId}`);
 
       set({
         displayedState: newState,
@@ -187,7 +187,7 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
       const newPendingActions = new Map(pendingActions);
       newPendingActions.delete(actionId);
 
-      console.log("✅ Action confirmed", { actionId });
+      logger.debug(TAG, `Action confirmed: actionId=${actionId}`);
 
       // If server provided delta, apply it (authoritative)
       if (delta && displayedState) {
@@ -211,15 +211,11 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
 
       const pendingAction = pendingActions.get(actionId);
       if (!pendingAction) {
-        console.warn("⚠️ Cannot rollback: Action not found", actionId);
+        logger.warn(TAG, `Cannot rollback: action not found, actionId=${actionId}`);
         return;
       }
 
-      console.error("❌ Action failed - Rolling back", {
-        actionId,
-        error,
-        type: pendingAction.action.type,
-      });
+      logger.error(TAG, `Action failed, rolling back: type=${pendingAction.action.type}, actionId=${actionId}, error=${error}`);
 
       const newPendingActions = new Map(pendingActions);
       newPendingActions.delete(actionId);
@@ -251,7 +247,7 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
     // Rollback all pending actions
     rollbackAllActions: () => {
       const { confirmedState } = get();
-      console.warn("⚠️ Rolling back all pending actions");
+      logger.warn(TAG, "Rolling back all pending actions");
       set({
         displayedState: confirmedState ? structuredClone(confirmedState) : null,
         pendingActions: new Map(),
@@ -278,7 +274,7 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
 
     // Reset all state
     resetState: () => {
-      console.log("🔄 Resetting personal channel state");
+      logger.info(TAG, "Resetting personal channel state");
       set({
         isSubscribed: false,
         isReady: false,
@@ -299,7 +295,7 @@ function applyActionToState(
   state: PlayerPersonalState
 ): PlayerPersonalState {
   const newState = structuredClone(state);
-  console.log({ action })
+  logger.debug(TAG, `Reapplying action: type=${action.type}, actionId=${action.actionId}`);
   // TODO MC: Removed due to outdated code.
   return newState;
 }

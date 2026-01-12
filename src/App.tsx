@@ -3,13 +3,15 @@ import { TwitchAuthGate } from "./components/ui/TwitchAuthGate";
 import { useAuthStore } from "./hooks/useAuthStore";
 import { Overlay } from "./pages/Overlay";
 import { Panel } from "./pages/Panel";
+import { logger } from "./services/Logger";
 
+const TAG = "App";
 const extType = import.meta.env.VITE_EXT_TYPE;
 const DISABLE_BACKEND = import.meta.env.VITE_DISABLE_BACKEND;
 
 export const App: React.FC = () => {
   if (extType !== "panel" && extType !== "overlay") {
-    console.error("No valid extension type specified in .env");
+    logger.error(TAG, `Invalid extension type specified in .env: ${extType}`);
   }
 
   const { token, channelId, isAuthenticated } = useAuthStore();
