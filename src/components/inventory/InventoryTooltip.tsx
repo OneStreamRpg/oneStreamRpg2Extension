@@ -1,7 +1,7 @@
 export const InventoryTooltip: React.FC = () => {
   return (
     <div className="flex bg-amber-700">
-      <div className="bg-green-900">
+      <div className="bg-gray-900">
         <header className="flex">
           <img
             src={`https://cdn.onestreamrpg.com/images/items/batSword.png`}
