@@ -26,7 +26,10 @@ export const useSocketStore = create<SocketStore>((set) => ({
   ping: null, // ✅ Initial value
   setSocket: (socket) => set({ socket }),
   setIsConnected: (isConnected) => set({ isConnected }),
-  setGameState: (gameState) => set({ gameState }),
+  setGameState: (gameState) => {
+    console.log("Game state updated:", gameState);
+    set({ gameState })
+  },
   setinGame: (inGame) => set({ inGame }),
   setPing: (ping) => set({ ping }), // ✅ Setter
 }));
