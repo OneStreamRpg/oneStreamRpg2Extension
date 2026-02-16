@@ -2,8 +2,11 @@ import { MouseEvent, useEffect, useRef, useState } from "react";
 import ClickMarker from "../components/ui/ClickMarker";
 import { useGameObjects } from "../hooks/useGameobjects";
 import { usePersonalChannelDebug } from "../hooks/usePersonalChannelDebug";
+import { logger } from "../services/Logger";
 import { useSocketStore } from "../store/socketStore";
 import { handleClick as externalClickHandler } from "../utils/handleClick";
+
+const TAG = "ConnectedOverlay";
 
 const ConnectedOverlay = () => {
   // Enable debug tools in development
@@ -28,12 +31,12 @@ const ConnectedOverlay = () => {
 
         if (width > 1 && height > 1) {
           setContainerSize({ width, height });
-          console.log("✅ Container size updated:", width, height);
+          logger.debug(TAG, "Container size updated", { width, height });
         } else {
-          console.warn("⚠️ Container size too small or not ready yet.");
+          logger.warn(TAG, "Container size too small or not ready yet");
         }
       } else {
-        console.warn("⚠️ containerRef.current is null");
+        logger.warn(TAG, "containerRef.current is null");
       }
     };
 
@@ -106,10 +109,6 @@ const ConnectedOverlay = () => {
     }
   };
 
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    console.log(e);
-  };
-
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -128,7 +127,6 @@ const ConnectedOverlay = () => {
     <div
       ref={containerRef}
       onClick={handleClick}
-      onMouseMove={handleMouseMove}
       style={{ position: "absolute", height: "100%", width: "100%" }}
     >
       <h2>Overlay2</h2>
