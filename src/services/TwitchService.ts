@@ -35,5 +35,11 @@ export async function fetchTwitchUser({ userId, helixToken, clientId }: FetchUse
     }
 
     const data = await response.json();
-    return data.data[0] ?? null;
+    const user = data.data[0] ?? null;
+    if (user) {
+        logger.info(TAG, `Fetched Twitch user: ${user.display_name}`);
+    } else {
+        logger.warn(TAG, `No user data returned for userId=${userId}`);
+    }
+    return user;
 }
