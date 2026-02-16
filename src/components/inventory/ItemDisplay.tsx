@@ -11,9 +11,9 @@ export const ItemDisplay: React.FC<{ item: Item }> = ({ item }) => {
 
   return (
     <div
-      className="text-xs bg-gray-800 text-white size-16 cursor-grab relative"
+      className="text-xs bg-red-800 text-white size-16 cursor-default relative"
       data-item-id={item.id}
-      title={itemData?.name ?? item.itemId}
+      data-tooltip-id="inventory-tooltip"
     >
       {DISPLAY_ICON ? (
         <img

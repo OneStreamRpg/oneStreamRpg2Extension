@@ -1,4 +1,9 @@
-export const InventoryTooltip: React.FC = () => {
+import { metadataService } from "../../services/MetadataService";
+import { Item } from "./types";
+
+export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
+  const itemData = metadataService.getItemSync(item.itemId);
+
   return (
     <div className="flex bg-amber-700">
       <div className="bg-gray-900">
@@ -12,7 +17,7 @@ export const InventoryTooltip: React.FC = () => {
             }}
           />
           <section>
-            <h2>Name</h2>
+            <h2>Name: {itemData?.name ?? item.itemId}</h2>
             <p>Rarity & Type</p>
             <p>Damage</p>
             <p>Attack speed</p>
