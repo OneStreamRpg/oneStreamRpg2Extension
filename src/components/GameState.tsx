@@ -39,8 +39,8 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
   const activeTimeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const updatePlayersState = (
-    players: Array<{ id: string; [key: string]: any }>,
-    previousPlayers: Array<{ id: string; [key: string]: any }>
+    players: Array<{ id: string;[key: string]: any }>,
+    previousPlayers: Array<{ id: string;[key: string]: any }>
   ) => {
     const playerMap = new Map(previousPlayers.map((p) => [p.id, p]));
     players.forEach((playerUpdate) => {
@@ -49,12 +49,13 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         Object.assign(existingPlayer, playerUpdate);
       }
     });
+    console.log("Updated players:", Array.from(playerMap.values()));
     return Array.from(playerMap.values());
   };
 
   const updateEnemiesState = (
-    enemies: Array<{ id: string; [key: string]: any }>,
-    previousEnemies: Array<{ id: string; [key: string]: any }>
+    enemies: Array<{ id: string;[key: string]: any }>,
+    previousEnemies: Array<{ id: string;[key: string]: any }>
   ) => {
     const enemyMap = new Map(previousEnemies.map((e) => [e.id, e]));
     enemies.forEach((enemyUpdate) => {
@@ -63,14 +64,17 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         Object.assign(existingEnemy, enemyUpdate);
       }
     });
+    console.log("Updated enemies:", Array.from(enemyMap.values()));
     return Array.from(enemyMap.values());
   };
 
   const updateNpcsState = (
-    npcs: Array<{ id: string; [key: string]: any }>,
-    previousNpcs: Array<{ id: string; [key: string]: any }>
+    npcs: Array<{ id: string;[key: string]: any }>,
+    previousNpcs: Array<{ id: string;[key: string]: any }>
   ) => {
-    const npcMap = new Map(previousNpcs.map((n) => [n.id, n]));
+    console.log("NPC delta received:", npcs);
+    console.log("Previous NPCs:", previousNpcs);
+    const npcMap = new Map(previousNpcs.map((npc) => [npc.id, npc]));
     npcs.forEach((npcUpdate) => {
       const existingNpc = npcMap.get(npcUpdate.id);
       if (existingNpc) {
@@ -79,6 +83,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         npcMap.set(npcUpdate.id, npcUpdate);
       }
     });
+    console.log("Updated npcs:", Array.from(npcMap.values()));
     return Array.from(npcMap.values());
   };
 
@@ -132,22 +137,31 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     });
 
     socketInstance.on("inGame", (data) => {
-      logger.info(TAG, `inGame state changed: ${data}`);
+      logger.info(TAG, `inGame state changed:`, data);
       if (data.inGame) {
+        logger.info(TAG, `Player is now in-game, requesting initial game state...`, {
+          channelId,
+        });
         setinGame(data.inGame);
         socketInstance.emit("getGameState");
+        console.log({ socketInstance });
       } else {
+        logger.info(TAG, `Player left the game, clearing game state`);
         setinGame(false);
         setGameState({ players: [], enemies: [], npcs: [] });
       }
     });
 
     socketInstance.on("gameStateDelta", (data) => {
+      console.log("Game state delta received", data);
       if (data.delta) {
         const pingToStreamer = data.delta.ping || 0;
         const timeoutId = setTimeout(() => {
           const previousState = useSocketStore.getState().gameState;
-          if (!previousState) return;
+          if (!previousState) {
+            console.log("No previous game state, skipping delta application");
+            return
+          };
           let players = [...(previousState.players || [])];
           let enemies = [...(previousState.enemies || [])];
           let npcs = [...(previousState.npcs || [])];
