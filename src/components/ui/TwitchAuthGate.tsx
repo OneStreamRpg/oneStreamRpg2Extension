@@ -22,7 +22,7 @@ export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
   useEffect(() => {
     if (window.Twitch && window.Twitch.ext) {
       window.Twitch.ext.onAuthorized(async (auth) => {
-        logger.info(TAG, `onAuthorized: auth=${auth}`);
+        logger.info(TAG, `onAuthorized: auth=`, auth);
         const isLinked = !!window.Twitch.ext.viewer?.isLinked;
 
         const user = await fetchTwitchUser({
