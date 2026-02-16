@@ -40,8 +40,9 @@ export const Inventory: React.FC = () => {
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
-    // Store the item being dragged
-    setActiveItem(active.data.current?.item ?? null);
+    const item = active.data.current?.item ?? null;
+    logger.debug(TAG, "Drag started", { itemId: item?.itemId, containerId: active.data.current?.containerId });
+    setActiveItem(item);
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -77,6 +78,7 @@ export const Inventory: React.FC = () => {
       const activeIndex = parseInt(activeId.split("-")[1]);
       const overIndex = parseInt(overId.split("-")[1]);
 
+      logger.info(TAG, `Swap inventory: slot ${activeIndex} <-> slot ${overIndex}`);
       swapInventorySlots(activeIndex, overIndex);
     }
 
@@ -87,9 +89,11 @@ export const Inventory: React.FC = () => {
 
       //Check for compatibility
       if (!canEquipInSlot(overSlotKey, activeItem)) {
+        logger.debug(TAG, `Equip blocked: item incompatible with slot ${overSlotKey}`);
         return;
       }
 
+      logger.info(TAG, `Equip item: inventory[${activeIndex}] -> ${overSlotKey}`);
       equipItem(activeIndex, overSlotKey);
     }
 
@@ -125,6 +129,7 @@ export const Inventory: React.FC = () => {
         }
       }
 
+      logger.info(TAG, `Unequip item: ${equipmentSlotKey} -> inventory[${inventoryTargetIndex}]`);
       unequipItem(equipmentSlotKey, inventoryTargetIndex);
     }
 
@@ -140,10 +145,17 @@ export const Inventory: React.FC = () => {
         overEquipmentSlotKey,
         activeItem
       );
-      if (!isMovingItemCompatible) return;
+      if (!isMovingItemCompatible) {
+        logger.debug(TAG, `Equipment swap blocked: item incompatible with ${overEquipmentSlotKey}`);
+        return;
+      }
       const isSwappedItemCompatible =
         !itemAtOver || canEquipInSlot(activeEquipmentSlotKey, itemAtOver);
-      if (!isSwappedItemCompatible) return;
+      if (!isSwappedItemCompatible) {
+        logger.debug(TAG, `Equipment swap blocked: target item incompatible with ${activeEquipmentSlotKey}`);
+        return;
+      }
+      logger.info(TAG, `Swap equipment: ${activeEquipmentSlotKey} <-> ${overEquipmentSlotKey}`);
       swapEquipment(activeEquipmentSlotKey, overEquipmentSlotKey);
     }
   }

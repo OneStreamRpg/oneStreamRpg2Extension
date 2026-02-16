@@ -22,7 +22,7 @@ export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
   useEffect(() => {
     if (window.Twitch && window.Twitch.ext) {
       window.Twitch.ext.onAuthorized(async (auth) => {
-        logger.info(TAG, `onAuthorized: auth=`, auth);
+        logger.info(TAG, "onAuthorized", { channelId: auth.channelId });
         const isLinked = !!window.Twitch.ext.viewer?.isLinked;
 
         const user = await fetchTwitchUser({
@@ -32,7 +32,10 @@ export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
         });
 
         if (user) {
+          logger.info(TAG, `Twitch user fetched: ${user.display_name}`);
           setProfile(user);
+        } else {
+          logger.warn(TAG, "Failed to fetch Twitch user profile");
         }
 
         setAuth({
@@ -45,6 +48,7 @@ export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
       window.Twitch.ext.onContext(() => {
         const isNowLinked = !!window.Twitch.ext.viewer?.isLinked;
         if (!isNowLinked) {
+          logger.info(TAG, "User unlinked, logging out");
           setLoggedOut();
         }
       });

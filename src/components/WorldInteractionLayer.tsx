@@ -23,7 +23,10 @@ export const WorldInteractionLayer: React.FC = () => {
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
       const section = sectionRef.current;
-      if (!section) return;
+      if (!section) {
+        logger.warn(TAG, "Click ignored: sectionRef not available");
+        return;
+      }
 
       const bounds = section.getBoundingClientRect();
 
