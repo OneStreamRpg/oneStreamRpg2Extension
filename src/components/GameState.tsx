@@ -103,6 +103,8 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     logger.info(TAG, `Connecting to socket.io server at ${VITE_SOCKET_URL}`);
     const socketInstance: Socket = io(VITE_SOCKET_URL, {
       path: "/socket.io",
+      // MC: Active in case you want to have a good log in dev console
+      // transports: ["websocket"],
       auth: {
         token,
         channelId,
