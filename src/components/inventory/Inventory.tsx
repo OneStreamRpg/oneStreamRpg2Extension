@@ -5,6 +5,7 @@ import {
   DragStartEvent,
 } from "@dnd-kit/core";
 import { useMemo, useState } from "react";
+import { Tooltip } from "react-tooltip";
 import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
 import { logger } from "../../services/Logger";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
@@ -16,6 +17,7 @@ import {
   isEmptyItem,
 } from "./inventoryService";
 import { InventorySlot } from "./InventorySlot";
+import { InventoryTooltip } from "./InventoryTooltip";
 import { ItemDisplay } from "./ItemDisplay";
 import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
 
@@ -151,20 +153,6 @@ export const Inventory: React.FC = () => {
     []
   );
 
-  // Collect all items for tooltip rendering
-  //   const allItems = useMemo(() => {
-  //     const items: Item[] = [];
-  //     // Add inventory items
-  //     inventoryItems.forEach((item) => {
-  //       if (item) items.push(item);
-  //     });
-  //     // Add equipment items
-  //     Object.values(equipmentSlots).forEach((item) => {
-  //       if (item) items.push(item);
-  //     });
-  //     return items;
-  //   }, [inventoryItems, equipmentSlots]);
-
   if (displayedState === null) {
     return <div>Loading inventory...</div>;
   }
@@ -216,20 +204,23 @@ export const Inventory: React.FC = () => {
         </DragOverlay>
       </DndContext>
 
-      {/* Tooltips rendered outside of dragging context */}
-      {/* {!activeItem &&
-        allItems.map((item) => (
-          <Tooltip
-            key={`tooltip-${item.id}`}
-            id={`item-tooltip-${item.id}`}
-            place="bottom"
-            clickable
-            delayShow={200}
-            anchorSelect={`[data-item-id="${item.id}"]`}
-          >
-            <p>Debug</p>
-          </Tooltip>
-        ))} */}
+      <Tooltip
+        id="inventory-tooltip"
+        place="left"
+        delayShow={200}
+        hidden={Boolean(activeItem)}
+        render={({ activeAnchor }) => {
+          const itemId = activeAnchor?.getAttribute("data-item-id");
+          if (!itemId) return null;
+
+          const item =
+            inventoryItems.find((i) => i?.id === itemId) ??
+            Object.values(equipmentSlots).find((i) => i?.id === itemId);
+
+          if (!item) return null;
+          return <InventoryTooltip item={item} />;
+        }}
+      />
     </>
   );
 };
