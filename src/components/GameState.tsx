@@ -49,7 +49,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         Object.assign(existingPlayer, playerUpdate);
       }
     });
-    console.log("Updated players:", Array.from(playerMap.values()));
+    logger.debug(TAG, "Updated players", Array.from(playerMap.values()));
     return Array.from(playerMap.values());
   };
 
@@ -64,7 +64,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         Object.assign(existingEnemy, enemyUpdate);
       }
     });
-    console.log("Updated enemies:", Array.from(enemyMap.values()));
+    logger.debug(TAG, "Updated enemies", Array.from(enemyMap.values()));
     return Array.from(enemyMap.values());
   };
 
@@ -72,8 +72,8 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     npcs: Array<{ id: string;[key: string]: any }>,
     previousNpcs: Array<{ id: string;[key: string]: any }>
   ) => {
-    console.log("NPC delta received:", npcs);
-    console.log("Previous NPCs:", previousNpcs);
+    logger.debug(TAG, "NPC delta received", npcs);
+    logger.debug(TAG, "Previous NPCs", previousNpcs);
     const npcMap = new Map(previousNpcs.map((npc) => [npc.id, npc]));
     npcs.forEach((npcUpdate) => {
       const existingNpc = npcMap.get(npcUpdate.id);
@@ -83,7 +83,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         npcMap.set(npcUpdate.id, npcUpdate);
       }
     });
-    console.log("Updated npcs:", Array.from(npcMap.values()));
+    logger.debug(TAG, "Updated NPCs", Array.from(npcMap.values()));
     return Array.from(npcMap.values());
   };
 
@@ -132,6 +132,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     });
 
     socketInstance.on("gameState", (data) => {
+      logger.info(TAG, "Initial game state received");
       logger.debug(TAG, "Game state received", { data });
       if (data.gameState) {
         setGameState(data.gameState);
@@ -146,7 +147,6 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         });
         setinGame(data.inGame);
         socketInstance.emit("getGameState");
-        console.log({ socketInstance });
       } else {
         logger.info(TAG, `Player left the game, clearing game state`);
         setinGame(false);
@@ -155,13 +155,13 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     });
 
     socketInstance.on("gameStateDelta", (data) => {
-      console.log("Game state delta received", data);
+      logger.debug(TAG, "Game state delta received", data);
       if (data.delta) {
         const pingToStreamer = data.delta.ping || 0;
         const timeoutId = setTimeout(() => {
           const previousState = useSocketStore.getState().gameState;
           if (!previousState) {
-            console.log("No previous game state, skipping delta application");
+            logger.warn(TAG, "No previous game state, skipping delta application");
             return
           };
           let players = [...(previousState.players || [])];
@@ -209,7 +209,6 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       socketInstance.emit("ping");
       socketInstance.once("pong", () => {
         const latency = Date.now() - start;
-        // console.log(`📡 Ping: ${latency}ms`);
         if (setPing) setPing(latency);
       });
     }, 3000);
