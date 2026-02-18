@@ -11,7 +11,7 @@ export const ItemDisplay: React.FC<{ item: Item }> = ({ item }) => {
 
   return (
     <div
-      className="text-xs bg-red-800 text-white size-16 cursor-default relative"
+      className={`text-xs bg-red-800 text-white size-16 relative cursor-grab`}
       data-item-id={item.id}
       data-tooltip-id="inventory-tooltip"
     >
