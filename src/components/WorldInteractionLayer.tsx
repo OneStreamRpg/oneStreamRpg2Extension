@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { Tooltip } from "react-tooltip";
 import { useGameObjects } from "../hooks/useGameobjects";
+import { useNpcActions } from "../hooks/useNpcActions";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
 import { logger } from "../services/Logger";
 import { metadataService } from "../services/MetadataService";
@@ -19,6 +20,7 @@ export const WorldInteractionLayer: React.FC = () => {
   const gameState = useSocketStore((state) => state.gameState);
   const gameObjects = useGameObjects(gameState);
   const { movePlayer, setTargetEnemy } = usePersonalChannelActions(socket);
+  const { setTargetNpc } = useNpcActions(socket);
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
@@ -100,13 +102,15 @@ export const WorldInteractionLayer: React.FC = () => {
 
               if (obj.type === "enemy") {
                 setTargetEnemy(obj.id);
+              } else if (obj.type === "npc") {
+                setTargetNpc(obj.npcId);
               }
             }}
             className={`absolute pointer-events-auto ${
               obj.type === "enemy"
                 ? "cursor-crosshair"
                 : obj.type === "npc"
-                ? "cursor-help"
+                ? "cursor-pointer"
                 : "cursor-pointer"
             } ${DEBUG ? "hover:bg-white/20 border border-white/30" : ""} ${
               !obj.id ? "bg-red-500" : ""

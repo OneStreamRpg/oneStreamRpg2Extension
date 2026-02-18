@@ -5,6 +5,8 @@ type UIState = {
   activePage: Page | null;
   pagePosition: PagePosition;
   debugInventoryInfo: boolean;
+  questPanelOpen: boolean;
+  profileOpen: boolean;
 };
 
 type UIActions = {
@@ -12,12 +14,16 @@ type UIActions = {
   closeActivePage: () => void;
   setPagePosition: (position: PagePosition) => void;
   toggleDebugInventoryInfo: () => void;
+  toggleQuestPanel: () => void;
+  toggleProfile: () => void;
 };
 export const useUIStore = create<UIState & UIActions>((set) => ({
   // State
   activePage: null,
   pagePosition: PagePosition.RIGHT,
   debugInventoryInfo: true,
+  questPanelOpen: true,
+  profileOpen: true,
 
   // Actions
   setActivePage: (page) => {
@@ -31,5 +37,11 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
   },
   toggleDebugInventoryInfo: () => {
     set((state) => ({ debugInventoryInfo: !state.debugInventoryInfo }));
+  },
+  toggleQuestPanel: () => {
+    set((state) => ({ questPanelOpen: !state.questPanelOpen }));
+  },
+  toggleProfile: () => {
+    set((state) => ({ profileOpen: !state.profileOpen }));
   },
 }));

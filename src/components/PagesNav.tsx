@@ -14,12 +14,12 @@ export const PagesNav: React.FC = () => {
             Inventory
           </button>
         </li>
-        <li>
+<li>
           <button
             className="cursor-pointer"
-            onClick={() => setActivePage(Page.SkillTree)}
+            onClick={() => setActivePage(Page.Abilities)}
           >
-            Skill Tree
+            Abilities
           </button>
         </li>
       </ul>

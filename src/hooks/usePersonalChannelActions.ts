@@ -210,20 +210,73 @@ export function usePersonalChannelActions(socket: Socket | null) {
 
 
   /**
-   * Equip an ability to hotbar
+   * Equip an ability to hotbar (server auto-detects slot from ability's slotType)
    */
   const equipAbility = useCallback(
-    (slotIndex: number, abilityId: string) => {
+    (abilityId: string) => {
       sendAction(
         "equipAbility",
-        { slotIndex, abilityId } as EquipAbilityParams,
-        (state) => {
-          return state;
-        }
+        { abilityId },
+        (state) => state
       );
     },
     [sendAction]
   );
+
+  /**
+   * Unequip an ability from a slot
+   */
+  const unequipAbility = useCallback(
+    (slot: "main" | "second" | "ultimate") => {
+      sendAction(
+        "unequipAbility",
+        { slot },
+        (state) => state
+      );
+    },
+    [sendAction]
+  );
+
+  /**
+   * Get quests from server
+   */
+  const getQuests = useCallback(() => {
+    sendAction("getQuests", {}, (state) => state);
+  }, [sendAction]);
+
+  /**
+   * Cancel an active quest
+   */
+  const cancelQuest = useCallback(
+    (questId: string) => {
+      sendAction("cancelQuest", { questId }, (state) => state);
+    },
+    [sendAction]
+  );
+
+  /**
+   * Use the equipped potion
+   */
+  const usePotion = useCallback(() => {
+    sendAction("usePotion", {}, (state) => state);
+  }, [sendAction]);
+
+  /**
+   * Set the equipped potion
+   */
+  const setPotion = useCallback(
+    (potionId: string) => {
+      sendAction("setPotion", { potionId }, (state) => state);
+    },
+    [sendAction]
+  );
+
+  /**
+   * Get potion info from server
+   */
+  const getPotionInfo = useCallback(() => {
+    sendAction("potionInfo", {}, (state) => state);
+  }, [sendAction]);
 
   /**
    * Request full state sync
@@ -244,9 +297,15 @@ export function usePersonalChannelActions(socket: Socket | null) {
     swapEquipment: swapEquipmentSlots,
     swapInventorySlots,
     equipAbility,
+    unequipAbility,
     requestSync,
     movePlayer,
     castAbility,
-    setTargetEnemy
+    setTargetEnemy,
+    getQuests,
+    cancelQuest,
+    usePotion,
+    setPotion,
+    getPotionInfo,
   };
 }

@@ -145,6 +145,14 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
         }
       }
 
+      if (delta.quests !== undefined) {
+        newState.quests = delta.quests;
+        if (delta.versions?.questsVersion !== undefined) {
+          newVersions.questsVersion = delta.versions.questsVersion;
+        }
+      }
+
+
       logger.debug(TAG, "Delta applied to state", { delta });
       set({
         displayedState: newState,

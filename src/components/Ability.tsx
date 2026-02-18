@@ -2,6 +2,7 @@ import { useState } from "react";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
 import { AbilitySlotType, metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
+import { CdnIcon } from "./ui/CdnIcon";
 
 export type Ability = {
   slot: AbilitySlotType;
@@ -50,22 +51,18 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
         abilityMetaData.name + ": " + abilityMetaData.description
       }
       data-tooltip-place="top"
-      className={`relative size-16 border-2 bg-gray-800 ${
+      className={`relative size-16 border-2 bg-gray-800 overflow-hidden ${
         isOnCooldown
           ? "opacity-50 cursor-not-allowed"
           : "hover:bg-gray-700 cursor-pointer"
       }`}
     >
-      {/* Icon */}
-      <p className="text-xs text-white cursor-crosshair">
-        {abilityMetaData.name}
-      </p>
-      {/* <img
-        src={`https://cdn.onestreamrpg.com/images/items/20_bagel.png`}
-        alt={ability.name}
+      <CdnIcon
+        type="items"
+        id={ability.abilityId}
         className="size-full"
-        style={{ imageRendering: "pixelated" }}
-      /> */}
+        alt={abilityMetaData.name}
+      />
 
       {/* Cooldown overlay */}
       {isOnCooldown && (

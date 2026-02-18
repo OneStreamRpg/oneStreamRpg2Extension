@@ -2,6 +2,7 @@ import { Tooltip } from "react-tooltip";
 import { useAuthStore } from "../hooks/useAuthStore";
 import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
+import { useUIStore } from "../store/useUIStore";
 import { WindowContainer } from "./ui/WindowContainer";
 
 interface PlayerProfile {
@@ -20,6 +21,9 @@ interface PlayerProfile {
 export const ProfileNav: React.FC = () => {
   const { displayedState } = usePersonalChannelStore();
   const { profile } = useAuthStore();
+  const profileOpen = useUIStore((state) => state.profileOpen);
+  const toggleProfile = useUIStore((state) => state.toggleProfile);
+
   if (!displayedState || !profile) {
     return <div>Loading...</div>;
   }
@@ -43,6 +47,17 @@ export const ProfileNav: React.FC = () => {
   const xpPercentage = (currentLevelXp / playerProfile.requiredXp) * 100;
   const hpPercentage = (playerProfile.hp / playerProfile.maxHp) * 100;
   const manaPercentage = (playerProfile.mana / playerProfile.maxMana) * 100;
+  if (!profileOpen) {
+    return (
+      <button
+        onClick={toggleProfile}
+        className="pointer-events-auto bg-gray-800/80 px-2 py-1 text-xs cursor-pointer hover:bg-gray-700"
+      >
+        Stats
+      </button>
+    );
+  }
+
   return (
     <>
       <WindowContainer className="pointer-events-auto">
@@ -52,9 +67,10 @@ export const ProfileNav: React.FC = () => {
             data-tooltip-id="player-stats-tooltip"
           >
             <img
-              className="w-12 h-12 border flex items-center justify-center"
+              className="w-12 h-12 border flex items-center justify-center cursor-pointer"
               src={profile.profile_image_url}
               alt={`${playerProfile.name}'s profile`}
+              onClick={toggleProfile}
             />
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between gap-4">

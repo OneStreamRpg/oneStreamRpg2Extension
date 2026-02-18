@@ -1,6 +1,7 @@
 // Personal Player Channel Types
 
 import { EquipmentSlotKey, Item } from "../components/inventory/types";
+import { InteractionData } from "./npcInteraction";
 
 export interface PlayerPersonalState {
   versions: StateVersions;
@@ -9,7 +10,8 @@ export interface PlayerPersonalState {
   currency: CurrencyState;
   abilities: any;
   stats: StatsState;
-  profile: any
+  profile: any;
+  quests?: QuestsState;
 }
 
 export interface StateVersions {
@@ -18,6 +20,7 @@ export interface StateVersions {
   currency: number;
   abilities: number;
   stats: number;
+  questsVersion: number;
 }
 
 export interface InventoryState {
@@ -71,6 +74,8 @@ export interface PlayerStateDelta {
   currency?: CurrencyState;
   abilities?: any;
   stats?: StatsState;
+  quests?: QuestsState;
+  pendingNpcInteraction?: InteractionData;
 }
 
 export interface PersonalChannelAction {
@@ -87,6 +92,33 @@ export interface ActionAcknowledgment {
   delta?: PlayerStateDelta;
   error?: string;
   timestamp: number;
+  data?: InteractionData;
+}
+
+// Quest types
+export interface QuestsState {
+  active: ActiveQuest[];
+  available: AvailableQuest[];
+}
+
+export interface ActiveQuest {
+  questId: string;
+  name: string;
+  description: string;
+  progress: number;
+  maxProgress: number;
+  progressMap?: Record<string, number>;
+  maxProgressMap?: Record<string, number>;
+  questType: string;
+}
+
+export interface AvailableQuest {
+  questId: string;
+  name: string;
+  description: string;
+  npcId: string;
+  npcName: string;
+  questType: string;
 }
 
 export interface PendingAction {

@@ -92,6 +92,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       window.Twitch.ext.onContext((context) => {
         if (context.hlsLatencyBroadcaster) {
           streamDelayRef.current = context.hlsLatencyBroadcaster;
+          useSocketStore.getState().setStreamDelay(context.hlsLatencyBroadcaster);
         }
       });
     }
@@ -145,6 +146,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     socketInstance.on("gameStateDelta", (data) => {
       if (data.delta) {
         const pingToStreamer = data.delta.ping || 0;
+        useSocketStore.getState().setPingToStreamer(pingToStreamer);
         const timeoutId = setTimeout(() => {
           const previousState = useSocketStore.getState().gameState;
           if (!previousState) return;
