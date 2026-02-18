@@ -5,6 +5,7 @@ export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
   const itemData = metadataService.getItemSync(item.itemId);
 
 
+  console.log({ item, itemData })
   // Examle item data structure:
   //   {
   //     "itemId": "dagger",
@@ -59,3 +60,26 @@ export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
     </div>
   );
 };
+
+
+// Mapping
+
+// {
+//     "itemId": "dagger",
+//     "name": "Dagger",
+//     "description": "A small dagger. Scales with Strength and Haste.",
+//     "rarity": "common",
+//     "value": 10,
+//     "type": "dagger",
+//     "attackSpeed": "normal",
+//     "damageType": "physical",
+//     "stats": {
+//         "strength": 2
+//     },
+//     "scalingRange": {
+//         "strength": {
+//             "min": "F",
+//             "max": "F"
+//         }
+//     }
+// }
