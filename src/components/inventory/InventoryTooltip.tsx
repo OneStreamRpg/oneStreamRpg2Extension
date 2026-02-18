@@ -4,6 +4,28 @@ import { Item } from "./types";
 export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
   const itemData = metadataService.getItemSync(item.itemId);
 
+
+  // Examle item data structure:
+  //   {
+  //     "itemId": "dagger",
+  //     "name": "Dagger",
+  //     "description": "A small dagger. Scales with Strength and Haste.",
+  //     "rarity": "common",
+  //     "value": 10,
+  //     "type": "dagger",
+  //     "attackSpeed": "normal",
+  //     "damageType": "physical",
+  //     "stats": {
+  //         "strength": 2
+  //     },
+  //     "scalingRange": {
+  //         "strength": {
+  //             "min": "F",
+  //             "max": "F"
+  //         }
+  //     }
+  // }
+
   return (
     <div className="flex bg-amber-700">
       <div className="bg-gray-900">
@@ -11,14 +33,14 @@ export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
           <img
             src={`https://cdn.onestreamrpg.com/images/items/batSword.png`}
             alt={"Item Icon"}
-            className="size-16 mx-auto"
+            className="size-24 m-4"
             style={{
               imageRendering: "pixelated",
             }}
           />
           <section>
-            <h2>Name: {itemData?.name ?? item.itemId}</h2>
-            <p>Rarity & Type</p>
+            <h2 className="text-lg font-bold">{itemData.name ?? `Unknown Item Name (${item.itemId})`}</h2>
+            <p>{itemData.rarity && `${itemData.rarity}`}{itemData.type && `${itemData.rarity ? " " : ""}${itemData.type}`}</p>
             <p>Damage</p>
             <p>Attack speed</p>
             <p>Damage Scaling</p>
@@ -27,11 +49,11 @@ export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
           </section>
         </header>
         <main>
-          <p>Description</p>
+          <p>{itemData.description}</p>
         </main>
         <footer className="flex">
-          <p>Requirements</p>
-          <p className="pl-2 ml-auto text-right">Sell Price: 1000 Gold</p>
+          <p>Requirements comming soon...</p>
+          {itemData.value && <p className="pl-2 ml-auto text-right">Sell Price: {itemData.value ?? 0}g</p>}
         </footer>
       </div>
     </div>

@@ -219,6 +219,7 @@ export const Inventory: React.FC = () => {
       <Tooltip
         id="inventory-tooltip"
         place="left"
+        clickable
         delayShow={200}
         hidden={Boolean(activeItem)}
         render={({ activeAnchor }) => {
