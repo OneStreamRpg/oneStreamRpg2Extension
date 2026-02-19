@@ -11,7 +11,7 @@ export const PotionsNav: React.FC = () => {
     (state) => state.displayedState
   );
   const socket = useSocketStore((state) => state.socket);
-  const { usePotion } = usePersonalChannelActions(socket);
+  const { usePotion: activatePotion } = usePersonalChannelActions(socket);
 
   const potionItem = displayedState?.equipment?.potion;
   const isEmpty = !potionItem || isEmptyItem(potionItem);
@@ -54,7 +54,7 @@ export const PotionsNav: React.FC = () => {
   return (
     <nav className="pointer-events-auto flex">
       <button
-        onClick={() => usePotion()}
+        onClick={() => activatePotion()}
         disabled={isOnCooldown || charges <= 0}
         className={`relative size-16 border-2 border-gray-600 bg-gray-800 overflow-hidden ${
           isOnCooldown || charges <= 0
