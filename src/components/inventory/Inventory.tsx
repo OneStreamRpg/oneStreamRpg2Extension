@@ -5,6 +5,7 @@ import {
   DragStartEvent,
 } from "@dnd-kit/core";
 import { useMemo, useState } from "react";
+import { Tooltip } from "react-tooltip";
 import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
 import { logger } from "../../services/Logger";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
@@ -16,6 +17,7 @@ import {
   isEmptyItem,
 } from "./inventoryService";
 import { InventorySlot } from "./InventorySlot";
+import { InventoryTooltip } from "./InventoryTooltip";
 import { ItemDisplay } from "./ItemDisplay";
 import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
 
@@ -38,8 +40,9 @@ export const Inventory: React.FC = () => {
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
-    // Store the item being dragged
-    setActiveItem(active.data.current?.item ?? null);
+    const item = active.data.current?.item ?? null;
+    logger.debug(TAG, "Drag started", { itemId: item?.itemId, containerId: active.data.current?.containerId });
+    setActiveItem(item);
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -75,6 +78,7 @@ export const Inventory: React.FC = () => {
       const activeIndex = parseInt(activeId.split("-")[1]);
       const overIndex = parseInt(overId.split("-")[1]);
 
+      logger.info(TAG, `Swap inventory: slot ${activeIndex} <-> slot ${overIndex}`);
       swapInventorySlots(activeIndex, overIndex);
     }
 
@@ -85,9 +89,11 @@ export const Inventory: React.FC = () => {
 
       //Check for compatibility
       if (!canEquipInSlot(overSlotKey, activeItem)) {
+        logger.debug(TAG, `Equip blocked: item incompatible with slot ${overSlotKey}`);
         return;
       }
 
+      logger.info(TAG, `Equip item: inventory[${activeIndex}] -> ${overSlotKey}`);
       equipItem(activeIndex, overSlotKey);
     }
 
@@ -123,6 +129,7 @@ export const Inventory: React.FC = () => {
         }
       }
 
+      logger.info(TAG, `Unequip item: ${equipmentSlotKey} -> inventory[${inventoryTargetIndex}]`);
       unequipItem(equipmentSlotKey, inventoryTargetIndex);
     }
 
@@ -138,10 +145,17 @@ export const Inventory: React.FC = () => {
         overEquipmentSlotKey,
         activeItem
       );
-      if (!isMovingItemCompatible) return;
+      if (!isMovingItemCompatible) {
+        logger.debug(TAG, `Equipment swap blocked: item incompatible with ${overEquipmentSlotKey}`);
+        return;
+      }
       const isSwappedItemCompatible =
         !itemAtOver || canEquipInSlot(activeEquipmentSlotKey, itemAtOver);
-      if (!isSwappedItemCompatible) return;
+      if (!isSwappedItemCompatible) {
+        logger.debug(TAG, `Equipment swap blocked: target item incompatible with ${activeEquipmentSlotKey}`);
+        return;
+      }
+      logger.info(TAG, `Swap equipment: ${activeEquipmentSlotKey} <-> ${overEquipmentSlotKey}`);
       swapEquipment(activeEquipmentSlotKey, overEquipmentSlotKey);
     }
   }
@@ -150,20 +164,6 @@ export const Inventory: React.FC = () => {
     () => Object.keys(EQUIPMENT_SLOT_CONFIG) as EquipmentSlotKey[],
     []
   );
-
-  // Collect all items for tooltip rendering
-  //   const allItems = useMemo(() => {
-  //     const items: Item[] = [];
-  //     // Add inventory items
-  //     inventoryItems.forEach((item) => {
-  //       if (item) items.push(item);
-  //     });
-  //     // Add equipment items
-  //     Object.values(equipmentSlots).forEach((item) => {
-  //       if (item) items.push(item);
-  //     });
-  //     return items;
-  //   }, [inventoryItems, equipmentSlots]);
 
   if (displayedState === null) {
     return <div>Loading inventory...</div>;
@@ -216,20 +216,24 @@ export const Inventory: React.FC = () => {
         </DragOverlay>
       </DndContext>
 
-      {/* Tooltips rendered outside of dragging context */}
-      {/* {!activeItem &&
-        allItems.map((item) => (
-          <Tooltip
-            key={`tooltip-${item.id}`}
-            id={`item-tooltip-${item.id}`}
-            place="bottom"
-            clickable
-            delayShow={200}
-            anchorSelect={`[data-item-id="${item.id}"]`}
-          >
-            <p>Debug</p>
-          </Tooltip>
-        ))} */}
+      <Tooltip
+        id="inventory-tooltip"
+        place="left"
+        clickable
+        delayShow={200}
+        hidden={Boolean(activeItem)}
+        render={({ activeAnchor }) => {
+          const itemId = activeAnchor?.getAttribute("data-item-id");
+          if (!itemId) return null;
+
+          const item =
+            inventoryItems.find((i) => i?.id === itemId) ??
+            Object.values(equipmentSlots).find((i) => i?.id === itemId);
+
+          if (!item) return null;
+          return <InventoryTooltip item={item} />;
+        }}
+      />
     </>
   );
 };

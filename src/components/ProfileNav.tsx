@@ -60,8 +60,8 @@ export const ProfileNav: React.FC = () => {
 
   return (
     <>
-      <WindowContainer className="pointer-events-auto">
-        <div className="flex items-center gap-2 p-2 bg-red-500/20 text-xs">
+      <WindowContainer className="pointer-events-auto hover:opacity-100 opacity-50 transition-opacity">
+        <div className="flex items-center gap-2 pr-2 text-xs">
           <div
             className="flex items-center gap-2"
             data-tooltip-id="player-stats-tooltip"
