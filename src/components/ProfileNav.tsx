@@ -45,7 +45,7 @@ export const ProfileNav: React.FC = () => {
   const manaPercentage = (playerProfile.mana / playerProfile.maxMana) * 100;
   return (
     <>
-      <WindowContainer className="pointer-events-auto">
+      <WindowContainer className="pointer-events-auto hover:opacity-100 opacity-50 transition-opacity">
         <div className="flex items-center gap-2 p-2 bg-red-500/20 text-xs">
           <div
             className="flex items-center gap-2"
