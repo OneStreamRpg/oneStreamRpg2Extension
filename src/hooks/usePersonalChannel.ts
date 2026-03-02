@@ -4,7 +4,7 @@ import { logger } from "../services/Logger";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
 import { useNpcStore } from "../store/useNpcStore";
-import { NpcPopupType } from "../types/npcInteraction";
+import { InteractData } from "../types/npcInteraction";
 import {
   ActionAcknowledgment,
   PlayerPersonalState,
@@ -77,23 +77,21 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
     const handleDelta = (data: { delta: PlayerStateDelta; timestamp: number }) => {
       logger.debug(TAG, "Delta update received", { data });
       applyDelta(data.delta);
+    };
 
-      // Handle pending NPC interaction (auto-interact after walk-to)
-      // Delay the initial "interact" popup to sync with the stream visual
-      if (data.delta.pendingNpcInteraction) {
-        const interaction = data.delta.pendingNpcInteraction;
-        const npcId = "npcId" in interaction ? (interaction as any).npcId : "";
-        const popupType = interaction.type as NpcPopupType;
+    // Listen for unsolicited server events (e.g. async NPC interaction after walk-to)
+    const handleEvent = (data: { event: string; data: any; timestamp: number }) => {
+      logger.debug(TAG, `Personal state event received: event=${data.event}`, data);
 
-        if (popupType === "interact") {
-          if (interactDelayTimeout.current) clearTimeout(interactDelayTimeout.current);
-          interactDelayTimeout.current = setTimeout(() => {
-            useNpcStore.getState().openPopup(npcId, popupType, interaction);
-            interactDelayTimeout.current = null;
-          }, getStreamSyncDelay());
-        } else {
-          useNpcStore.getState().openPopup(npcId, popupType, interaction);
-        }
+      if (data.event === "npcInteraction") {
+        // Scenario B: player had to walk to the NPC — event fires when they arrive
+        // Delay to sync with the stream visual
+        const interactData = data.data as InteractData;
+        if (interactDelayTimeout.current) clearTimeout(interactDelayTimeout.current);
+        interactDelayTimeout.current = setTimeout(() => {
+          useNpcStore.getState().openPopup(interactData.npcId, "interact", interactData);
+          interactDelayTimeout.current = null;
+        }, getStreamSyncDelay());
       }
     };
 
@@ -112,10 +110,12 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
       if (data.data && NPC_POPUP_TYPES.has(data.data.type)) {
         const popupData = data.data;
         if (popupData.type === "interact") {
+          // Scenario A: player was already in range — ACK carries interact data directly
+          // Delay to sync with the stream visual
           if (interactDelayTimeout.current) clearTimeout(interactDelayTimeout.current);
           interactDelayTimeout.current = setTimeout(() => {
-            useNpcStore.getState().updatePopupData(popupData);
-            useNpcStore.getState().setLoading(false);
+            const interactData = popupData as InteractData;
+            useNpcStore.getState().openPopup(interactData.npcId, "interact", interactData);
             interactDelayTimeout.current = null;
           }, getStreamSyncDelay());
         } else {
@@ -144,6 +144,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
     socket.on("personalState:ack", handleAck);
     socket.on("personalState:sync", handleSync);
     socket.on("personalState:error", handleError);
+    socket.on("personalState:event", handleEvent);
 
     // Cleanup
     return () => {
@@ -152,6 +153,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
       socket.off("personalState:ack", handleAck);
       socket.off("personalState:sync", handleSync);
       socket.off("personalState:error", handleError);
+      socket.off("personalState:event", handleEvent);
       if (interactDelayTimeout.current) {
         clearTimeout(interactDelayTimeout.current);
         interactDelayTimeout.current = null;
