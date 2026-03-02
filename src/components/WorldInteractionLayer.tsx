@@ -9,7 +9,7 @@ import { useSocketStore } from "../store/socketStore";
 import ClickMarker from "./ui/ClickMarker";
 
 const TAG = "WorldInteraction";
-const DEBUG = false;
+const DEBUG = import.meta.env.VITE_DEBUG_WORLD_INTERACTION === "true";
 
 export const WorldInteractionLayer: React.FC = () => {
   const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
@@ -25,7 +25,10 @@ export const WorldInteractionLayer: React.FC = () => {
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
       const section = sectionRef.current;
-      if (!section) return;
+      if (!section) {
+        logger.warn(TAG, "Click ignored: sectionRef not available");
+        return;
+      }
 
       const bounds = section.getBoundingClientRect();
 
@@ -73,17 +76,15 @@ export const WorldInteractionLayer: React.FC = () => {
         let metadata = null;
         if (obj.type === "npc") {
           const npc = metadataService.getNpcSync(obj.npcId);
-          metadata = `${
-            npc ? npc.name + " (NPC)" : "Unknown NPC, npcId is: " + obj.npcId
-          }`;
+          metadata = `${npc ? npc.name + " (NPC)" : "Unknown NPC, npcId is: " + obj.npcId
+            }`;
         } else if (obj.type === "enemy") {
           const enemy = metadataService.getEnemySync(obj.enemyId);
 
-          metadata = `${
-            enemy
-              ? enemy.name + " (Enemy)"
-              : "Unknown Enemy, enemyId is: " + obj.enemyId
-          }`;
+          metadata = `${enemy
+            ? enemy.name + " (Enemy)"
+            : "Unknown Enemy, enemyId is: " + obj.enemyId
+            }`;
         } else if (obj.type === "player") {
           metadata = `Player: ${obj.username}`;
         }
@@ -106,26 +107,22 @@ export const WorldInteractionLayer: React.FC = () => {
                 setTargetNpc(obj.npcId);
               }
             }}
-            className={`absolute pointer-events-auto ${
-              obj.type === "enemy"
-                ? "cursor-crosshair"
-                : obj.type === "npc"
+            className={`absolute pointer-events-auto ${obj.type === "enemy"
+              ? "cursor-crosshair"
+              : obj.type === "npc"
                 ? "cursor-pointer"
                 : "cursor-pointer"
-            } ${DEBUG ? "hover:bg-white/20 border border-white/30" : ""} ${
-              !obj.id ? "bg-red-500" : ""
-            }`}
+              } ${DEBUG ? ("hover:bg-white/20 border border-white/30" + (obj.type === "player" ? " bg-green-500/20" : "")) : ""} ${!obj.id ? "bg-red-500" : ""
+              }`}
             style={{
-              left: `${
-                ((obj.hitbox.x - obj.hitbox.width * obj.hitbox.xOffsetRatio) /
-                  1920) *
+              left: `${((obj.hitbox.x - obj.hitbox.width * obj.hitbox.xOffsetRatio) /
+                1920) *
                 100
-              }%`,
-              top: `${
-                ((obj.hitbox.y - obj.hitbox.height * obj.hitbox.yOffsetRatio) /
-                  1080) *
+                }%`,
+              top: `${((obj.hitbox.y - obj.hitbox.height * obj.hitbox.yOffsetRatio) /
+                1080) *
                 100
-              }%`,
+                }%`,
               width: `${(obj.hitbox.width / 1920) * 100}%`,
               height: `${(obj.hitbox.height / 1080) * 100}%`,
             }}

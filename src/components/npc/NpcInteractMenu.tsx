@@ -1,7 +1,7 @@
 import { useNpcActions } from "../../hooks/useNpcActions";
-import { InteractData, NpcPopupType } from "../../types/npcInteraction";
 import { metadataService } from "../../services/MetadataService";
 import { useSocketStore } from "../../store/socketStore";
+import { InteractData } from "../../types/npcInteraction";
 
 export const NpcInteractMenu: React.FC<{ data: InteractData }> = ({
   data,

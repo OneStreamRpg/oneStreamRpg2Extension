@@ -5,9 +5,8 @@ import { logger } from "../services/Logger";
 import { AbilitySlotType } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import {
-  EquipAbilityParams,
   PersonalChannelAction,
-  PlayerPersonalState,
+  PlayerPersonalState
 } from "../types/personalChannel";
 
 const TAG = "PersonalChannelActions";

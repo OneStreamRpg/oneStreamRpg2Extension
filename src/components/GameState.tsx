@@ -39,8 +39,8 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
   const activeTimeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const updatePlayersState = (
-    players: Array<{ id: string; [key: string]: any }>,
-    previousPlayers: Array<{ id: string; [key: string]: any }>
+    players: Array<{ id: string;[key: string]: any }>,
+    previousPlayers: Array<{ id: string;[key: string]: any }>
   ) => {
     const playerMap = new Map(previousPlayers.map((p) => [p.id, p]));
     players.forEach((playerUpdate) => {
@@ -49,12 +49,13 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         Object.assign(existingPlayer, playerUpdate);
       }
     });
+    logger.debug(TAG, "Updated players", Array.from(playerMap.values()));
     return Array.from(playerMap.values());
   };
 
   const updateEnemiesState = (
-    enemies: Array<{ id: string; [key: string]: any }>,
-    previousEnemies: Array<{ id: string; [key: string]: any }>
+    enemies: Array<{ id: string;[key: string]: any }>,
+    previousEnemies: Array<{ id: string;[key: string]: any }>
   ) => {
     const enemyMap = new Map(previousEnemies.map((e) => [e.id, e]));
     enemies.forEach((enemyUpdate) => {
@@ -63,14 +64,17 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         Object.assign(existingEnemy, enemyUpdate);
       }
     });
+    logger.debug(TAG, "Updated enemies", Array.from(enemyMap.values()));
     return Array.from(enemyMap.values());
   };
 
   const updateNpcsState = (
-    npcs: Array<{ id: string; [key: string]: any }>,
-    previousNpcs: Array<{ id: string; [key: string]: any }>
+    npcs: Array<{ id: string;[key: string]: any }>,
+    previousNpcs: Array<{ id: string;[key: string]: any }>
   ) => {
-    const npcMap = new Map(previousNpcs.map((n) => [n.id, n]));
+    logger.debug(TAG, "NPC delta received", npcs);
+    logger.debug(TAG, "Previous NPCs", previousNpcs);
+    const npcMap = new Map(previousNpcs.map((npc) => [npc.id, npc]));
     npcs.forEach((npcUpdate) => {
       const existingNpc = npcMap.get(npcUpdate.id);
       if (existingNpc) {
@@ -79,6 +83,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         npcMap.set(npcUpdate.id, npcUpdate);
       }
     });
+    logger.debug(TAG, "Updated NPCs", Array.from(npcMap.values()));
     return Array.from(npcMap.values());
   };
 
@@ -99,6 +104,8 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     logger.info(TAG, `Connecting to socket.io server at ${VITE_SOCKET_URL}`);
     const socketInstance: Socket = io(VITE_SOCKET_URL, {
       path: "/socket.io",
+      // MC: Active in case you want to have a good log in dev console
+      // transports: ["websocket"],
       auth: {
         token,
         channelId,
@@ -126,6 +133,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     });
 
     socketInstance.on("gameState", (data) => {
+      logger.info(TAG, "Initial game state received");
       logger.debug(TAG, "Game state received", { data });
       if (data.gameState) {
         setGameState(data.gameState);
@@ -133,23 +141,31 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     });
 
     socketInstance.on("inGame", (data) => {
-      logger.info(TAG, `inGame state changed: ${data}`);
+      logger.info(TAG, `inGame state changed:`, data);
       if (data.inGame) {
+        logger.info(TAG, `Player is now in-game, requesting initial game state...`, {
+          channelId,
+        });
         setinGame(data.inGame);
         socketInstance.emit("getGameState");
       } else {
+        logger.info(TAG, `Player left the game, clearing game state`);
         setinGame(false);
         setGameState({ players: [], enemies: [], npcs: [] });
       }
     });
 
     socketInstance.on("gameStateDelta", (data) => {
+      logger.debug(TAG, "Game state delta received", data);
       if (data.delta) {
         const pingToStreamer = data.delta.ping || 0;
         useSocketStore.getState().setPingToStreamer(pingToStreamer);
         const timeoutId = setTimeout(() => {
           const previousState = useSocketStore.getState().gameState;
-          if (!previousState) return;
+          if (!previousState) {
+            logger.warn(TAG, "No previous game state, skipping delta application");
+            return
+          };
           let players = [...(previousState.players || [])];
           let enemies = [...(previousState.enemies || [])];
           let npcs = [...(previousState.npcs || [])];
@@ -195,7 +211,6 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       socketInstance.emit("ping");
       socketInstance.once("pong", () => {
         const latency = Date.now() - start;
-        // console.log(`📡 Ping: ${latency}ms`);
         if (setPing) setPing(latency);
       });
     }, 3000);

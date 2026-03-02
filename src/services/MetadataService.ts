@@ -5,6 +5,10 @@
  * Data is lazily loaded and cached after first fetch. (singleton)
  */
 
+import { logger } from "./Logger";
+
+const TAG = "MetadataService";
+
 export type AbilitySlotType = "main" | "second" | "ultimate";
 export type CastAnimationPosition = "caster" | "target" | "effect";
 
@@ -57,9 +61,11 @@ class MetadataService {
 
         // Prevent multiple concurrent fetches
         if (this.fetchPromise) {
+            logger.debug(TAG, "Fetch already in progress, reusing existing promise");
             return this.fetchPromise;
         }
 
+        logger.info(TAG, `Fetching metadata from ${this.apiUrl}`);
         this.fetchPromise = fetch(this.apiUrl)
             .then(async (response) => {
                 if (!response.ok) {
@@ -67,7 +73,17 @@ class MetadataService {
                 }
                 const data = await response.json() as MetadataResponse;
                 this.data = data;
+                logger.info(TAG, "Metadata fetched successfully", {
+                    items: Object.keys(data.items).length,
+                    enemies: Object.keys(data.enemies).length,
+                    npcs: Object.keys(data.npcs).length,
+                    abilities: Object.keys(data.abilities).length,
+                });
                 return data;
+            })
+            .catch((err) => {
+                logger.error(TAG, "Failed to fetch metadata", err);
+                throw err;
             })
             .finally(() => {
                 this.fetchPromise = null;

@@ -1,4 +1,7 @@
 import { MutableRefObject, RefObject } from "react";
+import { logger } from "../services/Logger";
+
+const TAG = "HandleClick";
 
 export const handleClick = (
   e: React.MouseEvent,
@@ -8,7 +11,14 @@ export const handleClick = (
   timeoutRef: MutableRefObject<ReturnType<typeof setTimeout> | null>,
   containerRef: RefObject<HTMLDivElement> // 🔹 Accept ref
 ) => {
-  if (!socket || !isConnected || !containerRef.current) return;
+  if (!socket || !isConnected || !containerRef.current) {
+    logger.warn(TAG, "Click ignored: missing prerequisites", {
+      hasSocket: !!socket,
+      isConnected,
+      hasContainer: !!containerRef.current,
+    });
+    return;
+  }
 
   const container = containerRef.current;
   const bounds = container.getBoundingClientRect();
@@ -22,6 +32,7 @@ export const handleClick = (
   const scaledX = rawX * scaleX;
   const scaledY = rawY * scaleY;
 
+  logger.debug(TAG, "Emitting movePlayer", { x: Math.round(scaledX), y: Math.round(scaledY) });
   socket.emit("movePlayer", { x: scaledX, y: scaledY });
 
   if (timeoutRef.current) clearTimeout(timeoutRef.current);
