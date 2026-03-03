@@ -91,7 +91,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
         interactDelayTimeout.current = setTimeout(() => {
           useNpcStore.getState().openPopup(interactData.npcId, "interact", interactData);
           interactDelayTimeout.current = null;
-        }, getStreamSyncDelay());
+        }, 0);
       }
     };
 
@@ -117,7 +117,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
             const interactData = popupData as InteractData;
             useNpcStore.getState().openPopup(interactData.npcId, "interact", interactData);
             interactDelayTimeout.current = null;
-          }, getStreamSyncDelay());
+          }, 0);
         } else {
           useNpcStore.getState().updatePopupData(popupData);
           useNpcStore.getState().setLoading(false);
