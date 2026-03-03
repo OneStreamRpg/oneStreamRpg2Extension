@@ -58,7 +58,7 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
       }`}
     >
       <CdnIcon
-        type="items"
+        type="abilities"
         id={ability.abilityId}
         className="size-full"
         alt={abilityMetaData.name}
