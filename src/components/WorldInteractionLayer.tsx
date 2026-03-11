@@ -1,15 +1,17 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Tooltip } from "react-tooltip";
 import { useGameObjects } from "../hooks/useGameobjects";
 import { useNpcActions } from "../hooks/useNpcActions";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
 import { logger } from "../services/Logger";
 import { metadataService } from "../services/MetadataService";
+import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
 import ClickMarker from "./ui/ClickMarker";
 
 const TAG = "WorldInteraction";
 const DEBUG = import.meta.env.VITE_DEBUG_WORLD_INTERACTION === "true";
+const EMPTY_QUESTS: { npcId: string }[] = [];
 
 export const WorldInteractionLayer: React.FC = () => {
   const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
@@ -19,6 +21,13 @@ export const WorldInteractionLayer: React.FC = () => {
   const socket = useSocketStore((state) => state.socket);
   const gameState = useSocketStore((state) => state.gameState);
   const gameObjects = useGameObjects(gameState);
+  const availableQuests = usePersonalChannelStore(
+    (state) => state.displayedState?.quests?.available ?? EMPTY_QUESTS
+  );
+  const questNpcIds = useMemo(
+    () => new Set(availableQuests.map((q) => q.npcId)),
+    [availableQuests]
+  );
   const { movePlayer, setTargetEnemy } = usePersonalChannelActions(socket);
   const { setTargetNpc } = useNpcActions(socket);
 
@@ -126,7 +135,22 @@ export const WorldInteractionLayer: React.FC = () => {
               width: `${(obj.hitbox.width / 1920) * 100}%`,
               height: `${(obj.hitbox.height / 1080) * 100}%`,
             }}
-          />
+          >
+            {obj.type === "npc" && questNpcIds.has(obj.npcId) && (
+              <img
+                src="/media/img/icons/questionmark.png"
+                className="absolute pointer-events-none"
+                style={{
+                  bottom: "100%",
+                  left: "50%",
+                  transform: "translateX(-40%) translateY(-50%)",
+                  width: "55%",
+                  height: "auto",
+                }}
+                alt=""
+              />
+            )}
+          </div>
         );
       })}
     </section>
