@@ -28,24 +28,28 @@ export const ActiveQuestItem: React.FC<ActiveQuestItemProps> = ({
       {expanded && (
         <div className="mt-1">
           <p className="text-xs text-gray-400">{quest.description}</p>
-          {quest.progressMap && quest.maxProgressMap ? (
+          {quest.maxProgressMap && Object.keys(quest.maxProgressMap).length > 0 ? (
             <div className="mt-1">
-              {Object.entries(quest.progressMap).map(([key, value]) => (
-                <div key={key} className="mt-1">
-                  <p className="text-xs text-gray-300">{key}</p>
-                  <div className="w-full bg-gray-700 h-2 mt-0.5">
-                    <div
-                      className="bg-blue-500 h-2"
-                      style={{
-                        width: `${Math.round((value / (quest.maxProgressMap![key] ?? 1)) * 100)}%`,
-                      }}
-                    />
+              {Object.keys(quest.maxProgressMap).map((key) => {
+                const current = quest.progressMap?.[key] ?? 0;
+                const max = quest.maxProgressMap![key];
+                return (
+                  <div key={key} className="mt-1">
+                    <p className="text-xs text-gray-300">{key}</p>
+                    <div className="w-full bg-gray-700 h-2 mt-0.5">
+                      <div
+                        className="bg-blue-500 h-2"
+                        style={{
+                          width: `${Math.round((current / (max ?? 1)) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {current}/{max ?? "?"}
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-500">
-                    {value}/{quest.maxProgressMap![key] ?? "?"}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <>
@@ -92,11 +96,12 @@ export const AvailableQuestItem: React.FC<AvailableQuestItemProps> = ({
         className="flex items-center justify-between cursor-pointer"
         onClick={() => setExpanded(!expanded)}
       >
-        <p className="text-sm font-semibold">{quest.name}</p>
+        <p className="text-sm font-semibold">Quest from {quest.npcName}</p>
         <span className="text-xs text-gray-400">{expanded ? "▼" : "▶"}</span>
       </div>
       {expanded && (
         <div className="mt-1">
+          <p className="text-xs text-gray-300 font-medium">{quest.name}</p>
           <p className="text-xs text-gray-400">{quest.description}</p>
           <button
             onClick={(e) => {
