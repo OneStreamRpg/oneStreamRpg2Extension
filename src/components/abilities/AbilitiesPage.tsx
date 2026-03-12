@@ -85,7 +85,7 @@ export const AbilitiesPage: React.FC = () => {
                     }`}
                   >
                     <CdnIcon
-                      type="items"
+                      type="abilities"
                       id={abilityId}
                       className="size-10"
                       alt={meta?.name}

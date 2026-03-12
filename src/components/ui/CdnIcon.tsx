@@ -2,7 +2,7 @@ import { useState } from "react";
 import { getCdnIconUrl } from "../../utils/cdnIcon";
 
 interface CdnIconProps {
-  type: "items" | "enemy" | "npc";
+  type: "items" | "enemy" | "npc" | "abilities";
   id: string;
   className?: string;
   alt?: string;
