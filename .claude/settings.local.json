@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx vite build)"
+      "Bash(npx vite build)",
+      "Bash(cd \"C:\\\\Users\\\\Julian\\\\Documents\\\\github\\\\oneStreamRpg2Extension\" && npx tsc --noEmit 2>&1 | head -50)"
     ]
   }
 }
