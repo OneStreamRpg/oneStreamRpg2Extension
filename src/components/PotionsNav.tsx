@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
-import { CdnIcon } from "./ui/CdnIcon";
 import { isEmptyItem } from "./inventory/inventoryService";
 import { isPotionItem } from "./inventory/types";
+import { CdnIcon } from "./ui/CdnIcon";
 
 export const PotionsNav: React.FC = () => {
   const displayedState = usePersonalChannelStore(
@@ -40,7 +40,7 @@ export const PotionsNav: React.FC = () => {
   if (isEmpty) {
     return (
       <nav className="pointer-events-auto flex">
-        <div className="size-16 border-2 border-gray-600 bg-gray-800 flex items-center justify-center">
+        <div className="size-12 border-2 border-gray-600 bg-gray-800 flex items-center justify-center">
           <span className="text-xs text-gray-500">Potion</span>
         </div>
       </nav>
@@ -56,11 +56,10 @@ export const PotionsNav: React.FC = () => {
       <button
         onClick={() => activatePotion()}
         disabled={isOnCooldown || charges <= 0}
-        className={`relative size-16 border-2 border-gray-600 bg-gray-800 overflow-hidden ${
-          isOnCooldown || charges <= 0
-            ? "opacity-50 cursor-not-allowed"
-            : "hover:bg-gray-700 cursor-pointer"
-        }`}
+        className={`relative size-12 border-2 border-gray-600 bg-gray-800 overflow-hidden ${isOnCooldown || charges <= 0
+          ? "opacity-50 cursor-not-allowed"
+          : "hover:bg-gray-700 cursor-pointer"
+          }`}
         title={`${potionItem!.itemId} (${charges}/${maxCharges})`}
       >
         <CdnIcon

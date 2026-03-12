@@ -21,7 +21,7 @@ export const AbilitiesNav: React.FC = () => {
         !isEmptyAbility(ability) ? (
           <Ability key={ability.slot} ability={ability} />
         ) : (
-          <div key={ability.slot} className="relative size-16 border-2 bg-gray-800"></div>
+          <div key={ability.slot} className="relative size-12 border-2 bg-gray-800"></div>
         )
       )}
 

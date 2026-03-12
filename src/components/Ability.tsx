@@ -51,11 +51,10 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
         abilityMetaData.name + ": " + abilityMetaData.description
       }
       data-tooltip-place="top"
-      className={`relative size-16 border-2 bg-gray-800 overflow-hidden ${
-        isOnCooldown
+      className={`relative size-12 border-2 bg-gray-800 overflow-hidden ${isOnCooldown
           ? "opacity-50 cursor-not-allowed"
           : "hover:bg-gray-700 cursor-pointer"
-      }`}
+        }`}
     >
       <CdnIcon
         type="abilities"
@@ -72,7 +71,7 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
             style={{ height: `${cooldownPercentage}%` }}
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-white text-sm font-bold">
+            <span className="text-white text-xs font-bold">
               {Math.ceil(cooldown / 1000)}s
             </span>
           </div>

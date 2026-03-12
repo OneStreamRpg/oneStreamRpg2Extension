@@ -8,7 +8,7 @@ import { QuestPanel } from "./quests/QuestPanel";
 
 export const UserInterface: React.FC = () => {
   return (
-    <main className="size-full grid grid-cols-1 grid-rows-[auto_1fr_auto] pb-12 pt-12 px-2 pointer-events-none">
+    <main className="size-full grid grid-cols-1 grid-rows-[auto_1fr_auto] pb-7 pt-12 px-2 pointer-events-none">
       <aside className="flex justify-between w-full">
         <div className="relative flex flex-col gap-2">
           <ProfileNav />
