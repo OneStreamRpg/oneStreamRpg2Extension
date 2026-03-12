@@ -17,7 +17,7 @@ const TAG = "PersonalChannel";
 const NPC_POPUP_TYPES = new Set<string>([
   "interact", "shop", "buy", "recipes", "buyRecipe", "craftList", "craft",
   "dialogue", "dialogueAnswer",
-  "arena", "summon", "trade", "tradeItem",
+  "arena", "spawnArena", "summon", "trade", "tradeItem",
   "stash", "stashPut", "stashGet", "stashSwap",
   "acceptQuest",
 ]);

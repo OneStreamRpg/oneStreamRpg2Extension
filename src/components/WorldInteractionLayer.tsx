@@ -79,7 +79,7 @@ export const WorldInteractionLayer: React.FC = () => {
       }
     >
       {marker && <ClickMarker x={marker.x} y={marker.y} />}
-      <Tooltip id="game-object-tooltip" />
+      <Tooltip id="game-object-tooltip" style={{ zIndex: 9999 }} />
 
       {gameObjects.map((obj) => {
         let metadata = null;
@@ -143,8 +143,8 @@ export const WorldInteractionLayer: React.FC = () => {
                 style={{
                   bottom: "100%",
                   left: "50%",
-                  transform: "translateX(-40%) translateY(-50%)",
-                  width: "55%",
+                  transform: "translateX(-40%) translateY(-35%)",
+                  width: "1.5vw",
                   height: "auto",
                 }}
                 alt=""

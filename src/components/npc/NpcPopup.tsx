@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNpcStore } from "../../store/useNpcStore";
 import { WindowContainer } from "../ui/WindowContainer";
 import {
@@ -7,6 +8,7 @@ import {
   CraftListData,
   DialogueData,
   ArenaData,
+  SpawnArenaData,
   SummonData,
   TradeData,
   StashData,
@@ -20,6 +22,28 @@ import { NpcArena } from "./NpcArena";
 import { NpcSummon } from "./NpcSummon";
 import { NpcTrade } from "./NpcTrade";
 import { NpcStash } from "./NpcStash";
+
+const SpawnArenaCountdown: React.FC<{ message: string; onDone: () => void }> = ({ message, onDone }) => {
+  const [count, setCount] = useState(3);
+
+  useEffect(() => {
+    if (count <= 0) {
+      onDone();
+      return;
+    }
+    const t = setTimeout(() => setCount((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [count, onDone]);
+
+  return (
+    <div className="flex flex-col items-center gap-4 min-w-48 p-4">
+      <p className="text-sm text-center">{message}</p>
+      {count > 0 && (
+        <span className="text-6xl font-bold text-red-400">{count}</span>
+      )}
+    </div>
+  );
+};
 
 // Response types that show a transient message instead of a full UI
 const MESSAGE_TYPES = new Set([
@@ -67,6 +91,11 @@ export const NpcPopup: React.FC = () => {
         return <NpcDialogue data={popupData as DialogueData} />;
       case "arena":
         return <NpcArena data={popupData as ArenaData} />;
+      case "spawnArena": {
+        const d = popupData as SpawnArenaData;
+        const msg = d.message ?? "Battle begins!";
+        return <SpawnArenaCountdown message={msg} onDone={closePopup} />;
+      }
       case "summon":
         return <NpcSummon data={popupData as SummonData} />;
       case "trade":

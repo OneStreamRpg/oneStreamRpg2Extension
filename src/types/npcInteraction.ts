@@ -75,6 +75,12 @@ export interface ArenaData {
   arenaStones: ArenaStone[];
 }
 
+export interface SpawnArenaData {
+  type: "spawnArena";
+  success: boolean;
+  message?: string;
+}
+
 export interface ArenaStone {
   stoneId: string;
   enemyName: string;
@@ -182,6 +188,7 @@ export type InteractionData =
   | RecipesData
   | DialogueData
   | ArenaData
+  | SpawnArenaData
   | SummonData
   | TradeData
   | CraftListData
