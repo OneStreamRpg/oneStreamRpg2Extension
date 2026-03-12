@@ -4,6 +4,7 @@ import { usePersonalChannel } from "../hooks/usePersonalChannel";
 import { logger } from "../services/Logger";
 import { metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
+import { ActionAcknowledgment } from "../types/personalChannel";
 
 const TAG = "GameState";
 
@@ -26,6 +27,9 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     setGameState,
     setinGame,
     setPing,
+    setJoinStatus,
+    setJoinError,
+    setJoinGameFn,
   } = useSocketStore();
 
   // Initialize personal channel
@@ -117,6 +121,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     socketInstance.on("connect", () => {
       logger.info(TAG, "Connected to socket.io server");
       setIsConnected(true);
+      setJoinError(null);
     });
 
     socketInstance.on("authenticated", () => {
@@ -126,7 +131,38 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     socketInstance.on("disconnect", () => {
       logger.warn(TAG, "Disconnected from socket.io server");
       setIsConnected(false);
+      setinGame(false);
     });
+
+    const joinGame = (loginName: string) => {
+      const actionId = `join-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      setJoinStatus("joining");
+
+      socketInstance.emit("personalChannel:action", {
+        actionId,
+        seq: 1,
+        type: "join",
+        params: { username: loginName },
+      });
+
+      const handleJoinAck = (data: ActionAcknowledgment) => {
+        if (data.actionId !== actionId) return;
+        socketInstance.off("personalState:ack", handleJoinAck);
+
+        if (data.success || data.error === "Already in game") {
+          setJoinStatus("idle");
+          setJoinError(null);
+          socketInstance.emit("personalChannel:requestSync");
+        } else {
+          setJoinStatus("idle");
+          setJoinError(data.error ?? "Failed to join game");
+        }
+      };
+
+      socketInstance.on("personalState:ack", handleJoinAck);
+    };
+
+    setJoinGameFn(joinGame);
 
     socketInstance.on("connect_error", (err) => {
       logger.error(TAG, "Connection error", err);
@@ -223,7 +259,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       setIsConnected(false);
       setSocket(null);
     };
-  }, [token, channelId, setSocket, setIsConnected, setGameState]);
+  }, [token, channelId, setSocket, setIsConnected, setGameState, setinGame, setJoinStatus, setJoinError, setJoinGameFn]);
 
   return <>{children}</>;
 };

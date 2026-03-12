@@ -9,7 +9,7 @@ const LOG_LEVELS: Record<LogLevel, number> = {
 
 const config = {
     enabled: import.meta.env.DEV,
-    minLevel: "debug",
+    minLevel: "info",
 } as const;
 
 function shouldLog(level: LogLevel,): boolean {
