@@ -24,6 +24,9 @@ export const WorldInteractionLayer: React.FC = () => {
   const availableQuests = usePersonalChannelStore(
     (state) => state.displayedState?.quests?.available ?? EMPTY_QUESTS
   );
+  const currentUsername = usePersonalChannelStore(
+    (state) => state.displayedState?.profile?.username ?? null
+  );
   const questNpcIds = useMemo(
     () => new Set(availableQuests.map((q) => q.npcId)),
     [availableQuests]
@@ -144,6 +147,20 @@ export const WorldInteractionLayer: React.FC = () => {
                   bottom: "100%",
                   left: "50%",
                   transform: "translateX(-40%) translateY(-35%)",
+                  width: "1.5vw",
+                  height: "auto",
+                }}
+                alt=""
+              />
+            )}
+            {obj.type === "player" && obj.username === currentUsername && (
+              <img
+                src="/media/img/icons/playerIndicator.png"
+                className="absolute pointer-events-none"
+                style={{
+                  bottom: "100%",
+                  left: "50%",
+                  transform: "translateX(-50%) translateY(-140%)",
                   width: "1.5vw",
                   height: "auto",
                 }}
