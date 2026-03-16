@@ -26,6 +26,7 @@ interface UsePersonalChannelOptions {
   socket: Socket | null;
   isConnected: boolean;
   enabled?: boolean;
+  inGame?: boolean;
 }
 
 function getStreamSyncDelay(): number {
@@ -34,7 +35,7 @@ function getStreamSyncDelay(): number {
 }
 
 export function usePersonalChannel(options: UsePersonalChannelOptions) {
-  const { socket, isConnected, enabled = true } = options;
+  const { socket, isConnected, enabled = true, inGame = false } = options;
   const hasSubscribed = useRef(false);
   const syncRequested = useRef(false);
   const interactDelayTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -205,6 +206,23 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
       socket.off("disconnect", handleDisconnect);
     };
   }, [socket, enabled, rollbackAllActions, resetState, setSubscribed]);
+
+  // When inGame becomes true, reset subscription and re-subscribe to get fresh in-game state
+  useEffect(() => {
+    if (!socket || !isConnected || !enabled || !inGame) return;
+
+    logger.info(TAG, "Player joined game, re-subscribing to personal channel");
+    hasSubscribed.current = false;
+    rollbackAllActions();
+    resetState();
+
+    setTimeout(() => {
+      if (socket.connected) {
+        socket.emit("personalChannel:subscribe");
+        hasSubscribed.current = true;
+      }
+    }, 100);
+  }, [socket, isConnected, enabled, inGame, rollbackAllActions, resetState]);
 
   return {
     isSubscribed,

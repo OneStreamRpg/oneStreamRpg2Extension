@@ -22,6 +22,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
   const {
     socket,
     isConnected,
+    inGame,
     setSocket,
     setIsConnected,
     setGameState,
@@ -37,6 +38,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     socket,
     isConnected,
     enabled: true,
+    inGame,
   });
 
   const streamDelayRef = useRef(0);
@@ -152,7 +154,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         if (data.success || data.error === "Already in game") {
           setJoinStatus("idle");
           setJoinError(null);
-          socketInstance.emit("personalChannel:requestSync");
+          // Re-subscription is handled by usePersonalChannel watching inGame
         } else {
           setJoinStatus("idle");
           setJoinError(data.error ?? "Failed to join game");
