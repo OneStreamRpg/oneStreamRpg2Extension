@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Tooltip } from "react-tooltip";
 import { useGameObjects } from "../hooks/useGameobjects";
 import { useNpcActions } from "../hooks/useNpcActions";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
@@ -8,6 +7,7 @@ import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
 import ClickMarker from "./ui/ClickMarker";
+import { PathOverlay } from "./PathOverlay";
 
 const TAG = "WorldInteraction";
 const DEBUG = import.meta.env.VITE_DEBUG_WORLD_INTERACTION === "true";
@@ -23,9 +23,6 @@ export const WorldInteractionLayer: React.FC = () => {
   const gameObjects = useGameObjects(gameState);
   const availableQuests = usePersonalChannelStore(
     (state) => state.displayedState?.quests?.available ?? EMPTY_QUESTS
-  );
-  const currentUsername = usePersonalChannelStore(
-    (state) => state.displayedState?.profile?.username ?? null
   );
   const questNpcIds = useMemo(
     () => new Set(availableQuests.map((q) => q.npcId)),
@@ -82,7 +79,7 @@ export const WorldInteractionLayer: React.FC = () => {
       }
     >
       {marker && <ClickMarker x={marker.x} y={marker.y} />}
-      <Tooltip id="game-object-tooltip" style={{ zIndex: 9999 }} />
+      <PathOverlay />
 
       {gameObjects.map((obj) => {
         let metadata = null;
@@ -97,17 +94,10 @@ export const WorldInteractionLayer: React.FC = () => {
             ? enemy.name + " (Enemy)"
             : "Unknown Enemy, enemyId is: " + obj.enemyId
             }`;
-        } else if (obj.type === "player") {
-          metadata = `Player: ${obj.username}`;
         }
 
         return (
           <div
-            data-tooltip-id="game-object-tooltip"
-            data-tooltip-content={
-              metadata ? metadata : "No metadata found for: " + obj.id
-            }
-            data-tooltip-place="top"
             key={obj.id}
             onClick={(e) => {
               e.stopPropagation();
@@ -147,20 +137,6 @@ export const WorldInteractionLayer: React.FC = () => {
                   bottom: "100%",
                   left: "50%",
                   transform: "translateX(-40%) translateY(-35%)",
-                  width: "1.5vw",
-                  height: "auto",
-                }}
-                alt=""
-              />
-            )}
-            {obj.type === "player" && obj.username === currentUsername && (
-              <img
-                src="/media/img/icons/playerIndicator.png"
-                className="absolute pointer-events-none"
-                style={{
-                  bottom: "100%",
-                  left: "50%",
-                  transform: "translateX(-50%) translateY(-140%)",
                   width: "1.5vw",
                   height: "auto",
                 }}

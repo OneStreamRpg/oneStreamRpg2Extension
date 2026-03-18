@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 import { logger } from "../services/Logger";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
+import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
 import { useSocketStore } from "../store/socketStore";
 import { useNpcStore } from "../store/useNpcStore";
 import { InteractData } from "../types/npcInteraction";
@@ -84,6 +85,14 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
     const handleEvent = (data: { event: string; data: any; timestamp: number }) => {
       logger.debug(TAG, `Personal state event received: event=${data.event}`, data);
 
+      if (data.event === "moveStart") {
+        const path = data.data?.remainingPath as Waypoint[] | undefined;
+        if (path) {
+          usePathOverlayStore.getState().setPath(path);
+        }
+        return;
+      }
+
       if (data.event === "npcInteraction") {
         // Scenario B: player had to walk to the NPC — event fires when they arrive
         // Delay to sync with the stream visual
@@ -139,6 +148,14 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
       setError(data.error);
     };
 
+    // Listen for player movement deltas (~20Hz) — buffered by stream delay
+    const handlePlayerDelta = (data: { delta: { remainingPath: Waypoint[] }; timestamp: number }) => {
+      const path = data.delta?.remainingPath;
+      if (!path) return;
+      const applyAt = data.timestamp + getStreamSyncDelay();
+      usePathOverlayStore.getState().enqueueDelta(path, applyAt);
+    };
+
     // Register event listeners
     socket.on("personalState:init", handleInit);
     socket.on("personalState:delta", handleDelta);
@@ -146,6 +163,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
     socket.on("personalState:sync", handleSync);
     socket.on("personalState:error", handleError);
     socket.on("personalState:event", handleEvent);
+    socket.on("personalState:playerDelta", handlePlayerDelta);
 
     // Cleanup
     return () => {
@@ -155,6 +173,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
       socket.off("personalState:sync", handleSync);
       socket.off("personalState:error", handleError);
       socket.off("personalState:event", handleEvent);
+      socket.off("personalState:playerDelta", handlePlayerDelta);
       if (interactDelayTimeout.current) {
         clearTimeout(interactDelayTimeout.current);
         interactDelayTimeout.current = null;

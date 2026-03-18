@@ -5,7 +5,7 @@ import { useSocketStore } from "../../store/socketStore";
 
 export const NpcRecipes: React.FC<{ data: RecipesData }> = ({ data }) => {
   const socket = useSocketStore((state) => state.socket);
-  const { buyRecipe, craft } = useNpcActions(socket);
+  const { buyRecipe } = useNpcActions(socket);
 
   const npcMeta = metadataService.getNpcSync(data.npcId);
   const npcName = npcMeta?.name ?? data.npcId;
@@ -34,12 +34,6 @@ export const NpcRecipes: React.FC<{ data: RecipesData }> = ({ data }) => {
                     className="px-2 py-1 bg-yellow-700 hover:bg-yellow-600 cursor-pointer text-xs"
                   >
                     Buy
-                  </button>
-                  <button
-                    onClick={() => craft(data.npcId, index + 1)}
-                    className="px-2 py-1 bg-blue-700 hover:bg-blue-600 cursor-pointer text-xs"
-                  >
-                    Craft
                   </button>
                 </div>
               </div>
