@@ -1,7 +1,8 @@
 export const WindowContainer: React.FC<{
   children: React.ReactNode;
   className?: string;
-}> = ({ children, className = "" }) => {
+  style?: React.CSSProperties;
+}> = ({ children, className = "", style: styleProp = {} }) => {
   return (
     <div
       className={`pointer-events-auto ${className}`}
@@ -28,6 +29,7 @@ export const WindowContainer: React.FC<{
         paddingBottom: "8px",
         paddingLeft: "8px",
         paddingRight: "0px",
+        ...styleProp,
       }}
     >
       {children}

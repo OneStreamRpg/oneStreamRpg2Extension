@@ -10,13 +10,18 @@ import { QuestPanel } from "./quests/QuestPanel";
 export const UserInterface: React.FC = () => {
   const profileOpen = useUIStore((state) => state.profileOpen);
   const questPanelOpen = useUIStore((state) => state.questPanelOpen);
+  const activePage = useUIStore((state) => state.activePage);
+
+  const pageOpen = activePage !== null;
 
   return (
     <main className="size-full flex flex-row pointer-events-none">
       <div className="flex-1 grid grid-cols-1 grid-rows-[auto_1fr_auto] pb-7 pt-12 px-2">
-        <aside className="relative flex flex-col gap-2 w-fit">
-          {profileOpen && <ProfileNav />}
-          {questPanelOpen && <QuestPanel />}
+        <aside className="relative h-0">
+          <div className="absolute top-0 flex flex-col gap-2 w-fit">
+            {profileOpen && <ProfileNav />}
+            {questPanelOpen && <QuestPanel />}
+          </div>
         </aside>
         <section className="overflow-hidden">
           <ActivePage />
@@ -26,7 +31,9 @@ export const UserInterface: React.FC = () => {
           <PotionsNav />
         </aside>
       </div>
-      <LeftNav />
+      <div className={pageOpen ? "invisible" : ""}>
+        <LeftNav />
+      </div>
       <NpcPopup />
     </main>
   );

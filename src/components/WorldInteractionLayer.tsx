@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
+import GameObjectTooltip from "./ui/GameObjectTooltip";
 import { useGameObjects } from "../hooks/useGameobjects";
 import { useNpcActions } from "../hooks/useNpcActions";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
@@ -15,6 +16,7 @@ const EMPTY_QUESTS: { npcId: string }[] = [];
 
 export const WorldInteractionLayer: React.FC = () => {
   const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -83,18 +85,23 @@ export const WorldInteractionLayer: React.FC = () => {
 
       {gameObjects.map((obj) => {
         let metadata = null;
+        let displayName: string | null = null;
         if (obj.type === "npc") {
           const npc = metadataService.getNpcSync(obj.npcId);
+          displayName = npc?.name ?? null;
           metadata = `${npc ? npc.name + " (NPC)" : "Unknown NPC, npcId is: " + obj.npcId
             }`;
         } else if (obj.type === "enemy") {
           const enemy = metadataService.getEnemySync(obj.enemyId);
-
+          displayName = enemy?.name ?? null;
           metadata = `${enemy
             ? enemy.name + " (Enemy)"
             : "Unknown Enemy, enemyId is: " + obj.enemyId
             }`;
         }
+
+        const isHovered = hoveredId === obj.id;
+        const showTooltip = isHovered && displayName && obj.type !== "player";
 
         return (
           <div
@@ -109,6 +116,8 @@ export const WorldInteractionLayer: React.FC = () => {
                 setTargetNpc(obj.npcId);
               }
             }}
+            onMouseEnter={() => obj.type !== "player" && setHoveredId(obj.id)}
+            onMouseLeave={() => setHoveredId(null)}
             className={`absolute pointer-events-auto ${obj.type === "enemy"
               ? "cursor-crosshair"
               : obj.type === "npc"
@@ -142,6 +151,26 @@ export const WorldInteractionLayer: React.FC = () => {
                 }}
                 alt=""
               />
+            )}
+            {showTooltip && (
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  bottom: "100%",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  marginBottom: "4px",
+                  whiteSpace: "nowrap",
+                  background: "rgba(0,0,0,0.75)",
+                  color: obj.type === "npc" ? "#c8a020" : "#e05050",
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  zIndex: 1000,
+                }}
+              >
+                {displayName}
+              </div>
             )}
           </div>
         );

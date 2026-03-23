@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Tooltip } from "react-tooltip";
 import { useAuthStore } from "../hooks/useAuthStore";
 import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useUIStore } from "../store/useUIStore";
 import { WindowContainer } from "./ui/WindowContainer";
+import { windowHoverStyle } from "./ui/windowHoverStyle";
 
 interface PlayerProfile {
   name: string;
@@ -22,6 +24,7 @@ export const ProfileNav: React.FC = () => {
   const { displayedState } = usePersonalChannelStore();
   const { profile } = useAuthStore();
   const toggleProfile = useUIStore((state) => state.toggleProfile);
+  const [isHovered, setIsHovered] = useState(false);
 
   if (!displayedState || !profile) {
     return <div>Loading...</div>;
@@ -48,7 +51,12 @@ export const ProfileNav: React.FC = () => {
   const manaPercentage = (playerProfile.mana / playerProfile.maxMana) * 100;
   return (
     <>
-      <WindowContainer className="pointer-events-auto hover:opacity-100 opacity-50 transition-opacity">
+      <div
+        className="pointer-events-auto"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+      <WindowContainer style={windowHoverStyle(isHovered)}>
         <div className="flex items-center gap-2 pr-2 text-xs">
           <div
             className="flex items-center gap-2"
@@ -114,6 +122,7 @@ export const ProfileNav: React.FC = () => {
           </div>
         </div>
       </WindowContainer>
+      </div>
 
       <Tooltip
         id="player-stats-tooltip"
