@@ -13,7 +13,6 @@ export const UserInterface: React.FC = () => {
 
   return (
     <main className="size-full flex flex-row pointer-events-none">
-      <LeftNav />
       <div className="flex-1 grid grid-cols-1 grid-rows-[auto_1fr_auto] pb-7 pt-12 px-2">
         <aside className="relative flex flex-col gap-2 w-fit">
           {profileOpen && <ProfileNav />}
@@ -27,6 +26,7 @@ export const UserInterface: React.FC = () => {
           <PotionsNav />
         </aside>
       </div>
+      <LeftNav />
       <NpcPopup />
     </main>
   );

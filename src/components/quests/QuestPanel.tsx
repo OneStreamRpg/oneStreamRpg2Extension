@@ -2,6 +2,7 @@ import { useNpcActions } from "../../hooks/useNpcActions";
 import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
+import { useUIStore } from "../../store/useUIStore";
 import { WindowContainer } from "../ui/WindowContainer";
 import { ActiveQuestItem, AvailableQuestItem } from "./QuestItem";
 
@@ -12,6 +13,7 @@ export const QuestPanel: React.FC = () => {
   const socket = useSocketStore((state) => state.socket);
   const { cancelQuest } = usePersonalChannelActions(socket);
   const { setTargetNpc } = useNpcActions(socket);
+  const toggleQuestPanel = useUIStore((state) => state.toggleQuestPanel);
 
   const quests = displayedState?.quests;
 
@@ -19,6 +21,14 @@ export const QuestPanel: React.FC = () => {
     <WindowContainer className="pointer-events-auto w-56 max-h-64 overflow-y-auto">
       <div className="flex items-center justify-between mb-2 pr-2">
         <span className="text-sm font-bold" style={{ color: "#c8a020" }}>Quests</span>
+        <button
+          onClick={toggleQuestPanel}
+          className="cursor-pointer flex items-center justify-center"
+          style={{ color: "#9a7850", lineHeight: 1 }}
+          title="Close"
+        >
+          ✕
+        </button>
       </div>
 
       {!quests ? (

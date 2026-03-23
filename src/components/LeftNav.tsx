@@ -63,7 +63,7 @@ export const LeftNav: React.FC = () => {
   const toggleProfile = useUIStore((state) => state.toggleProfile);
 
   return (
-    <nav className="flex flex-col justify-end h-full gap-1 pb-7 pt-12">
+    <nav className="flex flex-col justify-start h-full gap-1 pb-7 pt-12">
       <NavButton
         icon="inventory"
         label="Inventory"
