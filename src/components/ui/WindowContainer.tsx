@@ -24,7 +24,7 @@ export const WindowContainer: React.FC<{
         borderBottom: "3px solid #3d1a06",
         borderLeft: "3px solid #3d1a06",
         borderRight: "3px solid #3d1a06",
-        backgroundColor: "rgba(30, 15, 6, 0.5)",
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
         paddingTop: "8px",
         paddingBottom: "8px",
         paddingLeft: "8px",

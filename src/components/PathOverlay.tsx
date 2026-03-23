@@ -36,15 +36,6 @@ export const PathOverlay: React.FC = () => {
         strokeLinejoin="round"
         strokeDasharray="14 8"
       />
-      {remainingPath.map((p, i) => (
-        <circle
-          key={i}
-          cx={p.x}
-          cy={p.y}
-          r="5"
-          fill="rgba(255, 255, 255, 0.9)"
-        />
-      ))}
     </svg>
   );
 };

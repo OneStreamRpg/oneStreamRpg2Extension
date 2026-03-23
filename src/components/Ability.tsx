@@ -51,7 +51,7 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
         abilityMetaData.name + ": " + abilityMetaData.description
       }
       data-tooltip-place="top"
-      className={`relative size-12 overflow-hidden ${isOnCooldown ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+      className={`relative size-12 overflow-hidden ${isOnCooldown ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:brightness-125"}`}
       style={{
         backgroundColor: "#231206",
         borderTop: "3px solid #9a7228",

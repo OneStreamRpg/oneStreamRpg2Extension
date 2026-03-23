@@ -17,7 +17,7 @@ export const ActiveQuestItem: React.FC<ActiveQuestItemProps> = ({
       : 0;
 
   return (
-    <div className="bg-gray-800/50 p-2">
+    <div className="p-2">
       <div
         className="flex items-center justify-between cursor-pointer"
         onClick={() => setExpanded(!expanded)}
@@ -91,7 +91,7 @@ export const AvailableQuestItem: React.FC<AvailableQuestItemProps> = ({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="bg-gray-800/50 p-2">
+    <div className="p-2">
       <div
         className="flex items-center justify-between cursor-pointer"
         onClick={() => setExpanded(!expanded)}

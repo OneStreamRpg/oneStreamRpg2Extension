@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Tooltip } from "react-tooltip";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
@@ -77,7 +78,7 @@ export const PotionsNav: React.FC = () => {
       <button
         onClick={() => activatePotion()}
         disabled={isOnCooldown || charges <= 0}
-        className={`relative size-12 overflow-hidden ${isOnCooldown || charges <= 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+        className={`relative size-12 overflow-hidden ${isOnCooldown || charges <= 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:brightness-125"}`}
         style={{
           backgroundColor: "#231206",
           borderTop: "3px solid #9a7228",
@@ -97,7 +98,9 @@ export const PotionsNav: React.FC = () => {
             "0px 0px 8px 0px rgba(0,0,0,0.8)",
           ].join(", "),
         }}
-        title={`${potionItem!.itemId} (${charges}/${maxCharges})`}
+        data-tooltip-id="potion-tooltip"
+        data-tooltip-content={`${potionItem!.itemId} (${charges}/${maxCharges})`}
+        data-tooltip-place="top"
       >
         <CdnIcon
           type="items"
@@ -124,6 +127,7 @@ export const PotionsNav: React.FC = () => {
           </>
         )}
       </button>
+      <Tooltip id="potion-tooltip" delayShow={300} />
     </nav>
   );
 };
