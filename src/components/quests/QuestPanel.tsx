@@ -2,12 +2,10 @@ import { useNpcActions } from "../../hooks/useNpcActions";
 import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
-import { useUIStore } from "../../store/useUIStore";
+import { WindowContainer } from "../ui/WindowContainer";
 import { ActiveQuestItem, AvailableQuestItem } from "./QuestItem";
 
 export const QuestPanel: React.FC = () => {
-  const questPanelOpen = useUIStore((state) => state.questPanelOpen);
-  const toggleQuestPanel = useUIStore((state) => state.toggleQuestPanel);
   const displayedState = usePersonalChannelStore(
     (state) => state.displayedState
   );
@@ -17,36 +15,19 @@ export const QuestPanel: React.FC = () => {
 
   const quests = displayedState?.quests;
 
-  if (!questPanelOpen) {
-    return (
-      <button
-        onClick={toggleQuestPanel}
-        className="pointer-events-auto bg-gray-800/80 px-2 py-1 text-xs cursor-pointer hover:bg-gray-700"
-      >
-        Quests
-      </button>
-    );
-  }
-
   return (
-    <div className="pointer-events-auto bg-gray-900/90 p-2 w-56 max-h-64 overflow-y-auto absolute z-10 top-full mt-2">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-bold">Quests</span>
-        <button
-          onClick={toggleQuestPanel}
-          className="text-xs text-gray-400 hover:text-white cursor-pointer"
-        >
-          Hide
-        </button>
+    <WindowContainer className="pointer-events-auto w-56 max-h-64 overflow-y-auto">
+      <div className="flex items-center justify-between mb-2 pr-2">
+        <span className="text-sm font-bold" style={{ color: "#c8a020" }}>Quests</span>
       </div>
 
       {!quests ? (
-        <p className="text-xs text-gray-500">No quest data</p>
+        <p className="text-xs" style={{ color: "#9a7850" }}>No quest data</p>
       ) : (
         <>
           {quests.active.length > 0 && (
             <div className="mb-2">
-              <p className="text-xs text-gray-400 mb-1">Active</p>
+              <p className="text-xs mb-1" style={{ color: "#9a7850" }}>Active</p>
               <div className="flex flex-col gap-1">
                 {quests.active.map((quest) => (
                   <ActiveQuestItem
@@ -61,7 +42,7 @@ export const QuestPanel: React.FC = () => {
 
           {quests.available.length > 0 && (
             <div>
-              <p className="text-xs text-gray-400 mb-1">Available</p>
+              <p className="text-xs mb-1" style={{ color: "#9a7850" }}>Available</p>
               <div className="flex flex-col gap-1">
                 {quests.available.map((quest) => (
                   <AvailableQuestItem
@@ -75,10 +56,10 @@ export const QuestPanel: React.FC = () => {
           )}
 
           {quests.active.length === 0 && quests.available.length === 0 && (
-            <p className="text-xs text-gray-500">No quests</p>
+            <p className="text-xs" style={{ color: "#9a7850" }}>No quests</p>
           )}
         </>
       )}
-    </div>
+    </WindowContainer>
   );
 };

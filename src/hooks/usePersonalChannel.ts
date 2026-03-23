@@ -2,9 +2,9 @@ import { useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 import { logger } from "../services/Logger";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
-import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
 import { useSocketStore } from "../store/socketStore";
 import { useNpcStore } from "../store/useNpcStore";
+import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
 import { InteractData } from "../types/npcInteraction";
 import {
   ActionAcknowledgment,
@@ -152,7 +152,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
     const handlePlayerDelta = (data: { delta: { remainingPath: Waypoint[] }; timestamp: number }) => {
       const path = data.delta?.remainingPath;
       if (!path) return;
-      const applyAt = data.timestamp + getStreamSyncDelay();
+      const applyAt = Date.now() + getStreamSyncDelay();
       usePathOverlayStore.getState().enqueueDelta(path, applyAt);
     };
 

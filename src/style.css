@@ -20,12 +20,12 @@
 
 ::-webkit-scrollbar-track {
   border: 8px solid transparent; /* Matches track color */
-  background: #0d0c0d; /* Track/background color */
+  background: #120a04; /* Track/background color */
   background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #282525; /* Scrollbar color */
+  background: #3d1a06; /* Scrollbar color */
   border-radius: 0px;
   border: 8px solid transparent; /* Matches track color */
   border-radius: 8px;
@@ -33,12 +33,12 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3d3b3b; /* Hover color */
+  background: #5c3015; /* Hover color */
   background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background: #181616; /* Dragging/active color */
+  background: #1e0f06; /* Dragging/active color */
   background-clip: padding-box;
 }
 

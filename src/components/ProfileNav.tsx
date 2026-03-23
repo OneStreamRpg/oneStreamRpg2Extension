@@ -21,7 +21,6 @@ interface PlayerProfile {
 export const ProfileNav: React.FC = () => {
   const { displayedState } = usePersonalChannelStore();
   const { profile } = useAuthStore();
-  const profileOpen = useUIStore((state) => state.profileOpen);
   const toggleProfile = useUIStore((state) => state.toggleProfile);
 
   if (!displayedState || !profile) {
@@ -47,17 +46,6 @@ export const ProfileNav: React.FC = () => {
   const xpPercentage = (currentLevelXp / playerProfile.requiredXp) * 100;
   const hpPercentage = (playerProfile.hp / playerProfile.maxHp) * 100;
   const manaPercentage = (playerProfile.mana / playerProfile.maxMana) * 100;
-  if (!profileOpen) {
-    return (
-      <button
-        onClick={toggleProfile}
-        className="pointer-events-auto bg-gray-800/80 px-2 py-1 text-xs cursor-pointer hover:bg-gray-700"
-      >
-        Stats
-      </button>
-    );
-  }
-
   return (
     <>
       <WindowContainer className="pointer-events-auto hover:opacity-100 opacity-50 transition-opacity">
