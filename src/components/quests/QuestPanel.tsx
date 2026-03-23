@@ -1,11 +1,9 @@
-import { useState } from "react";
 import { useNpcActions } from "../../hooks/useNpcActions";
 import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
 import { useUIStore } from "../../store/useUIStore";
 import { WindowContainer } from "../ui/WindowContainer";
-import { windowHoverStyle } from "../ui/windowHoverStyle";
 import { ActiveQuestItem, AvailableQuestItem } from "./QuestItem";
 
 export const QuestPanel: React.FC = () => {
@@ -16,17 +14,11 @@ export const QuestPanel: React.FC = () => {
   const { cancelQuest } = usePersonalChannelActions(socket);
   const { setTargetNpc } = useNpcActions(socket);
   const toggleQuestPanel = useUIStore((state) => state.toggleQuestPanel);
-  const [isHovered, setIsHovered] = useState(false);
 
   const quests = displayedState?.quests;
 
   return (
-    <div
-      className="pointer-events-auto"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-    <WindowContainer className="w-56 max-h-64 overflow-y-auto" style={windowHoverStyle(isHovered)}>
+    <WindowContainer className="pointer-events-auto w-56 max-h-64 overflow-y-auto">
       <div className="flex items-center justify-between mb-2 pr-2">
         <span className="text-sm font-bold" style={{ color: "#c8a020" }}>Quests</span>
         <button
@@ -79,6 +71,5 @@ export const QuestPanel: React.FC = () => {
         </>
       )}
     </WindowContainer>
-    </div>
   );
 };
