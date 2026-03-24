@@ -46,3 +46,8 @@
 ::-webkit-scrollbar-button {
   display: none;
 }
+
+@keyframes castBarFill {
+  from { width: 0%; }
+  to { width: 100%; }
+}

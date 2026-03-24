@@ -5,6 +5,7 @@ import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
 import { useNpcStore } from "../store/useNpcStore";
 import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
+import { useCastBarStore } from "../store/useCastBarStore";
 import { InteractData } from "../types/npcInteraction";
 import {
   ActionAcknowledgment,
@@ -84,6 +85,11 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
     // Listen for unsolicited server events (e.g. async NPC interaction after walk-to)
     const handleEvent = (data: { event: string; data: any; timestamp: number }) => {
       logger.debug(TAG, `Personal state event received: event=${data.event}`, data);
+
+      if (data.event === "castStart") {
+        useCastBarStore.getState().startCast(data.data.name, getStreamSyncDelay());
+        return;
+      }
 
       if (data.event === "moveStart") {
         const path = data.data?.remainingPath as Waypoint[] | undefined;

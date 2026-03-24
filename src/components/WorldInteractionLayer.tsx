@@ -1,5 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import GameObjectTooltip from "./ui/GameObjectTooltip";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameObjects } from "../hooks/useGameobjects";
 import { useNpcActions } from "../hooks/useNpcActions";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
@@ -7,11 +6,73 @@ import { logger } from "../services/Logger";
 import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
+import { useCastBarStore } from "../store/useCastBarStore";
 import { PathOverlay } from "./PathOverlay";
 
 const TAG = "WorldInteraction";
 const DEBUG = import.meta.env.VITE_DEBUG_WORLD_INTERACTION === "true";
 const EMPTY_QUESTS: { npcId: string }[] = [];
+
+const PlayerCastBar: React.FC = () => {
+  const cast = useCastBarStore((state) => state.cast);
+  const clearCast = useCastBarStore((state) => state.clearCast);
+
+  useEffect(() => {
+    if (!cast) return;
+    const timer = setTimeout(() => clearCast(), cast.castTimeMs);
+    return () => clearTimeout(timer);
+  }, [cast, clearCast]);
+
+  if (!cast) return null;
+
+  return (
+    <div
+      className="absolute pointer-events-none"
+      style={{
+        bottom: "190%",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "140%",
+        minWidth: "60px",
+      }}
+    >
+      <div
+        style={{
+          textAlign: "center",
+          color: "#e8d08a",
+          fontSize: "0.6vw",
+          fontWeight: "bold",
+          marginBottom: "2px",
+          textShadow: "0 1px 2px rgba(0,0,0,0.9)",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {cast.abilityName}
+      </div>
+      <div
+        style={{
+          background: "rgba(0,0,0,0.6)",
+          borderRadius: "2px",
+          height: "4px",
+          overflow: "hidden",
+          border: "1px solid rgba(255,255,255,0.15)",
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            background: "linear-gradient(90deg, #c8a020, #f0d060)",
+            animationName: "castBarFill",
+            animationDuration: `${cast.castTimeMs}ms`,
+            animationTimingFunction: "linear",
+            animationFillMode: "forwards",
+            width: "0%",
+          }}
+        />
+      </div>
+    </div>
+  );
+};
 
 export const WorldInteractionLayer: React.FC = () => {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -129,6 +190,7 @@ export const WorldInteractionLayer: React.FC = () => {
               height: `${(obj.hitbox.height / 1080) * 100}%`,
             }}
           >
+            {obj.type === "player" && <PlayerCastBar />}
             {obj.type === "npc" && questNpcIds.has(obj.npcId) && (
               <img
                 src="/media/img/icons/questionmark.png"
