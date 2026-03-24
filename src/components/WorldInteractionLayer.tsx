@@ -6,24 +6,24 @@ import { logger } from "../services/Logger";
 import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
-import { useCastBarStore } from "../store/useCastBarStore";
+import { useSyncBarStore } from "../store/useSyncBarStore";
 import { PathOverlay } from "./PathOverlay";
 
 const TAG = "WorldInteraction";
 const DEBUG = import.meta.env.VITE_DEBUG_WORLD_INTERACTION === "true";
 const EMPTY_QUESTS: { npcId: string }[] = [];
 
-const PlayerCastBar: React.FC = () => {
-  const cast = useCastBarStore((state) => state.cast);
-  const clearCast = useCastBarStore((state) => state.clearCast);
+const PlayerSyncBar: React.FC = () => {
+  const bar = useSyncBarStore((state) => state.bar);
+  const hide = useSyncBarStore((state) => state.hide);
 
   useEffect(() => {
-    if (!cast) return;
-    const timer = setTimeout(() => clearCast(), cast.castTimeMs);
+    if (!bar) return;
+    const timer = setTimeout(() => hide(), bar.durationMs);
     return () => clearTimeout(timer);
-  }, [cast, clearCast]);
+  }, [bar, hide]);
 
-  if (!cast) return null;
+  if (!bar) return null;
 
   return (
     <div
@@ -47,7 +47,7 @@ const PlayerCastBar: React.FC = () => {
           whiteSpace: "nowrap",
         }}
       >
-        {cast.abilityName}
+        {bar.label}
       </div>
       <div
         style={{
@@ -63,7 +63,7 @@ const PlayerCastBar: React.FC = () => {
             height: "100%",
             background: "linear-gradient(90deg, #c8a020, #f0d060)",
             animationName: "castBarFill",
-            animationDuration: `${cast.castTimeMs}ms`,
+            animationDuration: `${bar.durationMs}ms`,
             animationTimingFunction: "linear",
             animationFillMode: "forwards",
             width: "0%",
@@ -190,7 +190,7 @@ export const WorldInteractionLayer: React.FC = () => {
               height: `${(obj.hitbox.height / 1080) * 100}%`,
             }}
           >
-            {obj.type === "player" && <PlayerCastBar />}
+            {obj.type === "player" && <PlayerSyncBar />}
             {obj.type === "npc" && questNpcIds.has(obj.npcId) && (
               <img
                 src="/media/img/icons/questionmark.png"

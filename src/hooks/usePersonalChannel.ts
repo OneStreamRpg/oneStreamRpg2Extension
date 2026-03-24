@@ -5,7 +5,7 @@ import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
 import { useNpcStore } from "../store/useNpcStore";
 import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
-import { useCastBarStore } from "../store/useCastBarStore";
+import { useSyncBarStore } from "../store/useSyncBarStore";
 import { InteractData } from "../types/npcInteraction";
 import {
   ActionAcknowledgment,
@@ -87,7 +87,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
       logger.debug(TAG, `Personal state event received: event=${data.event}`, data);
 
       if (data.event === "castStart") {
-        useCastBarStore.getState().startCast(data.data.name, getStreamSyncDelay());
+        useSyncBarStore.getState().show(data.data.name, getStreamSyncDelay());
         return;
       }
 
@@ -96,6 +96,11 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
         if (path) {
           usePathOverlayStore.getState().setPath(path, data.data?.targetType);
         }
+        const targetType = data.data?.targetType as string | undefined;
+        const label = targetType === "enemy" ? "Attacking..." : targetType === "npc" ? "Talking..." : "Moving...";
+        const delay = getStreamSyncDelay();
+        console.log("[SyncBar] moveStart received, delay=", delay, { targetType, label });
+        useSyncBarStore.getState().show(label, delay);
         return;
       }
 
