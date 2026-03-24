@@ -88,7 +88,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
       if (data.event === "moveStart") {
         const path = data.data?.remainingPath as Waypoint[] | undefined;
         if (path) {
-          usePathOverlayStore.getState().setPath(path);
+          usePathOverlayStore.getState().setPath(path, data.data?.targetType);
         }
         return;
       }

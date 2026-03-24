@@ -1,5 +1,7 @@
 import { create } from "zustand";
 
+export type PathTargetType = "enemy" | "npc" | undefined;
+
 export interface Waypoint {
   x: number;
   y: number;
@@ -12,8 +14,9 @@ interface DeltaEntry {
 
 interface PathOverlayStore {
   remainingPath: Waypoint[];
+  targetType: PathTargetType;
   deltaQueue: DeltaEntry[];
-  setPath: (path: Waypoint[]) => void;
+  setPath: (path: Waypoint[], targetType?: PathTargetType) => void;
   enqueueDelta: (remainingPath: Waypoint[], applyAt: number) => void;
   processQueue: (now: number) => void;
   clearPath: () => void;
@@ -21,9 +24,10 @@ interface PathOverlayStore {
 
 export const usePathOverlayStore = create<PathOverlayStore>((set, get) => ({
   remainingPath: [],
+  targetType: undefined,
   deltaQueue: [],
 
-  setPath: (path) => set({ remainingPath: path, deltaQueue: [] }),
+  setPath: (path, targetType) => set({ remainingPath: path, targetType, deltaQueue: [] }),
 
   enqueueDelta: (remainingPath, applyAt) => {
     const { deltaQueue } = get();

@@ -7,7 +7,6 @@ import { logger } from "../services/Logger";
 import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
-import ClickMarker from "./ui/ClickMarker";
 import { PathOverlay } from "./PathOverlay";
 
 const TAG = "WorldInteraction";
@@ -15,9 +14,7 @@ const DEBUG = import.meta.env.VITE_DEBUG_WORLD_INTERACTION === "true";
 const EMPTY_QUESTS: { npcId: string }[] = [];
 
 export const WorldInteractionLayer: React.FC = () => {
-  const [marker, setMarker] = useState<{ x: number; y: number } | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
   const socket = useSocketStore((state) => state.socket);
@@ -60,11 +57,6 @@ export const WorldInteractionLayer: React.FC = () => {
         )}`
       );
       movePlayer(scaledX, scaledY);
-
-      // Display marker for 5000ms
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      setMarker({ x: rawX, y: rawY });
-      timeoutRef.current = setTimeout(() => setMarker(null), 5000);
     },
     [movePlayer]
   );
@@ -80,7 +72,6 @@ export const WorldInteractionLayer: React.FC = () => {
         }
       }
     >
-      {marker && <ClickMarker x={marker.x} y={marker.y} />}
       <PathOverlay />
 
       {gameObjects.map((obj) => {

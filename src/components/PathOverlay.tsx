@@ -1,8 +1,14 @@
 import { useEffect, useRef } from "react";
 import { usePathOverlayStore } from "../store/usePathOverlayStore";
 
+const PATH_COLORS: Record<string, string> = {
+  enemy: "rgba(255, 60, 60, 0.85)",
+  npc: "rgba(255, 220, 50, 0.85)",
+};
+
 export const PathOverlay: React.FC = () => {
   const remainingPath = usePathOverlayStore((state) => state.remainingPath);
+  const targetType = usePathOverlayStore((state) => state.targetType);
   const processQueue = usePathOverlayStore((state) => state.processQueue);
   const rafRef = useRef<number | null>(null);
 
@@ -30,7 +36,7 @@ export const PathOverlay: React.FC = () => {
       <polyline
         points={points}
         fill="none"
-        stroke="rgba(255, 255, 255, 0.85)"
+        stroke={targetType ? PATH_COLORS[targetType] : "rgba(255, 255, 255, 0.85)"}
         strokeWidth="4"
         strokeLinecap="round"
         strokeLinejoin="round"
