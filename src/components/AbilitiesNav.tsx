@@ -3,9 +3,13 @@ import { Tooltip } from "react-tooltip";
 import { isEmptyAbility } from "../abilityService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { Ability } from "./Ability";
+import { AbilityTooltip } from "./abilities/AbilityTooltip";
+import { CalcBreakdown } from "./ui/CalcBreakdown";
+import { ResolvedToken } from "../utils/resolveScaling";
 
 export const AbilitiesNav: React.FC = () => {
   const { displayedState } = usePersonalChannelStore();
+  const stats = displayedState?.stats;
 
   if (!displayedState)
     return (
@@ -47,7 +51,29 @@ export const AbilitiesNav: React.FC = () => {
         )
       )}
 
-      <Tooltip id="ability-tooltip" delayShow={300} />
+      <Tooltip
+        id="ability-tooltip"
+        delayShow={300}
+        clickable
+        render={({ activeAnchor }) => {
+          const abilityId = activeAnchor?.getAttribute("data-ability-id");
+          if (!abilityId || !stats) return null;
+          return <AbilityTooltip abilityId={abilityId} stats={stats} />;
+        }}
+      />
+      <Tooltip
+        id="ability-calc-tooltip"
+        delayShow={0}
+        render={({ activeAnchor }) => {
+          const raw = activeAnchor?.getAttribute("data-breakdown");
+          if (!raw) return null;
+          try {
+            return <CalcBreakdown resolved={JSON.parse(raw) as ResolvedToken} />;
+          } catch {
+            return null;
+          }
+        }}
+      />
     </nav>
   );
 };

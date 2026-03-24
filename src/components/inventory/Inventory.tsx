@@ -20,6 +20,8 @@ import { InventorySlot } from "./InventorySlot";
 import { InventoryTooltip } from "./InventoryTooltip";
 import { ItemDisplay } from "./ItemDisplay";
 import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
+import { CalcBreakdown } from "../ui/CalcBreakdown";
+import { ResolvedToken } from "../../utils/resolveScaling";
 
 const TAG = "Inventory";
 
@@ -216,6 +218,20 @@ export const Inventory: React.FC = () => {
         </DragOverlay>
       </DndContext>
 
+      <Tooltip
+        id="inventory-calc-tooltip"
+        place="right"
+        delayShow={0}
+        render={({ activeAnchor }) => {
+          const raw = activeAnchor?.getAttribute("data-breakdown");
+          if (!raw) return null;
+          try {
+            return <CalcBreakdown resolved={JSON.parse(raw) as ResolvedToken} />;
+          } catch {
+            return null;
+          }
+        }}
+      />
       <Tooltip
         id="inventory-tooltip"
         place="left"

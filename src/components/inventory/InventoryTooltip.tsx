@@ -1,8 +1,11 @@
 import { metadataService } from "../../services/MetadataService";
+import { usePersonalChannelStore } from "../../store/personalChannelStore";
+import { ResolvedDescription } from "../ui/ResolvedDescription";
 import { Item } from "./types";
 
 export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
   const itemData = metadataService.getItemSync(item.itemId);
+  const stats = usePersonalChannelStore((state) => state.displayedState?.stats);
 
   if (!itemData) {
     return (
@@ -47,6 +50,15 @@ export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
           </div>
         )}
         <p>{itemData.description}</p>
+        {itemData.effects?.map((effect: any, i: number) => (
+          <div key={i} className="border-t border-gray-600 pt-1 mt-1">
+            <p className="font-semibold text-sm text-yellow-200">{effect.name}</p>
+            {stats
+              ? <ResolvedDescription description={effect.description} scaling={effect.scaling} stats={stats} calcTooltipId="inventory-calc-tooltip" />
+              : <p className="text-sm">{effect.description}</p>
+            }
+          </div>
+        ))}
       </main>
       <footer className="flex">
         <p className="text-sm text-gray-500">Requirements</p>

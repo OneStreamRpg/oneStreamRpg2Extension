@@ -47,9 +47,7 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
       onClick={() => handleAbilityClick()}
       disabled={isOnCooldown}
       data-tooltip-id="ability-tooltip"
-      data-tooltip-content={
-        abilityMetaData.name + ": " + abilityMetaData.description
-      }
+      data-ability-id={ability.abilityId}
       data-tooltip-place="top"
       className={`relative size-12 overflow-hidden ${isOnCooldown ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:brightness-125"}`}
       style={{

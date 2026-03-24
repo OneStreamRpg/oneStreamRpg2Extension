@@ -6,6 +6,7 @@
  */
 
 import { logger } from "./Logger";
+import { ScalingMap } from "../utils/resolveScaling";
 
 const TAG = "MetadataService";
 
@@ -26,6 +27,7 @@ type Ability = {
     slotType: AbilitySlotType;
     castAnimationId?: string;
     castAnimationPosition?: CastAnimationPosition; // Where the cast animation appears: "caster" (default), "target", or "effect"
+    scaling?: ScalingMap;
 };
 
 
