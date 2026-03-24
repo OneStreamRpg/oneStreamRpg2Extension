@@ -1,4 +1,4 @@
-import { Tooltip } from "react-tooltip";
+import { useState } from "react";
 import { useAuthStore } from "../hooks/useAuthStore";
 import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
@@ -12,16 +12,17 @@ interface PlayerProfile {
   requiredXp: number;
   hp: number;
   maxHp: number;
-  mana: number;
-  maxMana: number;
 }
 
-// MC: I require for the first fetch maxHp, maxMana and requiredXp or maxXpLevel
+const STAT_ICONS = ["armor", "haste", "healing", "magic", "strength"] as const;
+
+// MC: I require for the first fetch maxHp and requiredXp or maxXpLevel
 
 export const ProfileNav: React.FC = () => {
   const { displayedState } = usePersonalChannelStore();
   const { profile } = useAuthStore();
   const toggleProfile = useUIStore((state) => state.toggleProfile);
+  const [statsOpen, setStatsOpen] = useState(false);
 
   if (!displayedState || !profile) {
     return <div>Loading...</div>;
@@ -35,25 +36,19 @@ export const ProfileNav: React.FC = () => {
       metadataService.getXpForNextLevelSync(displayedState.stats.level) ?? -1,
     hp: displayedState.stats.hp,
     maxHp: displayedState.stats.maxHp,
-    mana: displayedState.stats.mana,
-    maxMana: displayedState.stats.maxMana,
   };
 
-  const fullStats = displayedState.stats;
   const currentLevelRequiredXp =
     metadataService.getXpRequirementsSync()![playerProfile.level];
   const currentLevelXp = playerProfile.currentXp - currentLevelRequiredXp;
   const xpPercentage = (currentLevelXp / playerProfile.requiredXp) * 100;
   const hpPercentage = (playerProfile.hp / playerProfile.maxHp) * 100;
-  const manaPercentage = (playerProfile.mana / playerProfile.maxMana) * 100;
+
   return (
-    <>
+    <div className="flex items-center">
       <WindowContainer className="pointer-events-auto">
         <div className="flex items-center gap-2 pr-2 text-xs">
-          <div
-            className="flex items-center gap-2"
-            data-tooltip-id="player-stats-tooltip"
-          >
+          <div className="flex items-center gap-2">
             <img
               className="w-12 h-12 border flex items-center justify-center cursor-pointer"
               src={profile.profile_image_url}
@@ -82,21 +77,6 @@ export const ProfileNav: React.FC = () => {
               </div>
 
               <div className="relative">
-                <div className="h-4 border">
-                  <div
-                    className="h-full"
-                    style={{
-                      width: `${manaPercentage}%`,
-                      backgroundColor: "blue",
-                    }}
-                  />
-                </div>
-                <span className="absolute inset-0 flex items-center justify-center">
-                  {playerProfile.mana} / {playerProfile.maxMana}
-                </span>
-              </div>
-
-              <div className="relative">
                 <div className="h-3 border">
                   <div
                     className="h-full"
@@ -115,27 +95,49 @@ export const ProfileNav: React.FC = () => {
         </div>
       </WindowContainer>
 
-      <Tooltip
-        id="player-stats-tooltip"
-        place="bottom"
-        clickable
-        delayShow={200}
+      <button
+        onClick={() => setStatsOpen((o) => !o)}
+        className="pointer-events-auto cursor-pointer"
+        style={{
+          color: "#c8a020",
+          background: "rgba(0,0,0,0.7)",
+          border: "3px solid #9a7228",
+          borderLeft: "none",
+          padding: "4px 6px",
+          fontSize: "14px",
+          lineHeight: 1,
+        }}
       >
-        <div className="p-4">
-          <h3>Character Stats</h3>
+        {statsOpen ? "‹" : "›"}
+      </button>
 
-          <div className="mt-2">
-            {Object.entries(fullStats).map(([statName, statValue]) => (
-              <div className="flex justify-between" key={statName}>
-                <span>
-                  {statName.charAt(0).toUpperCase() + statName.slice(1)}:
-                </span>
-                <span>{statValue}</span>
-              </div>
-            ))}
-          </div>
+      <div
+          style={{
+            maxWidth: statsOpen ? "200px" : "0px",
+            opacity: statsOpen ? 1 : 0,
+            overflow: "hidden",
+            transition: "max-width 0.25s ease, opacity 0.2s ease",
+          }}
+        >
+          <WindowContainer className="pointer-events-auto">
+            <div className="flex flex-col gap-1 px-2 text-xs" style={{ whiteSpace: "nowrap" }}>
+              {STAT_ICONS.map((stat) => (
+                <div key={stat} className="flex items-center gap-2">
+                  <img
+                    src={`/media/img/icons/stats/${stat}.png`}
+                    width={16}
+                    height={16}
+                    alt={stat}
+                  />
+                  <span className="capitalize">{stat}</span>
+                  <span className="ml-auto pl-4" style={{ color: "#c8a020" }}>
+                    {displayedState.stats[stat] ?? 0}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </WindowContainer>
         </div>
-      </Tooltip>
-    </>
+    </div>
   );
 };

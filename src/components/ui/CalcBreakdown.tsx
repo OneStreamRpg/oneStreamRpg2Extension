@@ -1,17 +1,27 @@
 import { ResolvedToken } from "../../utils/resolveScaling";
 
 export const CalcBreakdown: React.FC<{ resolved: ResolvedToken }> = ({ resolved }) => {
+  const baseTerm = resolved.breakdown.find((t) => t.label === "base");
+  const statTerms = resolved.breakdown.filter((t) => t.label !== "base");
+
   return (
-    <div className="text-xs font-mono p-1 min-w-32">
-      <p className="text-gray-300 mb-1 capitalize">{resolved.token}</p>
-      {resolved.breakdown.map((term, i) => (
-        <p key={i} className="text-gray-200">
-          {term.label === "base"
-            ? `base ${term.contribution}`
-            : `+ floor(${term.statValue} × ${term.coefficient}) = ${term.contribution}  [${term.label}]`}
-        </p>
+    <div className="flex items-center gap-1 text-xs font-mono p-1 flex-wrap">
+      <span style={{ color: "#c8a020" }}>{resolved.total}</span>
+      <span>=</span>
+      <span>{baseTerm?.contribution ?? 0}</span>
+      {statTerms.map((term, i) => (
+        <span key={i} className="flex items-center gap-0.5">
+          <span>+</span>
+          <span>{Math.round((term.coefficient ?? 0) * 100)}%</span>
+          <img
+            src={`/media/img/icons/stats/${term.label}.png`}
+            width={12}
+            height={12}
+            alt={term.label}
+            title={term.label}
+          />
+        </span>
       ))}
-      <p className="text-yellow-300 border-t border-gray-600 mt-1 pt-1">= {resolved.total}</p>
     </div>
   );
 };
