@@ -81,6 +81,9 @@ export const WorldInteractionLayer: React.FC = () => {
   const socket = useSocketStore((state) => state.socket);
   const gameState = useSocketStore((state) => state.gameState);
   const gameObjects = useGameObjects(gameState);
+  const myUsername = usePersonalChannelStore(
+    (state) => state.displayedState?.profile?.username ?? null
+  );
   const availableQuests = usePersonalChannelStore(
     (state) => state.displayedState?.quests?.available ?? EMPTY_QUESTS
   );
@@ -190,7 +193,7 @@ export const WorldInteractionLayer: React.FC = () => {
               height: `${(obj.hitbox.height / 1080) * 100}%`,
             }}
           >
-            {obj.type === "player" && <PlayerSyncBar />}
+            {obj.type === "player" && obj.username === myUsername && <PlayerSyncBar />}
             {obj.type === "npc" && questNpcIds.has(obj.npcId) && (
               <img
                 src="/media/img/icons/questionmark.png"
