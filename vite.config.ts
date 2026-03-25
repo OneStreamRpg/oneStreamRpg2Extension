@@ -6,10 +6,16 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: './',
   build: {
-    sourcemap: true,      // Enables source maps
-    minify: false,        // Prevents minification
+    sourcemap: true,
+    minify: false,
+    rollupOptions: {
+      input: {
+        index: 'index.html',
+        panel: 'panel.html',
+      },
+    },
   },
   define: {
-    'process.env.NODE_ENV': '"development"', // Simulates dev environment
+    'process.env.NODE_ENV': '"development"',
   },
 })

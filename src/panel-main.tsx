@@ -5,6 +5,6 @@ import "./style.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App extType="overlay" />
+    <App extType="panel" />
   </React.StrictMode>
 );
