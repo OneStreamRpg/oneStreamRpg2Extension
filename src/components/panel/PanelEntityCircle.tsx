@@ -86,7 +86,7 @@ export const PanelEntityCircle: React.FC<PanelEntityCircleProps> = ({
       {/* Quest indicator */}
       {hasQuest && (
         <img
-          src="/media/img/icons/questionmark.png"
+          src={`${import.meta.env.BASE_URL}media/img/icons/questionmark.png`}
           className="absolute pointer-events-none"
           style={{
             bottom: "100%",

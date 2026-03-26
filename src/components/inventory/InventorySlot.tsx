@@ -7,7 +7,8 @@ import { Item } from "./types";
 export const InventorySlot: React.FC<{
   item: Item | null;
   index: number;
-}> = ({ item, index }) => {
+  isDraggingActive: boolean;
+}> = ({ item, index, isDraggingActive }) => {
   const slotId = `inventory-${index}`;
   const { setNodeRef, isOver, active } = useDroppable({
     id: slotId,
@@ -47,7 +48,7 @@ export const InventorySlot: React.FC<{
       className={`border border-dashed size-17 flex items-center justify-center ${
         canPlaceHere
           ? "outline-2 outline-blue-500"
-          : isCompatible
+          : isDraggingActive && isCompatible
           ? "outline-2 outline-green-500"
           : ""
       }`}

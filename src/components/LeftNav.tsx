@@ -49,7 +49,7 @@ const NavButton: React.FC<NavButtonProps> = ({ icon, label, isActive, onClick })
         backgroundColor: bgColor,
       }}
     >
-      <img src={`/media/img/icons/${icon}.png`} width={28} height={28} alt={label} />
+      <img src={`${import.meta.env.BASE_URL}media/img/icons/${icon}.png`} width={28} height={28} alt={label} />
     </button>
   );
 };

@@ -7,7 +7,8 @@ import { EquipmentSlotKey, Item } from "./types";
 export const EquipmentSlot: React.FC<{
   item: Item | null;
   slotKey: EquipmentSlotKey;
-}> = ({ item, slotKey }) => {
+  isDraggingActive: boolean;
+}> = ({ item, slotKey, isDraggingActive }) => {
   const slotId = `equipment-${slotKey}`;
 
   const { setNodeRef, isOver, active } = useDroppable({
@@ -28,7 +29,7 @@ export const EquipmentSlot: React.FC<{
         className={`border border-dashed bg-amber-100 ${
           canPlaceHere
             ? "outline-blue-500 outline-2"
-            : isCompatible
+            : isDraggingActive && isCompatible
             ? "outline-green-500 outline-2"
             : ""
         } size-17 flex items-center justify-center relative`}

@@ -20,6 +20,7 @@ export const DraggableItem: React.FC<{
     transform: CSS.Translate.toString(transform),
     opacity: isDragging ? 0 : 1,
     transition: isDragging ? "none" : "transform 200ms ease",
+    touchAction: "none",
   };
 
   return (

@@ -62,7 +62,7 @@ export const PanelBurgerMenu: React.FC<PanelBurgerMenuProps> = ({
                 }}
               >
                 <img
-                  src={`/media/img/icons/${item.icon}.png`}
+                  src={`${import.meta.env.BASE_URL}media/img/icons/${item.icon}.png`}
                   width={24}
                   height={24}
                   alt={item.label}

@@ -124,7 +124,7 @@ export const ProfileNav: React.FC = () => {
               {STAT_ICONS.map((stat) => (
                 <div key={stat} className="flex items-center gap-2">
                   <img
-                    src={`/media/img/icons/stats/${stat}.png`}
+                    src={`${import.meta.env.BASE_URL}media/img/icons/stats/${stat}.png`}
                     width={16}
                     height={16}
                     alt={stat}

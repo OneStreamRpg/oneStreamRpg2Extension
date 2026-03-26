@@ -77,7 +77,7 @@ export const PanelStatsPage: React.FC = () => {
           {STAT_ICONS.map((stat) => (
             <div key={stat} className="flex items-center gap-3">
               <img
-                src={`/media/img/icons/stats/${stat}.png`}
+                src={`${import.meta.env.BASE_URL}media/img/icons/stats/${stat}.png`}
                 width={20}
                 height={20}
                 alt={stat}

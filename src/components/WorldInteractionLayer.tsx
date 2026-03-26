@@ -196,7 +196,7 @@ export const WorldInteractionLayer: React.FC = () => {
             {obj.type === "player" && obj.username === myUsername && <PlayerSyncBar />}
             {obj.type === "npc" && questNpcIds.has(obj.npcId) && (
               <img
-                src="/media/img/icons/questionmark.png"
+                src={`${import.meta.env.BASE_URL}media/img/icons/questionmark.png`}
                 className="absolute pointer-events-none"
                 style={{
                   bottom: "100%",

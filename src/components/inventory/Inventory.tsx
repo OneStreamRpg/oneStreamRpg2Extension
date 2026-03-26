@@ -3,6 +3,10 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
 } from "@dnd-kit/core";
 import { useMemo, useState } from "react";
 import { Tooltip } from "react-tooltip";
@@ -35,6 +39,11 @@ export const Inventory: React.FC = () => {
     usePersonalChannelActions(socket);
 
   logger.debug(TAG, "Rendering inventory", { displayedState });
+
+  const sensors = useSensors(
+    useSensor(MouseSensor),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } })
+  );
 
   // State to hold the item being currently dragged.
   // This is used for highlighting compatible slots and for the DragOverlay.
@@ -175,7 +184,7 @@ export const Inventory: React.FC = () => {
   const equipmentSlots = displayedState.equipment;
   return (
     <>
-      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <section className="grid grid-cols-[auto_1fr_auto] gap-2 mb-4">
           <section className="flex flex-col items-center gap-y-2">
             {equipmentSlotKeys.slice(0, 5).map((slotKey) => (
@@ -183,6 +192,7 @@ export const Inventory: React.FC = () => {
                 key={slotKey}
                 slotKey={slotKey}
                 item={equipmentSlots[slotKey]}
+                isDraggingActive={activeItem !== null}
               />
             ))}
           </section>
@@ -202,13 +212,14 @@ export const Inventory: React.FC = () => {
                 key={slotKey}
                 slotKey={slotKey}
                 item={equipmentSlots[slotKey]}
+                isDraggingActive={activeItem !== null}
               />
             ))}
           </section>
         </section>
         <section className="grid grid-cols-4 gap-2">
           {inventoryItems.map((item, index) => (
-            <InventorySlot key={index} index={index} item={item} />
+            <InventorySlot key={index} index={index} item={item} isDraggingActive={activeItem !== null} />
           ))}
         </section>
 
@@ -234,9 +245,10 @@ export const Inventory: React.FC = () => {
       />
       <Tooltip
         id="inventory-tooltip"
-        place="left"
+        place="top"
         clickable
-        delayShow={200}
+        delayShow={0}
+        openEvents={{ mouseenter: true, focus: true, click: true }}
         hidden={Boolean(activeItem)}
         render={({ activeAnchor }) => {
           const itemId = activeAnchor?.getAttribute("data-item-id");

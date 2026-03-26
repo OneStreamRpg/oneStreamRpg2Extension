@@ -14,7 +14,7 @@ export const CalcBreakdown: React.FC<{ resolved: ResolvedToken }> = ({ resolved 
           <span>+</span>
           <span>{Math.round((term.coefficient ?? 0) * 100)}%</span>
           <img
-            src={`/media/img/icons/stats/${term.label}.png`}
+            src={`${import.meta.env.BASE_URL}media/img/icons/stats/${term.label}.png`}
             width={12}
             height={12}
             alt={term.label}
