@@ -233,6 +233,7 @@ export const Inventory: React.FC = () => {
         id="inventory-calc-tooltip"
         place="right"
         delayShow={0}
+        style={{ zIndex: 9999 }}
         render={({ activeAnchor }) => {
           const raw = activeAnchor?.getAttribute("data-breakdown");
           if (!raw) return null;
