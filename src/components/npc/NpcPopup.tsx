@@ -1,38 +1,38 @@
 import { useEffect, useState } from "react";
 import { Tooltip } from "react-tooltip";
 import { useNpcStore } from "../../store/useNpcStore";
-import { WindowContainer } from "../ui/WindowContainer";
+import {
+  ArenaData,
+  CraftListData,
+  DialogueData,
+  InteractData,
+  QuestPreviewData,
+  RecipesData,
+  ShopData,
+  SpawnArenaData,
+  StashData,
+  SummonData,
+  TradeData,
+} from "../../types/npcInteraction";
+import { ResolvedToken } from "../../utils/resolveScaling";
 import { InventoryTooltip } from "../inventory/InventoryTooltip";
 import { Item } from "../inventory/types";
 import { CalcBreakdown } from "../ui/CalcBreakdown";
-import { ResolvedToken } from "../../utils/resolveScaling";
+import { WindowContainer } from "../ui/WindowContainer";
+import { NpcArena } from "./NpcArena";
+import { NpcCraft } from "./NpcCraft";
+import { NpcDialogue } from "./NpcDialogue";
+import { NpcInteractMenu } from "./NpcInteractMenu";
+import { NpcQuestPreview } from "./NpcQuestPreview";
+import { NpcRecipes } from "./NpcRecipes";
+import { NpcShop } from "./NpcShop";
+import { NpcStash } from "./NpcStash";
+import { NpcSummon } from "./NpcSummon";
+import { NpcTrade } from "./NpcTrade";
 
 function makeItem(itemId: string, quantity = 1): Item {
   return { id: itemId, itemId, quantity, tags: [] };
 }
-import {
-  InteractData,
-  ShopData,
-  RecipesData,
-  CraftListData,
-  DialogueData,
-  ArenaData,
-  SpawnArenaData,
-  SummonData,
-  TradeData,
-  StashData,
-  QuestPreviewData,
-} from "../../types/npcInteraction";
-import { NpcInteractMenu } from "./NpcInteractMenu";
-import { NpcShop } from "./NpcShop";
-import { NpcRecipes } from "./NpcRecipes";
-import { NpcCraft } from "./NpcCraft";
-import { NpcDialogue } from "./NpcDialogue";
-import { NpcArena } from "./NpcArena";
-import { NpcSummon } from "./NpcSummon";
-import { NpcTrade } from "./NpcTrade";
-import { NpcStash } from "./NpcStash";
-import { NpcQuestPreview } from "./NpcQuestPreview";
 
 const SpawnArenaCountdown: React.FC<{ message: string; onDone: () => void }> = ({ message, onDone }) => {
   const [count, setCount] = useState(3);
@@ -153,7 +153,7 @@ export const NpcPopup: React.FC = () => {
 
       {/* Modal */}
       <div onClick={(e) => e.stopPropagation()} className="relative z-10">
-        <WindowContainer className="p-4">
+        <WindowContainer className="p-6" style={{ paddingRight: "8px" }}>
           <div className="flex justify-end mb-2">
             <button
               onClick={closePopup}

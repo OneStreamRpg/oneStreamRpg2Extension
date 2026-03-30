@@ -90,6 +90,41 @@ export const PanelStatsPage: React.FC = () => {
           ))}
         </div>
       </WindowContainer>
+
+      {/* Currency */}
+      {displayedState.currency && (
+        <WindowContainer className="p-4" style={{ paddingRight: "16px" }}>
+          <div className="text-sm font-bold mb-3" style={{ color: "#c8a020" }}>
+            Currency
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <img
+                src={`${import.meta.env.BASE_URL}media/img/icons/gold.png`}
+                width={20}
+                height={20}
+                alt="gold"
+              />
+              <span className="text-sm">Gold</span>
+              <span className="ml-auto text-sm" style={{ color: "#c8a020" }}>
+                {displayedState.currency.gold ?? 0}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <img
+                src={`${import.meta.env.BASE_URL}media/img/icons/gem.png`}
+                width={20}
+                height={20}
+                alt="gems"
+              />
+              <span className="text-sm">Gems</span>
+              <span className="ml-auto text-sm" style={{ color: "#c8a020" }}>
+                {displayedState.currency.gems ?? 0}
+              </span>
+            </div>
+          </div>
+        </WindowContainer>
+      )}
     </div>
   );
 };

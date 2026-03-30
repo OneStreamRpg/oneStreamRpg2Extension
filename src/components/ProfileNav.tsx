@@ -90,6 +90,25 @@ export const ProfileNav: React.FC = () => {
                   {playerProfile.currentXp} / {playerProfile.requiredXp} XP
                 </span>
               </div>
+
+              {displayedState.currency && (
+                <div className="flex items-center gap-3">
+                  <img
+                    src={`${import.meta.env.BASE_URL}media/img/icons/gold.png`}
+                    width={14}
+                    height={14}
+                    alt="gold"
+                  />
+                  <span style={{ color: "#c8a020" }}>{displayedState.currency.gold ?? 0}</span>
+                  <img
+                    src={`${import.meta.env.BASE_URL}media/img/icons/gem.png`}
+                    width={14}
+                    height={14}
+                    alt="gems"
+                  />
+                  <span style={{ color: "#c8a020" }}>{displayedState.currency.gems ?? 0}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
