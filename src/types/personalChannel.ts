@@ -12,6 +12,7 @@ export interface PlayerPersonalState {
   stats: StatsState;
   profile: any;
   quests?: QuestsState;
+  pendingQuestAccept?: { questId: string; npcId: string } | null;
 }
 
 export interface StateVersions {

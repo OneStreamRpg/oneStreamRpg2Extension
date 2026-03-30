@@ -22,7 +22,7 @@ const NPC_POPUP_TYPES = new Set<string>([
   "dialogue", "dialogueAnswer",
   "arena", "spawnArena", "summon", "trade", "tradeItem",
   "stash", "stashPut", "stashGet", "stashSwap",
-  "acceptQuest",
+  "acceptQuest", "questPreview", "confirmAcceptQuest", "declineQuest",
 ]);
 
 interface UsePersonalChannelOptions {

@@ -121,6 +121,23 @@ export function useNpcActions(socket: Socket | null) {
     [sendNpcAction]
   );
 
+  const questPreview = useCallback(
+    (npcId: string, questId: string) =>
+      sendNpcAction("questPreview", { npcId, questId }),
+    [sendNpcAction]
+  );
+
+  const confirmAcceptQuest = useCallback(
+    (npcId: string, questId: string) =>
+      sendNpcAction("confirmAcceptQuest", { npcId, questId }),
+    [sendNpcAction]
+  );
+
+  const declineQuest = useCallback(
+    () => sendNpcAction("declineQuest", {}),
+    [sendNpcAction]
+  );
+
   const trade = useCallback(
     (npcId?: string) => sendNpcAction("trade", { npcId }),
     [sendNpcAction]
@@ -195,6 +212,9 @@ export function useNpcActions(socket: Socket | null) {
     summon,
     summonEnemy,
     acceptQuest,
+    questPreview,
+    confirmAcceptQuest,
+    declineQuest,
     trade,
     tradeItem,
     stash,

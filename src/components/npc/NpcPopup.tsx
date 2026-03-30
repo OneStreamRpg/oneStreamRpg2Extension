@@ -21,6 +21,7 @@ import {
   SummonData,
   TradeData,
   StashData,
+  QuestPreviewData,
 } from "../../types/npcInteraction";
 import { NpcInteractMenu } from "./NpcInteractMenu";
 import { NpcShop } from "./NpcShop";
@@ -31,6 +32,7 @@ import { NpcArena } from "./NpcArena";
 import { NpcSummon } from "./NpcSummon";
 import { NpcTrade } from "./NpcTrade";
 import { NpcStash } from "./NpcStash";
+import { NpcQuestPreview } from "./NpcQuestPreview";
 
 const SpawnArenaCountdown: React.FC<{ message: string; onDone: () => void }> = ({ message, onDone }) => {
   const [count, setCount] = useState(3);
@@ -58,6 +60,7 @@ const SpawnArenaCountdown: React.FC<{ message: string; onDone: () => void }> = (
 const MESSAGE_TYPES = new Set([
   "buy", "buyRecipe", "craft", "acceptQuest",
   "stashPut", "stashGet", "stashSwap", "tradeItem",
+  "confirmAcceptQuest", "declineQuest",
 ]);
 
 export const NpcPopup: React.FC = () => {
@@ -93,10 +96,13 @@ export const NpcPopup: React.FC = () => {
 
     // Handle simple success/failure message responses
     if (MESSAGE_TYPES.has(popupData.type)) {
-      const msg = (popupData as any).message;
+      const msg =
+        popupData.type === "declineQuest"
+          ? "Quest declined."
+          : (popupData as any).message ?? "Done.";
       return (
         <div className="flex flex-col gap-2 min-w-48 p-2">
-          <p className="text-sm">{msg ?? "Done."}</p>
+          <p className="text-sm">{msg}</p>
         </div>
       );
     }
@@ -126,6 +132,8 @@ export const NpcPopup: React.FC = () => {
         return <NpcTrade data={popupData as TradeData} />;
       case "stash":
         return <NpcStash data={popupData as StashData} />;
+      case "questPreview":
+        return <NpcQuestPreview data={popupData as QuestPreviewData} />;
       default:
         return (
           <p className="text-sm text-gray-400">

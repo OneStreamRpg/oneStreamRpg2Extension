@@ -11,7 +11,8 @@ export type NpcPopupType =
   | "summon"
   | "trade"
   | "craftList"
-  | "stash";
+  | "stash"
+  | "questPreview";
 
 // Data response shapes from server ack `data` field
 // Matches actual server responses exactly
@@ -148,6 +149,40 @@ export interface AcceptQuestData {
   message?: string;
 }
 
+export interface QuestPreviewItemReward {
+  itemId: string;
+  itemName: string;
+  quantity: number;
+}
+
+export interface QuestPreviewData {
+  type: "questPreview";
+  quest: {
+    questId: string;
+    name: string;
+    description: string;
+    questType: string;
+    goldReward: number;
+    xpReward: number;
+    gemReward: number;
+    itemRewards: QuestPreviewItemReward[];
+    npcId: string;
+    npcName: string;
+  };
+}
+
+export interface ConfirmAcceptQuestData {
+  type: "confirmAcceptQuest";
+  success: boolean;
+  message: string;
+  twitchChatInfo?: string;
+}
+
+export interface DeclineQuestData {
+  type: "declineQuest";
+  success: boolean;
+}
+
 export interface GetQuestsData {
   type: "getQuests";
   activeQuests: ActiveQuestData[];
@@ -195,6 +230,9 @@ export type InteractionData =
   | StashData
   | StashActionData
   | AcceptQuestData
+  | QuestPreviewData
+  | ConfirmAcceptQuestData
+  | DeclineQuestData
   | GetQuestsData
   | CancelQuestData
   | { type: string; [key: string]: any };
