@@ -91,6 +91,11 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
         return;
       }
 
+      if (data.event === "potStart") {
+        useSyncBarStore.getState().show(data.data.name, getStreamSyncDelay());
+        return;
+      }
+
       if (data.event === "moveStart") {
         const path = data.data?.remainingPath as Waypoint[] | undefined;
         if (path) {

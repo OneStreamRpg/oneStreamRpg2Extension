@@ -32,6 +32,19 @@ type Ability = {
 
 
 
+type ItemSetEffect = {
+    piecesRequired: number;
+    name: string;
+    description: string;
+    scaling?: ScalingMap;
+};
+
+export type ItemSet = {
+    name: string;
+    description: string;
+    effects: ItemSetEffect[];
+};
+
 type MetadataResponse = {
     items: Record<string, Item>;
     enemies: Record<string, Enemy>;
@@ -45,6 +58,7 @@ class MetadataService {
     private static instance: MetadataService;
     private data: MetadataResponse | null = null;
     private fetchPromise: Promise<MetadataResponse> | null = null;
+    private itemSets: Record<string, ItemSet> | null = null;
     private readonly apiUrl = import.meta.env.VITE_SOCKET_URL + "/api/metadata";
 
     private constructor() { }
@@ -68,21 +82,36 @@ class MetadataService {
         }
 
         logger.info(TAG, `Fetching metadata from ${this.apiUrl}`);
-        this.fetchPromise = fetch(this.apiUrl)
+
+        const itemSetsPromise = fetch(this.apiUrl + "/item-sets")
             .then(async (response) => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json() as MetadataResponse;
-                this.data = data;
-                logger.info(TAG, "Metadata fetched successfully", {
-                    items: Object.keys(data.items).length,
-                    enemies: Object.keys(data.enemies).length,
-                    npcs: Object.keys(data.npcs).length,
-                    abilities: Object.keys(data.abilities).length,
-                });
-                return data;
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                this.itemSets = await response.json() as Record<string, ItemSet>;
+                logger.info(TAG, "Item sets fetched successfully", { sets: Object.keys(this.itemSets).length });
             })
+            .catch((err) => {
+                logger.error(TAG, "Failed to fetch item sets", err);
+            });
+
+        this.fetchPromise = Promise.all([
+            fetch(this.apiUrl)
+                .then(async (response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json() as MetadataResponse;
+                    this.data = data;
+                    logger.info(TAG, "Metadata fetched successfully", {
+                        items: Object.keys(data.items).length,
+                        enemies: Object.keys(data.enemies).length,
+                        npcs: Object.keys(data.npcs).length,
+                        abilities: Object.keys(data.abilities).length,
+                    });
+                    return data;
+                }),
+            itemSetsPromise,
+        ])
+            .then(([data]) => data)
             .catch((err) => {
                 logger.error(TAG, "Failed to fetch metadata", err);
                 throw err;
@@ -184,6 +213,14 @@ class MetadataService {
 
     getXpRequirementsSync(): Record<number, number> | undefined {
         return this.data?.xpRequirements;
+    }
+
+    getItemSetSync(setId: string): ItemSet | undefined {
+        return this.itemSets?.[setId];
+    }
+
+    getAllItemSetsSync(): Record<string, ItemSet> | undefined {
+        return this.itemSets ?? undefined;
     }
 
     // Special getters

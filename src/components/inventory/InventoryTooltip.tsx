@@ -6,6 +6,21 @@ import { Item } from "./types";
 export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
   const itemData = metadataService.getItemSync(item.itemId);
   const stats = usePersonalChannelStore((state) => state.displayedState?.stats);
+  const equipment = usePersonalChannelStore((state) => state.displayedState?.equipment);
+
+  const setData = itemData?.itemSetId ? metadataService.getItemSetSync(itemData.itemSetId) : undefined;
+  const equippedItemIds = equipment
+    ? new Set(Object.values(equipment).filter(Boolean).map((i) => i!.itemId))
+    : new Set<string>();
+  const setPieces = setData && itemData?.itemSetId
+    ? Object.values(metadataService.getAllItemsSync() ?? {}).filter(
+        (i: any) => i.itemSetId === itemData.itemSetId
+      )
+    : [];
+  const equippedSetCount = setPieces.filter((i: any) => equippedItemIds.has(i.itemId)).length;
+  const totalSetPieces = setData
+    ? Math.max(...setData.effects.map((e) => e.piecesRequired))
+    : 0;
 
   if (!itemData) {
     return (
@@ -59,6 +74,37 @@ export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
             }
           </div>
         ))}
+        {setData && (
+          <div className="border-t-2 border-gray-500 pt-1 mt-1">
+            <p className="font-semibold text-yellow-400">
+              Set: {setData.name} ({equippedSetCount}/{totalSetPieces})
+            </p>
+            <p className="text-sm text-gray-300 italic">{setData.description}</p>
+            <ul className="mt-1">
+              {setPieces.map((piece: any) => {
+                const equipped = equippedItemIds.has(piece.itemId);
+                return (
+                  <li key={piece.itemId} className={`text-sm ${equipped ? "text-green-400" : "text-gray-400"}`}>
+                    {equipped ? "✓" : "·"} {piece.name}
+                  </li>
+                );
+              })}
+            </ul>
+            {setData.effects.map((effect, i) => {
+              const active = equippedSetCount >= effect.piecesRequired;
+              return (
+                <div key={i} className={`border-t border-gray-600 pt-1 mt-1 ${active ? "" : "opacity-50"}`}>
+                  <p className="font-semibold text-sm text-yellow-200">
+                    ({effect.piecesRequired}) {effect.name}
+                  </p>
+                  {stats
+                    ? <ResolvedDescription description={effect.description} scaling={effect.scaling} stats={stats} calcTooltipId="inventory-calc-tooltip" />
+                    : <p className="text-sm">{effect.description}</p>}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </main>
       <footer className="flex">
         <p className="text-sm text-gray-500">Requirements</p>
