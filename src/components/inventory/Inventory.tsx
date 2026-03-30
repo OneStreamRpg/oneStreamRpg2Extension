@@ -196,15 +196,30 @@ export const Inventory: React.FC = () => {
               />
             ))}
           </section>
-          <section className="w-full bg-[#1d1d1f] text-center text-xs">
-            Player
-            {Object.values(equipmentSlots)
-              .filter((item) => item !== null && !isEmptyItem(item))
-              .map((item) => (
-                <div key={item!.id}>
-                  {item!.itemId}: {item!.quantity}
-                </div>
-              ))}
+          <section className="w-full relative" style={{ overflow: "visible", pointerEvents: "none" }}>
+            <div className="absolute left-1/2 -translate-x-1/2" style={{ width: 256, height: 256, top: 0, pointerEvents: "none" }}>
+              {/* Base player */}
+              <img
+                src="https://cdn.onestreamrpg.com/images/ingame/playerIdleDown.png"
+                alt="player"
+                draggable={false}
+                style={{ position: "absolute", inset: 0, width: 256, height: 256, imageRendering: "pixelated", pointerEvents: "none", userSelect: "none" }}
+              />
+              {/* Equipment overlays – all 64x64 sprites scaled 4x, stacked at origin */}
+              {(["chest", "pants", "boots", "gloves", "helmet"] as EquipmentSlotKey[]).map((slot) => {
+                const item = equipmentSlots[slot];
+                if (!item || isEmptyItem(item)) return null;
+                return (
+                  <img
+                    key={slot}
+                    src={`https://cdn.onestreamrpg.com/images/ingame/${item.itemId}IdleDown.png`}
+                    alt={slot}
+                    draggable={false}
+                    style={{ position: "absolute", inset: 0, width: 256, height: 256, imageRendering: "pixelated", pointerEvents: "none", userSelect: "none" }}
+                  />
+                );
+              })}
+            </div>
           </section>
           <section className="flex flex-col items-center gap-y-2">
             {equipmentSlotKeys.slice(5).map((slotKey) => (
@@ -232,7 +247,7 @@ export const Inventory: React.FC = () => {
       <Tooltip
         id="inventory-calc-tooltip"
         place="right"
-        delayShow={0}
+        delayShow={600}
         style={{ zIndex: 9999 }}
         render={({ activeAnchor }) => {
           const raw = activeAnchor?.getAttribute("data-breakdown");
@@ -248,7 +263,7 @@ export const Inventory: React.FC = () => {
         id="inventory-tooltip"
         place="top"
         clickable
-        delayShow={0}
+        delayShow={600}
         openEvents={{ mouseenter: true, focus: true, click: true }}
         hidden={Boolean(activeItem)}
         render={({ activeAnchor }) => {
