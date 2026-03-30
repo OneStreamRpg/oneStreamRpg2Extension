@@ -22,7 +22,14 @@ export const NpcCraft: React.FC<{ data: CraftListData }> = ({ data }) => {
           return (
             <div key={index} className="p-2 bg-gray-700/50">
               <div className="flex items-center gap-2">
-                <CdnIcon type="items" id={recipe.output.itemId} className="size-10" />
+                <CdnIcon
+                  type="items"
+                  id={recipe.output.itemId}
+                  className="size-10"
+                  data-tooltip-id="npc-item-tooltip"
+                  data-item-id={recipe.output.itemId}
+                  data-item-qty={recipe.output.quantity}
+                />
                 <div className="flex-1 text-sm">
                   <p className="font-semibold">{recipe.name}</p>
                   {recipe.description && (
@@ -34,8 +41,16 @@ export const NpcCraft: React.FC<{ data: CraftListData }> = ({ data }) => {
                       const inputMeta = metadataService.getItemSync(input.itemId);
                       const inputName = inputMeta?.name ?? input.itemId;
                       return (
-                        <span key={input.itemId}>
+                        <span key={input.itemId} className="inline-flex items-center gap-0.5">
                           {i > 0 && ", "}
+                          <CdnIcon
+                            type="items"
+                            id={input.itemId}
+                            className="size-4 inline-block"
+                            data-tooltip-id="npc-item-tooltip"
+                            data-item-id={input.itemId}
+                            data-item-qty={input.quantity}
+                          />
                           {input.quantity}x {inputName}
                         </span>
                       );

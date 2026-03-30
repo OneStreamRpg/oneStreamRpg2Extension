@@ -31,6 +31,9 @@ export const NpcTrade: React.FC<{ data: TradeData }> = ({ data }) => {
                     type="items"
                     id={trade.costItemId}
                     className="size-4"
+                    data-tooltip-id="npc-item-tooltip"
+                    data-item-id={trade.costItemId}
+                    data-item-qty={trade.costQuantity}
                   />
                   {costItemMeta?.name ?? trade.costItemId} x{trade.costQuantity}
                 </span>
@@ -43,6 +46,9 @@ export const NpcTrade: React.FC<{ data: TradeData }> = ({ data }) => {
                     type="items"
                     id={trade.itemId}
                     className="size-4"
+                    data-tooltip-id="npc-item-tooltip"
+                    data-item-id={trade.itemId}
+                    data-item-qty="1"
                   />
                   {itemMeta?.name ?? trade.itemId}
                 </span>

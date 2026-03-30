@@ -6,6 +6,7 @@ interface NpcStore {
   activePopupType: NpcPopupType | null;
   popupData: InteractionData | null;
   isLoading: boolean;
+  error: string | null;
 
   openPopup: (
     npcId: string,
@@ -15,6 +16,7 @@ interface NpcStore {
   updatePopupData: (data: InteractionData) => void;
   closePopup: () => void;
   setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
 }
 
 export const useNpcStore = create<NpcStore>((set) => ({
@@ -22,6 +24,7 @@ export const useNpcStore = create<NpcStore>((set) => ({
   activePopupType: null,
   popupData: null,
   isLoading: false,
+  error: null,
 
   openPopup: (npcId, type, data) =>
     set({
@@ -29,6 +32,7 @@ export const useNpcStore = create<NpcStore>((set) => ({
       activePopupType: type,
       popupData: data,
       isLoading: false,
+      error: null,
     }),
 
   updatePopupData: (data) =>
@@ -36,6 +40,7 @@ export const useNpcStore = create<NpcStore>((set) => ({
       activePopupType: data.type as NpcPopupType,
       popupData: data,
       isLoading: false,
+      error: null,
     }),
 
   closePopup: () =>
@@ -44,7 +49,9 @@ export const useNpcStore = create<NpcStore>((set) => ({
       activePopupType: null,
       popupData: null,
       isLoading: false,
+      error: null,
     }),
 
   setLoading: (loading) => set({ isLoading: loading }),
+  setError: (error) => set({ error, isLoading: false }),
 }));

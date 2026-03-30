@@ -1,6 +1,6 @@
 import { WindowContainer } from "../ui/WindowContainer";
 
-export type PanelPage = "map" | "inventory" | "abilities" | "quests" | "stats" | "actions";
+export type PanelPage = "map" | "inventory" | "abilities" | "quests" | "stats" | "actions" | "recipes";
 
 const MENU_ITEMS: { page: PanelPage; label: string; icon: string }[] = [
   { page: "map", label: "Map", icon: "quests" },
@@ -9,6 +9,7 @@ const MENU_ITEMS: { page: PanelPage; label: string; icon: string }[] = [
   { page: "quests", label: "Quests", icon: "quests" },
   { page: "stats", label: "Stats", icon: "stats" },
   { page: "actions", label: "Actions", icon: "abilities" },
+  { page: "recipes", label: "Recipes", icon: "recipes" },
 ];
 
 interface PanelBurgerMenuProps {

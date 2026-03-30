@@ -3,6 +3,7 @@ import { Page } from "../types/ui";
 import { AbilitiesPage } from "./abilities/AbilitiesPage";
 import { Inventory } from "./inventory/Inventory";
 import { PageLayout } from "./PageLayout";
+import { RecipesPage } from "./recipes/RecipesPage";
 import { SkillTree } from "./SkillTree";
 
 export const ActivePage: React.FC = () => {
@@ -14,6 +15,7 @@ export const ActivePage: React.FC = () => {
         {activePage === Page.Inventory && <Inventory />}
         {activePage === Page.SkillTree && <SkillTree />}
         {activePage === Page.Abilities && <AbilitiesPage />}
+        {activePage === Page.Recipes && <RecipesPage />}
       </PageLayout>
     )
   );

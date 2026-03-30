@@ -278,6 +278,13 @@ export function usePersonalChannelActions(socket: Socket | null) {
   }, [sendAction]);
 
   /**
+   * Fetch player's learned recipes
+   */
+  const fetchPlayerRecipes = useCallback(() => {
+    sendAction("playerRecipes", {}, (state) => state);
+  }, [sendAction]);
+
+  /**
    * Request full state sync
    */
   const requestSync = useCallback(() => {
@@ -306,5 +313,6 @@ export function usePersonalChannelActions(socket: Socket | null) {
     usePotion,
     setPotion,
     getPotionInfo,
+    fetchPlayerRecipes,
   };
 }

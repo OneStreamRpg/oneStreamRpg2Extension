@@ -88,6 +88,12 @@ export const LeftNav: React.FC = () => {
         isActive={questPanelOpen}
         onClick={toggleQuestPanel}
       />
+      <NavButton
+        icon="recipes"
+        label="Recipes"
+        isActive={activePage === Page.Recipes}
+        onClick={() => setActivePage(Page.Recipes)}
+      />
     </nav>
   );
 };

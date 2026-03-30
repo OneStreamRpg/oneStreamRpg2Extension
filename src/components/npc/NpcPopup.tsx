@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
+import { Tooltip } from "react-tooltip";
 import { useNpcStore } from "../../store/useNpcStore";
 import { WindowContainer } from "../ui/WindowContainer";
+import { InventoryTooltip } from "../inventory/InventoryTooltip";
+import { Item } from "../inventory/types";
+import { CalcBreakdown } from "../ui/CalcBreakdown";
+import { ResolvedToken } from "../../utils/resolveScaling";
+
+function makeItem(itemId: string, quantity = 1): Item {
+  return { id: itemId, itemId, quantity, tags: [] };
+}
 import {
   InteractData,
   ShopData,
@@ -52,11 +61,26 @@ const MESSAGE_TYPES = new Set([
 ]);
 
 export const NpcPopup: React.FC = () => {
-  const { activePopupType, popupData, isLoading, closePopup } = useNpcStore();
+  const { activePopupType, popupData, isLoading, error, closePopup } = useNpcStore();
 
   if (!activePopupType) return null;
 
   const renderContent = () => {
+    if (error) {
+      return (
+        <div className="flex flex-col items-center gap-3 min-w-48 p-4">
+          <p className="text-sm text-center" style={{ color: "#e07050" }}>{error}</p>
+          <button
+            onClick={closePopup}
+            className="px-3 py-1 text-xs cursor-pointer"
+            style={{ backgroundColor: "#3d1a06", border: "1px solid #9a7228" }}
+          >
+            Close
+          </button>
+        </div>
+      );
+    }
+
     if (isLoading && !popupData) {
       return (
         <div className="flex items-center justify-center p-8">
@@ -132,6 +156,34 @@ export const NpcPopup: React.FC = () => {
           </div>
           {renderContent()}
         </WindowContainer>
+
+        <Tooltip
+          id="npc-item-tooltip"
+          place="right"
+          clickable
+          delayShow={600}
+          render={({ activeAnchor }) => {
+            const itemId = activeAnchor?.getAttribute("data-item-id");
+            const qty = parseInt(activeAnchor?.getAttribute("data-item-qty") ?? "1", 10);
+            if (!itemId) return null;
+            return <InventoryTooltip item={makeItem(itemId, qty)} />;
+          }}
+        />
+        <Tooltip
+          id="inventory-calc-tooltip"
+          place="right"
+          delayShow={0}
+          style={{ zIndex: 9999 }}
+          render={({ activeAnchor }) => {
+            const raw = activeAnchor?.getAttribute("data-breakdown");
+            if (!raw) return null;
+            try {
+              return <CalcBreakdown resolved={JSON.parse(raw) as ResolvedToken} />;
+            } catch {
+              return null;
+            }
+          }}
+        />
       </div>
     </div>
   );

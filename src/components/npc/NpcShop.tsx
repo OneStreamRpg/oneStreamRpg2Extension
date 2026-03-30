@@ -26,7 +26,14 @@ export const NpcShop: React.FC<{ data: ShopData }> = ({ data }) => {
               key={index}
               className="flex items-center gap-2 p-2 bg-gray-700/50"
             >
-              <CdnIcon type="items" id={item.itemId} className="size-10" />
+              <CdnIcon
+                type="items"
+                id={item.itemId}
+                className="size-10"
+                data-tooltip-id="npc-item-tooltip"
+                data-item-id={item.itemId}
+                data-item-qty="1"
+              />
               <div className="flex-1 text-sm">
                 <p>{itemName}</p>
                 <p className="text-xs text-gray-400">

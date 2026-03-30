@@ -7,6 +7,7 @@ import { useNpcStore } from "../store/useNpcStore";
 import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
 import { InteractData } from "../types/npcInteraction";
+import { useRecipesStore } from "../store/useRecipesStore";
 import {
   ActionAcknowledgment,
   PlayerPersonalState,
@@ -129,6 +130,15 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
         confirmAction(data.actionId, data.delta);
       } else {
         rollbackAction(data.actionId, data.error);
+        // If the NPC popup is waiting for a response, surface the error
+        if (useNpcStore.getState().isLoading) {
+          useNpcStore.getState().setError(data.error ?? "Something went wrong.");
+        }
+      }
+
+      // Route playerRecipes response to recipes store
+      if (data.data?.type === "playerRecipes") {
+        useRecipesStore.getState().setRecipes((data.data as any).recipes ?? []);
       }
 
       // Route transient UI data to NPC store (only for actual popup types)

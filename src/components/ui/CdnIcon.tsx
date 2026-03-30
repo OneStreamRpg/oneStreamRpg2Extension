@@ -1,18 +1,17 @@
 import { useState } from "react";
 import { getCdnIconUrl } from "../../utils/cdnIcon";
 
-interface CdnIconProps {
+type CdnIconProps = React.ImgHTMLAttributes<HTMLImageElement> & {
   type: "items" | "enemy" | "npc" | "abilities";
   id: string;
-  className?: string;
-  alt?: string;
-}
+};
 
 export const CdnIcon: React.FC<CdnIconProps> = ({
   type,
   id,
   className = "",
   alt,
+  ...rest
 }) => {
   const [hasError, setHasError] = useState(false);
 
@@ -33,6 +32,7 @@ export const CdnIcon: React.FC<CdnIconProps> = ({
       className={className}
       style={{ imageRendering: "pixelated" }}
       onError={() => setHasError(true)}
+      {...rest}
     />
   );
 };

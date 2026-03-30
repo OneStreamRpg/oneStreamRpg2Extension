@@ -5,6 +5,7 @@ import { AbilitiesPage } from "../components/abilities/AbilitiesPage";
 import { Inventory } from "../components/inventory/Inventory";
 import { QuestPanel } from "../components/quests/QuestPanel";
 import { PanelActionsPage } from "../components/panel/PanelActionsPage";
+import { RecipesPage } from "../components/recipes/RecipesPage";
 import { PanelBurgerMenu, type PanelPage } from "../components/panel/PanelBurgerMenu";
 import { PanelMapView } from "../components/panel/PanelMapView";
 import { PanelNav } from "../components/panel/PanelNav";
@@ -58,6 +59,11 @@ export const Panel: React.FC = () => {
         )}
         {currentPage === "stats" && <PanelStatsPage />}
         {currentPage === "actions" && <PanelActionsPage />}
+        {currentPage === "recipes" && (
+          <div className="p-2">
+            <RecipesPage />
+          </div>
+        )}
       </main>
 
       <PanelBurgerMenu
