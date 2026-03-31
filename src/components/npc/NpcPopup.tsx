@@ -8,6 +8,8 @@ import {
   InteractData,
   QuestPreviewData,
   RecipesData,
+  SellManyData,
+  SellMenuData,
   ShopData,
   SpawnArenaData,
   StashData,
@@ -25,6 +27,7 @@ import { NpcDialogue } from "./NpcDialogue";
 import { NpcInteractMenu } from "./NpcInteractMenu";
 import { NpcQuestPreview } from "./NpcQuestPreview";
 import { NpcRecipes } from "./NpcRecipes";
+import { NpcSell } from "./NpcSell";
 import { NpcShop } from "./NpcShop";
 import { NpcStash } from "./NpcStash";
 import { NpcSummon } from "./NpcSummon";
@@ -61,6 +64,7 @@ const MESSAGE_TYPES = new Set([
   "buy", "buyRecipe", "craft", "acceptQuest",
   "stashPut", "stashGet", "stashSwap", "tradeItem",
   "confirmAcceptQuest", "declineQuest",
+  "sell",
 ]);
 
 export const NpcPopup: React.FC = () => {
@@ -134,6 +138,22 @@ export const NpcPopup: React.FC = () => {
         return <NpcStash data={popupData as StashData} />;
       case "questPreview":
         return <NpcQuestPreview data={popupData as QuestPreviewData} />;
+      case "sellMenu":
+        return <NpcSell data={popupData as SellMenuData} />;
+      case "sellMany": {
+        const d = popupData as SellManyData;
+        return (
+          <div className="flex flex-col gap-2 min-w-48 p-2">
+            <p className="text-sm font-bold">Sold {d.soldItems.length} item{d.soldItems.length !== 1 ? "s" : ""} for {d.totalGold}g!</p>
+            {d.soldItems.map((s, i) => (
+              <p key={i} className="text-xs text-gray-400">{s.name} — {s.gold}g</p>
+            ))}
+            {d.skipped > 0 && (
+              <p className="text-xs text-gray-500">{d.skipped} slot{d.skipped !== 1 ? "s" : ""} skipped.</p>
+            )}
+          </div>
+        );
+      }
       default:
         return (
           <p className="text-sm text-gray-400">

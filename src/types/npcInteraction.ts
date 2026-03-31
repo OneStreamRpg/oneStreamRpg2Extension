@@ -12,7 +12,8 @@ export type NpcPopupType =
   | "trade"
   | "craftList"
   | "stash"
-  | "questPreview";
+  | "questPreview"
+  | "sellMenu";
 
 // Data response shapes from server ack `data` field
 // Matches actual server responses exactly
@@ -45,6 +46,24 @@ export interface BuyData {
   type: "buy";
   success: boolean;
   message?: string;
+}
+
+export interface SellMenuData {
+  type: "sellMenu";
+  npcId: string;
+}
+
+export interface SellData {
+  type: "sell";
+  success: boolean;
+  message: string;
+}
+
+export interface SellManyData {
+  type: "sellMany";
+  totalGold: number;
+  soldItems: { itemId: string; name: string; gold: number }[];
+  skipped: number;
 }
 
 export interface RecipesData {
@@ -220,6 +239,9 @@ export type InteractionData =
   | InteractData
   | ShopData
   | BuyData
+  | SellMenuData
+  | SellData
+  | SellManyData
   | RecipesData
   | DialogueData
   | ArenaData

@@ -4,6 +4,7 @@ export type Item = {
   quantity: number
   tags: string[]
   scalings?: Record<string, number>
+  value?: number
 }
 
 export type PotionItem = Item & {

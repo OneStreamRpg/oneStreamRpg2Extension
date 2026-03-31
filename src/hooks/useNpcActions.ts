@@ -60,6 +60,18 @@ export function useNpcActions(socket: Socket | null) {
     [sendNpcAction]
   );
 
+  const sell = useCallback(
+    (npcId: string, slotIndex: number) =>
+      sendNpcAction("sell", { npcId, slotIndex }),
+    [sendNpcAction]
+  );
+
+  const sellMany = useCallback(
+    (npcId: string, slotIndices: number[]) =>
+      sendNpcAction("sellMany", { npcId, slotIndices }),
+    [sendNpcAction]
+  );
+
   const recipes = useCallback(
     (npcId?: string) => sendNpcAction("recipes", { npcId }),
     [sendNpcAction]
@@ -201,6 +213,8 @@ export function useNpcActions(socket: Socket | null) {
     interact,
     shop,
     buy,
+    sell,
+    sellMany,
     recipes,
     buyRecipe,
     craftList,

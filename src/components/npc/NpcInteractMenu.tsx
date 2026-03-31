@@ -1,6 +1,7 @@
 import { useNpcActions } from "../../hooks/useNpcActions";
 import { metadataService } from "../../services/MetadataService";
 import { useSocketStore } from "../../store/socketStore";
+import { useNpcStore } from "../../store/useNpcStore";
 import { InteractData } from "../../types/npcInteraction";
 
 export const NpcInteractMenu: React.FC<{ data: InteractData }> = ({
@@ -15,6 +16,11 @@ export const NpcInteractMenu: React.FC<{ data: InteractData }> = ({
   const handleInteraction = (type: string, questId?: string) => {
     if (type === "acceptQuest" && questId) {
       npcActions.acceptQuest(data.npcId, questId);
+      return;
+    }
+
+    if (type === "sell") {
+      useNpcStore.getState().updatePopupData({ type: "sellMenu", npcId: data.npcId });
       return;
     }
 
