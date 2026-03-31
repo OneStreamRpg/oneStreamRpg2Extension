@@ -156,8 +156,39 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
             interactDelayTimeout.current = null;
           }, 0);
         } else {
-          useNpcStore.getState().updatePopupData(popupData);
-          useNpcStore.getState().setLoading(false);
+          const currentType = useNpcStore.getState().activePopupType;
+
+          // Buy actions: keep shop open and show a toast
+          const toastTypes: Partial<Record<string, string[]>> = {
+            buy: ["shop"],
+            buyRecipe: ["recipes"],
+          };
+
+          // Stash actions: re-fetch stash data so both panels update in place
+          const stashActionTypes = new Set(["stashPut", "stashGet", "stashSwap"]);
+
+          if (toastTypes[popupData.type]?.includes(currentType ?? "")) {
+            const msg = (popupData as any).message ?? "Done.";
+            useNpcStore.getState().setToast(msg);
+            useNpcStore.getState().setLoading(false);
+          } else if (stashActionTypes.has(popupData.type) && currentType === "stash") {
+            const npcId = (useNpcStore.getState().popupData as any)?.npcId;
+            const { getNextSequence, applyOptimisticUpdate, displayedState } =
+              usePersonalChannelStore.getState();
+            if (npcId && socket && displayedState) {
+              const actionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+              const seq = getNextSequence();
+              const action = { actionId, seq, type: "stash", params: { npcId } };
+              applyOptimisticUpdate(action, structuredClone(displayedState));
+              useNpcStore.getState().setLoading(true);
+              socket.emit("personalChannel:action", action);
+            } else {
+              useNpcStore.getState().setLoading(false);
+            }
+          } else {
+            useNpcStore.getState().updatePopupData(popupData);
+            useNpcStore.getState().setLoading(false);
+          }
         }
       }
     };

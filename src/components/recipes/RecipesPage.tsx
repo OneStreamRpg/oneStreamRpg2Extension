@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Tooltip } from "react-tooltip";
 import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
+import { useNpcActions } from "../../hooks/useNpcActions";
 import { metadataService } from "../../services/MetadataService";
 import { useRecipesStore } from "../../store/useRecipesStore";
 import { useSocketStore } from "../../store/socketStore";
@@ -16,6 +17,7 @@ function makeItem(itemId: string, quantity: number): Item {
 export const RecipesPage: React.FC = () => {
   const socket = useSocketStore((state) => state.socket);
   const { fetchPlayerRecipes } = usePersonalChannelActions(socket);
+  const { setTargetNpc } = useNpcActions(socket);
   const recipes = useRecipesStore((state) => state.recipes);
   const isLoading = useRecipesStore((state) => state.isLoading);
   const setLoading = useRecipesStore((state) => state.setLoading);
@@ -28,6 +30,17 @@ export const RecipesPage: React.FC = () => {
   return (
     <>
       <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between px-1 pb-1" style={{ borderBottom: "1px solid #3d2a0a" }}>
+          <p className="text-xs" style={{ color: "#9a7850" }}>Craft recipes at the Crafting Table.</p>
+          <button
+            onClick={() => setTargetNpc("craftingTable")}
+            className="text-xs px-2 py-1 rounded"
+            style={{ backgroundColor: "#3d2a0a", color: "#f0d8a8", border: "1px solid #7a5520" }}
+          >
+            Go to Crafting Table
+          </button>
+        </div>
+
         {isLoading && <p className="text-center text-sm text-gray-400 py-4">Loading recipes...</p>}
 
         {!isLoading && recipes !== null && recipes.length === 0 && (
