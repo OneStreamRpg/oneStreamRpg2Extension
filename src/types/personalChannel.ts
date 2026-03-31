@@ -8,7 +8,7 @@ export interface PlayerPersonalState {
   inventory: InventoryState;
   equipment: EquipmentState;
   currency: CurrencyState;
-  abilities: any;
+  abilities: AbilitiesState;
   stats: StatsState;
   profile: any;
   quests?: QuestsState;
@@ -35,6 +35,18 @@ export interface CurrencyState {
   gold: number;
   gems?: number;
   [key: string]: number | undefined;
+}
+
+export interface EquippedAbility {
+  slot: "main" | "second" | "ultimate";
+  abilityId: string;
+  lastUsed?: number;            // Unix timestamp ms — when ability was last cast
+  effectiveCooldownMs?: number; // haste-adjusted cooldown from server
+}
+
+export interface AbilitiesState {
+  equipped: EquippedAbility[];
+  inventory: string[];
 }
 
 // TODO MC: Rework type
@@ -73,7 +85,7 @@ export interface PlayerStateDelta {
   inventory?: InventoryState;
   equipment?: EquipmentState;
   currency?: CurrencyState;
-  abilities?: any;
+  abilities?: AbilitiesState;
   stats?: StatsState;
   quests?: QuestsState;
   pendingNpcInteraction?: InteractionData;

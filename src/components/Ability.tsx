@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
 import { AbilitySlotType, metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
@@ -7,6 +7,8 @@ import { CdnIcon } from "./ui/CdnIcon";
 export type Ability = {
   slot: AbilitySlotType;
   abilityId: string;
+  lastUsed?: number;
+  effectiveCooldownMs?: number;
 };
 
 const TICKS_PER_SECOND = 16;
@@ -17,29 +19,48 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
   const socket = useSocketStore((state) => state.socket);
   const { castAbility } = usePersonalChannelActions(socket);
   const abilityMetaData = metadataService.getAbilitySync(ability.abilityId)!;
-  const [cooldown, setCooldown] = useState(0);
-  const cooldownTime =
+  const metadataCooldownMs =
     abilityMetaData.cooldownMs + ticksToMs(abilityMetaData.castTime);
+
+  const cooldownEndRef = useRef<number>(0);
+  const [displayCooldownMs, setDisplayCooldownMs] = useState(0);
+
+  // Sync cooldown from server data whenever lastUsed/effectiveCooldownMs props update
+  useEffect(() => {
+    if (ability.lastUsed !== undefined && ability.effectiveCooldownMs !== undefined) {
+      const serverEnd = ability.lastUsed + ability.effectiveCooldownMs;
+      const remaining = Math.max(0, serverEnd - Date.now());
+      cooldownEndRef.current = remaining > 0 ? serverEnd : 0;
+      setDisplayCooldownMs(remaining);
+    }
+  }, [ability.lastUsed, ability.effectiveCooldownMs]);
+
+  const isOnCooldown = displayCooldownMs > 0;
+
+  // Smooth 100ms countdown; cleans up on unmount
+  useEffect(() => {
+    if (!isOnCooldown) return;
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, cooldownEndRef.current - Date.now());
+      setDisplayCooldownMs(remaining);
+      if (remaining <= 0) {
+        cooldownEndRef.current = 0;
+        clearInterval(interval);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isOnCooldown]);
 
   const handleAbilityClick = () => {
     castAbility(ability.slot);
-
-    setCooldown(cooldownTime);
-
-    const interval = setInterval(() => {
-      setCooldown((prev) => {
-        if (prev > 0) {
-          return prev - 1000;
-        } else {
-          clearInterval(interval);
-          return 0;
-        }
-      });
-    }, 1000);
+    const optimisticMs = ability.effectiveCooldownMs ?? metadataCooldownMs;
+    cooldownEndRef.current = Date.now() + optimisticMs;
+    setDisplayCooldownMs(optimisticMs);
   };
 
-  const isOnCooldown = cooldown > 0;
-  const cooldownPercentage = (cooldown / cooldownTime) * 100;
+  const totalCooldownMs = ability.effectiveCooldownMs ?? metadataCooldownMs;
+  const cooldownPercentage =
+    totalCooldownMs > 0 ? (displayCooldownMs / totalCooldownMs) * 100 : 0;
 
   return (
     <button
@@ -86,7 +107,7 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
           />
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-white text-xs font-bold">
-              {Math.ceil(cooldown / 1000)}s
+              {Math.ceil(displayCooldownMs / 1000)}s
             </span>
           </div>
         </>
