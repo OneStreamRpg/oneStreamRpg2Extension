@@ -138,7 +138,7 @@ export const WorldInteractionLayer: React.FC = () => {
     >
       <PathOverlay />
 
-      {gameObjects.map((obj) => {
+      {gameObjects.filter((obj) => obj.hitbox).map((obj) => {
         let metadata = null;
         let displayName: string | null = null;
         if (obj.type === "npc") {
