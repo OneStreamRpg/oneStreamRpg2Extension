@@ -10,6 +10,7 @@ interface SocketStore {
   isConnected: boolean;
   gameState: GameState | null;
   inGame: boolean;
+  isDying: boolean;
   ping: number | null; // ✅ New: Current ping in ms
   streamDelay: number; // HLS latency to broadcaster in seconds
   pingToStreamer: number; // Server's ping to broadcaster in ms
@@ -20,6 +21,7 @@ interface SocketStore {
   setIsConnected: (state: boolean) => void;
   setGameState: (state: GameState) => void;
   setinGame: (state: boolean) => void;
+  setIsDying: (state: boolean) => void;
   setPing: (ping: number) => void; // ✅ New: Setter for ping
   setStreamDelay: (delay: number) => void;
   setPingToStreamer: (ping: number) => void;
@@ -33,6 +35,7 @@ export const useSocketStore = create<SocketStore>((set) => ({
   isConnected: false,
   gameState: null,
   inGame: false,
+  isDying: false,
   ping: null, // ✅ Initial value
   streamDelay: 0,
   pingToStreamer: 0,
@@ -43,6 +46,7 @@ export const useSocketStore = create<SocketStore>((set) => ({
   setIsConnected: (isConnected) => set({ isConnected }),
   setGameState: (gameState) => set({ gameState }),
   setinGame: (inGame) => set({ inGame }),
+  setIsDying: (isDying) => set({ isDying }),
   setPing: (ping) => set({ ping }), // ✅ Setter
   setStreamDelay: (delay) => set({ streamDelay: delay }),
   setPingToStreamer: (ping) => set({ pingToStreamer: ping }),

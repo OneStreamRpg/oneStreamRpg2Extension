@@ -14,7 +14,7 @@ import { useAuthStore } from "../hooks/useAuthStore";
 import { useSocketStore } from "../store/socketStore";
 
 export const Panel: React.FC = () => {
-  const { isConnected, inGame, joinStatus, joinError, joinGameFn } = useSocketStore();
+  const { isConnected, inGame, isDying, joinStatus, joinError, joinGameFn } = useSocketStore();
   const { profile } = useAuthStore();
   const [currentPage, setCurrentPage] = useState<PanelPage>("map");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,7 +23,7 @@ export const Panel: React.FC = () => {
     return <JoinGameScreen status="connecting" />;
   }
 
-  if (!inGame) {
+  if (!inGame && !isDying) {
     return (
       <JoinGameScreen
         status={joinStatus === "joining" ? "joining" : "idle"}

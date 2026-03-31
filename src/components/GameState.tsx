@@ -27,6 +27,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     setIsConnected,
     setGameState,
     setinGame,
+    setIsDying,
     setPing,
     setJoinStatus,
     setJoinError,
@@ -184,10 +185,17 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         logger.info(TAG, `Player is now in-game, requesting initial game state...`, {
           channelId,
         });
+        setIsDying(false);
         setinGame(data.inGame);
         socketInstance.emit("getGameState");
+      } else if (data.isDying) {
+        logger.info(TAG, `Player is dying/respawning, waiting for respawn`);
+        setIsDying(true);
+        setinGame(false);
+        setGameState({ players: [], enemies: [], npcs: [] });
       } else {
         logger.info(TAG, `Player left the game, clearing game state`);
+        setIsDying(false);
         setinGame(false);
         setGameState({ players: [], enemies: [], npcs: [] });
       }
@@ -261,7 +269,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       setIsConnected(false);
       setSocket(null);
     };
-  }, [token, channelId, setSocket, setIsConnected, setGameState, setinGame, setJoinStatus, setJoinError, setJoinGameFn]);
+  }, [token, channelId, setSocket, setIsConnected, setGameState, setinGame, setIsDying, setJoinStatus, setJoinError, setJoinGameFn]);
 
   return <>{children}</>;
 };

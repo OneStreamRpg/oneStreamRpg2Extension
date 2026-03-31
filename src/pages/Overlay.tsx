@@ -8,14 +8,14 @@ import { useSocketStore } from "../store/socketStore";
 const DEBUG_MODE = import.meta.env.VITE_DEVELOPER === "true";
 
 export const Overlay = () => {
-  const { isConnected, inGame, joinStatus, joinError, joinGameFn } = useSocketStore();
+  const { isConnected, inGame, isDying, joinStatus, joinError, joinGameFn } = useSocketStore();
   const { profile } = useAuthStore();
 
   if (!isConnected) {
     return <JoinGameScreen status="connecting" />;
   }
 
-  if (!inGame) {
+  if (!inGame && !isDying) {
     return (
       <JoinGameScreen
         status={joinStatus === "joining" ? "joining" : "idle"}
