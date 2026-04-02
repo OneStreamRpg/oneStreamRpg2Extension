@@ -32,6 +32,23 @@ type Ability = {
 
 
 
+export type QuestItemReward = {
+    itemId: string;
+    itemName: string;
+    quantity: number;
+};
+
+export type QuestDefinition = {
+    questId: string;
+    name: string;
+    description: string;
+    questType: string;
+    goldReward: number;
+    xpReward: number;
+    gemReward: number;
+    itemReward: QuestItemReward[];
+};
+
 type ItemSetEffect = {
     piecesRequired: number;
     name: string;
@@ -59,6 +76,7 @@ class MetadataService {
     private data: MetadataResponse | null = null;
     private fetchPromise: Promise<MetadataResponse> | null = null;
     private itemSets: Record<string, ItemSet> | null = null;
+    private quests: Record<string, QuestDefinition> | null = null;
     private readonly apiUrl = import.meta.env.VITE_SOCKET_URL + "/api/metadata";
 
     private constructor() { }
@@ -93,6 +111,16 @@ class MetadataService {
                 logger.error(TAG, "Failed to fetch item sets", err);
             });
 
+        const questsPromise = fetch(this.apiUrl + "/quests")
+            .then(async (response) => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                this.quests = await response.json() as Record<string, QuestDefinition>;
+                logger.info(TAG, "Quests fetched successfully", { quests: Object.keys(this.quests).length });
+            })
+            .catch((err) => {
+                logger.error(TAG, "Failed to fetch quests", err);
+            });
+
         this.fetchPromise = Promise.all([
             fetch(this.apiUrl)
                 .then(async (response) => {
@@ -110,6 +138,7 @@ class MetadataService {
                     return data;
                 }),
             itemSetsPromise,
+            questsPromise,
         ])
             .then(([data]) => data)
             .catch((err) => {
@@ -221,6 +250,14 @@ class MetadataService {
 
     getAllItemSetsSync(): Record<string, ItemSet> | undefined {
         return this.itemSets ?? undefined;
+    }
+
+    getQuestSync(questId: string): QuestDefinition | undefined {
+        return this.quests?.[questId];
+    }
+
+    getAllQuestsSync(): Record<string, QuestDefinition> | undefined {
+        return this.quests ?? undefined;
     }
 
     // Special getters

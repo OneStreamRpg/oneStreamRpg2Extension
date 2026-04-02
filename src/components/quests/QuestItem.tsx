@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { metadataService } from "../../services/MetadataService";
 import { ActiveQuest, AvailableQuest } from "../../types/personalChannel";
 
 interface ActiveQuestItemProps {
@@ -11,6 +12,7 @@ export const ActiveQuestItem: React.FC<ActiveQuestItemProps> = ({
   onCancel,
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const questDef = metadataService.getQuestSync(quest.questId);
   const progressPercent =
     quest.maxProgress > 0
       ? Math.round((quest.progress / quest.maxProgress) * 100)
@@ -64,6 +66,27 @@ export const ActiveQuestItem: React.FC<ActiveQuestItemProps> = ({
               </p>
             </>
           )}
+          {questDef && (questDef.goldReward > 0 || questDef.xpReward > 0 || questDef.gemReward > 0 || questDef.itemReward.length > 0) && (
+            <div className="mt-2">
+              <p className="text-xs text-gray-400 font-semibold">Rewards:</p>
+              <div className="flex flex-wrap gap-2 mt-0.5">
+                {questDef.goldReward > 0 && (
+                  <span className="text-xs text-yellow-400">{questDef.goldReward} Gold</span>
+                )}
+                {questDef.xpReward > 0 && (
+                  <span className="text-xs text-green-400">{questDef.xpReward} XP</span>
+                )}
+                {questDef.gemReward > 0 && (
+                  <span className="text-xs text-blue-300">{questDef.gemReward} Gems</span>
+                )}
+                {questDef.itemReward.map((item) => (
+                  <span key={item.itemId} className="text-xs text-purple-300">
+                    {item.quantity > 1 ? `${item.quantity}× ` : ""}{item.itemName}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -88,32 +111,15 @@ export const AvailableQuestItem: React.FC<AvailableQuestItemProps> = ({
   quest,
   onNavigate,
 }) => {
-  const [expanded, setExpanded] = useState(false);
-
   return (
-    <div className="p-2">
-      <div
-        className="flex items-center justify-between cursor-pointer"
-        onClick={() => setExpanded(!expanded)}
+    <div className="p-2 flex items-center justify-between">
+      <p className="text-sm font-semibold">Quest from {quest.npcName}</p>
+      <button
+        onClick={() => onNavigate(quest.npcId)}
+        className="text-xs text-blue-400 hover:text-blue-300 cursor-pointer"
       >
-        <p className="text-sm font-semibold">Quest from {quest.npcName}</p>
-        <span className="text-xs text-gray-400">{expanded ? "▼" : "▶"}</span>
-      </div>
-      {expanded && (
-        <div className="mt-1">
-          <p className="text-xs text-gray-300 font-medium">{quest.name}</p>
-          <p className="text-xs text-gray-400">{quest.description}</p>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onNavigate(quest.npcId);
-            }}
-            className="mt-1 text-xs text-blue-400 hover:text-blue-300 cursor-pointer"
-          >
-            Go to {quest.npcName}
-          </button>
-        </div>
-      )}
+        Go to
+      </button>
     </div>
   );
 };
