@@ -5,6 +5,7 @@ import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
 import { logger } from "../services/Logger";
 import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
+import { useAimStore } from "../store/useAimStore";
 import { useSocketStore } from "../store/socketStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
 import { PathOverlay } from "./PathOverlay";
@@ -76,6 +77,8 @@ const PlayerSyncBar: React.FC = () => {
 
 export const WorldInteractionLayer: React.FC = () => {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const mousePosRef = useRef({ x: 0, y: 0 });
   const sectionRef = useRef<HTMLElement>(null);
 
   const socket = useSocketStore((state) => state.socket);
@@ -91,11 +94,64 @@ export const WorldInteractionLayer: React.FC = () => {
     () => new Set(availableQuests.map((q) => q.npcId)),
     [availableQuests]
   );
-  const { movePlayer, setTargetEnemy } = usePersonalChannelActions(socket);
+  const { movePlayer, setTargetEnemy, castAbility } = usePersonalChannelActions(socket);
   const { setTargetNpc } = useNpcActions(socket);
+
+  const { isAiming, slotType, abilityType, range, effectSize, stopAim } = useAimStore();
+
+  // Convert client coords to world coords using the section's bounds
+  const clientToWorld = useCallback((clientX: number, clientY: number) => {
+    const section = sectionRef.current;
+    if (!section) return { x: 0, y: 0 };
+    const bounds = section.getBoundingClientRect();
+    return {
+      x: (clientX - bounds.left) * (1920 / bounds.width),
+      y: (clientY - bounds.top) * (1080 / bounds.height),
+    };
+  }, []);
+
+  // Track mouse and handle aim cast via mouseup when aiming
+  useEffect(() => {
+    if (!isAiming) return;
+
+    const onMouseMove = (e: MouseEvent) => {
+      mousePosRef.current = { x: e.clientX, y: e.clientY };
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+
+    const onMouseUp = (e: MouseEvent) => {
+      if (!slotType) { stopAim(); return; }
+
+      let { x: aimX, y: aimY } = clientToWorld(e.clientX, e.clientY);
+
+      if (range !== null) {
+        const playerPos = getPlayerWorldPos(gameState, myUsername);
+        if (playerPos) {
+          const dx = aimX - playerPos.x;
+          const dy = aimY - playerPos.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > range) {
+            aimX = playerPos.x + (dx / dist) * range;
+            aimY = playerPos.y + (dy / dist) * range;
+          }
+        }
+      }
+
+      castAbility(slotType, aimX, aimY);
+      stopAim();
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [isAiming, slotType, abilityType, range, clientToWorld, castAbility, stopAim, gameState, myUsername]);
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
+      if (isAiming) return; // mouseup handler already cast the ability
       const section = sectionRef.current;
       if (!section) {
         logger.warn(TAG, "Click ignored: sectionRef not available");
@@ -122,19 +178,74 @@ export const WorldInteractionLayer: React.FC = () => {
       );
       movePlayer(scaledX, scaledY);
     },
-    [movePlayer]
+    [movePlayer, isAiming]
   );
+
+  // Compute aim indicator position and properties
+  const aimIndicator = useMemo(() => {
+    if (!isAiming || !abilityType) return null;
+    const section = sectionRef.current;
+    if (!section) return null;
+
+    const bounds = section.getBoundingClientRect();
+    const mouse = {
+      x: (mousePosRef.current.x - bounds.left) * (1920 / bounds.width),
+      y: (mousePosRef.current.y - bounds.top) * (1080 / bounds.height),
+    };
+
+    if (abilityType === "skillshot") {
+      const playerPos = getPlayerWorldPos(gameState, myUsername);
+      let worldX = mouse.x;
+      let worldY = mouse.y;
+      let angle = 0;
+      if (playerPos) {
+        const dx = mouse.x - playerPos.x;
+        const dy = mouse.y - playerPos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (range !== null && dist > range) {
+          worldX = playerPos.x + (dx / dist) * range;
+          worldY = playerPos.y + (dy / dist) * range;
+        }
+        angle = Math.atan2(worldX - playerPos.x, -(worldY - playerPos.y));
+      }
+      const leftPct = (worldX / 1920) * 100;
+      const topPct = (worldY / 1080) * 100;
+      return { type: "skillshot" as const, leftPct, topPct, angle };
+    }
+
+    if (abilityType === "aoeCircle") {
+      let worldX = mouse.x;
+      let worldY = mouse.y;
+
+      if (range !== null) {
+        const playerPos = getPlayerWorldPos(gameState, myUsername);
+        if (playerPos) {
+          const dx = mouse.x - playerPos.x;
+          const dy = mouse.y - playerPos.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > range) {
+            worldX = playerPos.x + (dx / dist) * range;
+            worldY = playerPos.y + (dy / dist) * range;
+          }
+        }
+      }
+
+      const leftPct = (worldX / 1920) * 100;
+      const topPct = (worldY / 1080) * 100;
+      const scale = effectSize !== null ? effectSize / 50 : 1;
+      return { type: "aoeCircle" as const, leftPct, topPct, scale };
+    }
+
+    return null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAiming, abilityType, mousePos, range, effectSize, gameState, myUsername]);
 
   return (
     <section
       ref={sectionRef}
       onClick={handleClick}
       className="size-full bg-cover bg-center bg-no-repeat relative"
-      style={
-        {
-          // backgroundImage: "url(/media/img/layout/game_placeholder.png)",
-        }
-      }
+      style={isAiming ? { cursor: "crosshair" } : {}}
     >
       <PathOverlay />
 
@@ -231,6 +342,43 @@ export const WorldInteractionLayer: React.FC = () => {
           </div>
         );
       })}
+
+      {/* Aim indicators */}
+      {aimIndicator?.type === "skillshot" && (
+        <img
+          src={`${import.meta.env.BASE_URL}media/img/indicator/skillshot.png`}
+          alt=""
+          className="absolute pointer-events-none"
+          style={{
+            left: `${aimIndicator.leftPct}%`,
+            top: `${aimIndicator.topPct}%`,
+            transform: `translate(-50%, -50%) rotate(${aimIndicator.angle}rad)`,
+          }}
+        />
+      )}
+      {aimIndicator?.type === "aoeCircle" && (
+        <img
+          src={`${import.meta.env.BASE_URL}media/img/indicator/aoeCircle.png`}
+          alt=""
+          className="absolute pointer-events-none"
+          style={{
+            left: `${aimIndicator.leftPct}%`,
+            top: `${aimIndicator.topPct}%`,
+            transform: `translate(-50%, -50%) scale(${aimIndicator.scale})`,
+          }}
+        />
+      )}
     </section>
   );
 };
+
+function getPlayerWorldPos(
+  gameState: any,
+  myUsername: string | null
+): { x: number; y: number } | null {
+  if (!gameState || !myUsername) return null;
+  const players: any[] = gameState.players ?? [];
+  const me = players.find((p) => p.username === myUsername);
+  if (!me?.hitbox) return null;
+  return { x: me.hitbox.x, y: me.hitbox.y };
+}

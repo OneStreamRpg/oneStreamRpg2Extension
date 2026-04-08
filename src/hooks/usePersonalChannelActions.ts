@@ -177,10 +177,10 @@ export function usePersonalChannelActions(socket: Socket | null) {
   );
 
 
-  const castAbility = useCallback((slotType: AbilitySlotType) => {
+  const castAbility = useCallback((slotType: AbilitySlotType, aimX?: number, aimY?: number) => {
     sendAction(
       "castAbility",
-      { slotType } as { slotType: AbilitySlotType },
+      { slotType, ...(aimX !== undefined && aimY !== undefined ? { aimX, aimY } : {}) },
       (state) => {
         return state;
       }

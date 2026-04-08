@@ -28,6 +28,8 @@ type Ability = {
     castAnimationId?: string;
     castAnimationPosition?: CastAnimationPosition; // Where the cast animation appears: "caster" (default), "target", or "effect"
     scaling?: ScalingMap;
+    range?: number;
+    effectSize?: number;
 };
 
 
