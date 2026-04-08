@@ -3,6 +3,11 @@
 import { EquipmentSlotKey, Item } from "../components/inventory/types";
 import { InteractionData } from "./npcInteraction";
 
+export interface PendingClassTreeChoice {
+  level: number;
+  choices: string[]; // 1–3 abilityIds; length 1 is auto-resolved server-side
+}
+
 export interface PlayerPersonalState {
   versions: StateVersions;
   inventory: InventoryState;
@@ -13,6 +18,8 @@ export interface PlayerPersonalState {
   profile: any;
   quests?: QuestsState;
   pendingQuestAccept?: { questId: string; npcId: string } | null;
+  classTreeChoices?: Record<string, string>;
+  pendingClassTreeChoice?: PendingClassTreeChoice | null;
 }
 
 export interface StateVersions {
@@ -82,6 +89,7 @@ export interface StatsState {
 
 export interface PlayerStateDelta {
   versions: Partial<StateVersions>;
+  profile?: any;
   inventory?: InventoryState;
   equipment?: EquipmentState;
   currency?: CurrencyState;
@@ -89,6 +97,8 @@ export interface PlayerStateDelta {
   stats?: StatsState;
   quests?: QuestsState;
   pendingNpcInteraction?: InteractionData;
+  classTreeChoices?: Record<string, string>;
+  pendingClassTreeChoice?: PendingClassTreeChoice | null;
 }
 
 export interface PersonalChannelAction {

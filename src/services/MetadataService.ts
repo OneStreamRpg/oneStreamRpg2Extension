@@ -49,6 +49,16 @@ export type QuestDefinition = {
     itemReward: QuestItemReward[];
 };
 
+export type ClassTreeNode = {
+    level: number;
+    choices: string[]; // 1–3 abilityIds
+};
+
+export type ClassTreeDefinition = {
+    classId: string;
+    nodes: ClassTreeNode[];
+};
+
 type ItemSetEffect = {
     piecesRequired: number;
     name: string;
@@ -77,6 +87,7 @@ class MetadataService {
     private fetchPromise: Promise<MetadataResponse> | null = null;
     private itemSets: Record<string, ItemSet> | null = null;
     private quests: Record<string, QuestDefinition> | null = null;
+    private classTrees: Record<string, ClassTreeDefinition> | null = null;
     private readonly apiUrl = import.meta.env.VITE_SOCKET_URL + "/api/metadata";
 
     private constructor() { }
@@ -121,6 +132,16 @@ class MetadataService {
                 logger.error(TAG, "Failed to fetch quests", err);
             });
 
+        const classTreesPromise = fetch(this.apiUrl + "/class-trees")
+            .then(async (response) => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                this.classTrees = await response.json() as Record<string, ClassTreeDefinition>;
+                logger.info(TAG, "Class trees fetched successfully", { classes: Object.keys(this.classTrees).length });
+            })
+            .catch((err) => {
+                logger.error(TAG, "Failed to fetch class trees", err);
+            });
+
         this.fetchPromise = Promise.all([
             fetch(this.apiUrl)
                 .then(async (response) => {
@@ -139,6 +160,7 @@ class MetadataService {
                 }),
             itemSetsPromise,
             questsPromise,
+            classTreesPromise,
         ])
             .then(([data]) => data)
             .catch((err) => {
@@ -258,6 +280,14 @@ class MetadataService {
 
     getAllQuestsSync(): Record<string, QuestDefinition> | undefined {
         return this.quests ?? undefined;
+    }
+
+    getClassTreeSync(classId: string): ClassTreeDefinition | undefined {
+        return this.classTrees?.[classId];
+    }
+
+    getAllClassTreesSync(): Record<string, ClassTreeDefinition> | undefined {
+        return this.classTrees ?? undefined;
     }
 
     // Special getters

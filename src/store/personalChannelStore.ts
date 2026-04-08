@@ -79,85 +79,17 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
     // Apply delta from server
     applyDelta: (delta) => {
       const { versions, displayedState } = get();
-
       if (!displayedState || !versions) {
         logger.warn(TAG, "Cannot apply delta: state not initialized");
         return;
       }
-
-      // Check version numbers - reject stale updates
-      let isStale = false;
-      if (delta.versions) {
-        Object.entries(delta.versions).forEach(([domain, version]) => {
-          if (
-            version !== undefined &&
-            versions[domain as keyof StateVersions] !== undefined
-          ) {
-            if (version < versions[domain as keyof StateVersions]) {
-              logger.warn(TAG, `Rejecting stale delta for domain: ${domain}`, {
-                receivedVersion: version,
-                currentVersion: versions[domain as keyof StateVersions],
-              });
-              isStale = true;
-            }
-          }
-        });
-      }
-
-      if (isStale) return;
-
-      // Apply delta domains
-      const newState = { ...displayedState };
-      const newVersions = { ...versions };
-
-      if (delta.inventory !== undefined) {
-        newState.inventory = delta.inventory;
-        if (delta.versions?.inventory !== undefined) {
-          newVersions.inventory = delta.versions.inventory;
-        }
-      }
-
-      if (delta.equipment !== undefined) {
-        newState.equipment = delta.equipment;
-        if (delta.versions?.equipment !== undefined) {
-          newVersions.equipment = delta.versions.equipment;
-        }
-      }
-
-      if (delta.currency !== undefined) {
-        newState.currency = delta.currency;
-        if (delta.versions?.currency !== undefined) {
-          newVersions.currency = delta.versions.currency;
-        }
-      }
-
-      if (delta.abilities !== undefined) {
-        newState.abilities = delta.abilities;
-        if (delta.versions?.abilities !== undefined) {
-          newVersions.abilities = delta.versions.abilities;
-        }
-      }
-
-      if (delta.stats !== undefined) {
-        newState.stats = delta.stats;
-        if (delta.versions?.stats !== undefined) {
-          newVersions.stats = delta.versions.stats;
-        }
-      }
-
-      if (delta.quests !== undefined) {
-        newState.quests = delta.quests;
-        if (delta.versions?.questsVersion !== undefined) {
-          newVersions.questsVersion = delta.versions.questsVersion;
-        }
-      }
-
-
+      const result = computeDelta(delta, displayedState, versions);
+      if (!result) return;
       logger.debug(TAG, "Delta applied to state", { delta });
       set({
-        displayedState: newState,
-        confirmedState: structuredClone(newState),
-        versions: newVersions,
+        displayedState: result.newState,
+        confirmedState: structuredClone(result.newState),
+        versions: result.newVersions,
       });
     },
 
@@ -188,29 +120,32 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
       });
     },
 
-    // Confirm action success
+    // Confirm action success — always a single set() call to avoid cascading updates
     confirmAction: (actionId, delta) => {
-      const { pendingActions, displayedState } = get();
+      const { pendingActions, displayedState, versions } = get();
 
       const newPendingActions = new Map(pendingActions);
       newPendingActions.delete(actionId);
 
       logger.debug(TAG, `Action confirmed: actionId=${actionId}`);
 
-      // If server provided delta, apply it (authoritative)
-      if (delta && displayedState) {
-        get().applyDelta(delta);
-        // Update pending actions after applying delta
-        set({ pendingActions: newPendingActions });
-      } else {
-        // Otherwise, just update confirmed state to match displayed
-        set({
-          confirmedState: displayedState
-            ? structuredClone(displayedState)
-            : null,
-          pendingActions: newPendingActions,
-        });
+      if (delta && displayedState && versions) {
+        const result = computeDelta(delta, displayedState, versions);
+        if (result) {
+          set({
+            displayedState: result.newState,
+            confirmedState: structuredClone(result.newState),
+            versions: result.newVersions,
+            pendingActions: newPendingActions,
+          });
+          return;
+        }
       }
+
+      set({
+        confirmedState: displayedState ? structuredClone(displayedState) : null,
+        pendingActions: newPendingActions,
+      });
     },
 
     // Rollback action on failure
@@ -296,6 +231,61 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
     },
   })
 );
+
+// Pure helper — computes new state from a delta without calling set().
+// Returns null if the delta is stale and should be rejected.
+function computeDelta(
+  delta: PlayerStateDelta,
+  displayedState: PlayerPersonalState,
+  versions: StateVersions
+): { newState: PlayerPersonalState; newVersions: StateVersions } | null {
+  // Stale version check
+  if (delta.versions) {
+    for (const [domain, version] of Object.entries(delta.versions)) {
+      if (
+        version !== undefined &&
+        versions[domain as keyof StateVersions] !== undefined &&
+        version < versions[domain as keyof StateVersions]
+      ) {
+        logger.warn(TAG, `Rejecting stale delta for domain: ${domain}`);
+        return null;
+      }
+    }
+  }
+
+  const newState: PlayerPersonalState = { ...displayedState };
+  const newVersions: StateVersions = { ...versions };
+
+  if (delta.inventory !== undefined) {
+    newState.inventory = delta.inventory;
+    if (delta.versions?.inventory !== undefined) newVersions.inventory = delta.versions.inventory;
+  }
+  if (delta.equipment !== undefined) {
+    newState.equipment = delta.equipment;
+    if (delta.versions?.equipment !== undefined) newVersions.equipment = delta.versions.equipment;
+  }
+  if (delta.currency !== undefined) {
+    newState.currency = delta.currency;
+    if (delta.versions?.currency !== undefined) newVersions.currency = delta.versions.currency;
+  }
+  if (delta.abilities !== undefined) {
+    newState.abilities = delta.abilities;
+    if (delta.versions?.abilities !== undefined) newVersions.abilities = delta.versions.abilities;
+  }
+  if (delta.stats !== undefined) {
+    newState.stats = delta.stats;
+    if (delta.versions?.stats !== undefined) newVersions.stats = delta.versions.stats;
+  }
+  if (delta.quests !== undefined) {
+    newState.quests = delta.quests;
+    if (delta.versions?.questsVersion !== undefined) newVersions.questsVersion = delta.versions.questsVersion;
+  }
+  if (delta.profile !== undefined) newState.profile = delta.profile;
+  if (delta.classTreeChoices !== undefined) newState.classTreeChoices = delta.classTreeChoices;
+  if (delta.pendingClassTreeChoice !== undefined) newState.pendingClassTreeChoice = delta.pendingClassTreeChoice;
+
+  return { newState, newVersions };
+}
 
 // Helper function to reapply action logic
 function applyActionToState(

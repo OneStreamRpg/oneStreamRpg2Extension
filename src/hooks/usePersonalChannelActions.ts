@@ -285,6 +285,17 @@ export function usePersonalChannelActions(socket: Socket | null) {
   }, [sendAction]);
 
   /**
+   * Choose a class tree ability at a pending milestone level.
+   * choiceIndex: 1 = left option, 2 = right option
+   */
+  const chooseClassTreeAbility = useCallback(
+    (choiceIndex: 1 | 2 | 3) => {
+      sendAction("chooseClassTreeAbility", { choiceIndex }, (state) => state);
+    },
+    [sendAction]
+  );
+
+  /**
    * Request full state sync
    */
   const requestSync = useCallback(() => {
@@ -314,5 +325,6 @@ export function usePersonalChannelActions(socket: Socket | null) {
     setPotion,
     getPotionInfo,
     fetchPlayerRecipes,
+    chooseClassTreeAbility,
   };
 }

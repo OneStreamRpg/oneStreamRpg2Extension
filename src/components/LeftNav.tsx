@@ -77,6 +77,12 @@ export const LeftNav: React.FC = () => {
         onClick={() => setActivePage(Page.Abilities)}
       />
       <NavButton
+        icon="abilities"
+        label="Class Tree"
+        isActive={activePage === Page.ClassTree}
+        onClick={() => setActivePage(Page.ClassTree)}
+      />
+      <NavButton
         icon="stats"
         label="Stats"
         isActive={profileOpen}
