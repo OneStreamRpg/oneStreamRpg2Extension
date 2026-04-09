@@ -48,7 +48,11 @@ export interface EquippedAbility {
   slot: "main" | "second" | "ultimate";
   abilityId: string;
   lastUsed?: number;            // Unix timestamp ms — when ability was last cast
+  cooldownMs?: number;          // base cooldown in ms (used for charge regen timing)
   effectiveCooldownMs?: number; // haste-adjusted cooldown from server
+  charges?: number;             // current charges (charge system only)
+  maxCharges?: number;          // max charges; presence indicates charge system
+  lastChargeRegenAt?: number;   // Unix timestamp ms — when last charge regen started
 }
 
 export interface AbilitiesState {

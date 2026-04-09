@@ -9,7 +9,11 @@ export type Ability = {
   slot: AbilitySlotType;
   abilityId: string;
   lastUsed?: number;
+  cooldownMs?: number;
   effectiveCooldownMs?: number;
+  charges?: number;
+  maxCharges?: number;
+  lastChargeRegenAt?: number;
 };
 
 const TICKS_PER_SECOND = 16;
@@ -24,8 +28,15 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
   const metadataCooldownMs =
     abilityMetaData.cooldownMs + ticksToMs(abilityMetaData.castTime);
 
+  const isChargeSystem = ability.maxCharges !== undefined;
+
+  // --- Standard cooldown state ---
   const cooldownEndRef = useRef<number>(0);
   const [displayCooldownMs, setDisplayCooldownMs] = useState(0);
+
+  // --- Charge system state ---
+  const [localCharges, setLocalCharges] = useState(ability.charges ?? 0);
+  const [regenProgress, setRegenProgress] = useState(0);
 
   const isAimable =
     abilityMetaData.type === "skillshot" || abilityMetaData.type === "aoeCircle";
@@ -37,17 +48,25 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
 
   // Sync cooldown from server data whenever lastUsed/effectiveCooldownMs props update
   useEffect(() => {
-    if (ability.lastUsed !== undefined && ability.effectiveCooldownMs !== undefined) {
+    if (!isChargeSystem && ability.lastUsed !== undefined && ability.effectiveCooldownMs !== undefined) {
       const serverEnd = ability.lastUsed + ability.effectiveCooldownMs;
       const remaining = Math.max(0, serverEnd - Date.now());
       cooldownEndRef.current = remaining > 0 ? serverEnd : 0;
       setDisplayCooldownMs(remaining);
     }
-  }, [ability.lastUsed, ability.effectiveCooldownMs]);
+  }, [isChargeSystem, ability.lastUsed, ability.effectiveCooldownMs]);
+
+  // Sync charge count from server
+  useEffect(() => {
+    if (isChargeSystem && ability.charges !== undefined) {
+      setLocalCharges(ability.charges);
+    }
+  }, [isChargeSystem, ability.charges]);
 
   const isOnCooldown = displayCooldownMs > 0;
+  const canCast = isChargeSystem ? localCharges > 0 : !isOnCooldown;
 
-  // Smooth 100ms countdown; cleans up on unmount
+  // Smooth 100ms countdown for standard cooldown
   useEffect(() => {
     if (!isOnCooldown) return;
     const interval = setInterval(() => {
@@ -61,10 +80,28 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
     return () => clearInterval(interval);
   }, [isOnCooldown]);
 
+  // Animate regen progress bar between server pushes
+  useEffect(() => {
+    if (!isChargeSystem || localCharges >= (ability.maxCharges ?? 0)) {
+      setRegenProgress(0);
+      return;
+    }
+    const cdMs = ability.cooldownMs ?? ability.effectiveCooldownMs ?? metadataCooldownMs;
+    const regenStart = ability.lastChargeRegenAt ?? Date.now();
+    const interval = setInterval(() => {
+      setRegenProgress(Math.min((Date.now() - regenStart) / cdMs, 1.0));
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isChargeSystem, localCharges, ability.maxCharges, ability.lastChargeRegenAt, ability.cooldownMs, ability.effectiveCooldownMs, metadataCooldownMs]);
+
   const triggerCooldownOptimistic = () => {
-    const optimisticMs = ability.effectiveCooldownMs ?? metadataCooldownMs;
-    cooldownEndRef.current = Date.now() + optimisticMs;
-    setDisplayCooldownMs(optimisticMs);
+    if (isChargeSystem) {
+      setLocalCharges((prev) => Math.max(0, prev - 1));
+    } else {
+      const optimisticMs = ability.effectiveCooldownMs ?? metadataCooldownMs;
+      cooldownEndRef.current = Date.now() + optimisticMs;
+      setDisplayCooldownMs(optimisticMs);
+    }
   };
 
   const handleAbilityClick = () => {
@@ -74,15 +111,15 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (!isAimable || isOnCooldown) return;
+    if (!isAimable || !canCast) return;
     e.preventDefault();
     dragStartRef.current = { x: e.clientX, y: e.clientY };
     aimActivatedRef.current = false;
 
     const onMouseMove = (ev: MouseEvent) => {
       if (aimActivatedRef.current || !dragStartRef.current) return;
-      const dx = ev.clientX - dragStartRef.current.x;
-      const dy = ev.clientY - dragStartRef.current.y;
+      const dx = ev.clientX - dragStartRef.current!.x;
+      const dy = ev.clientY - dragStartRef.current!.y;
       if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
         aimActivatedRef.current = true;
         startAim(
@@ -136,11 +173,11 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
       key={ability.slot}
       onClick={() => handleAbilityClick()}
       onMouseDown={isAimable ? handleMouseDown : undefined}
-      disabled={isOnCooldown}
+      disabled={!canCast}
       data-tooltip-id="ability-tooltip"
       data-ability-id={ability.abilityId}
       data-tooltip-place="top"
-      className={`relative size-12 overflow-hidden ${isOnCooldown ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:brightness-125"}`}
+      className={`relative size-12 overflow-hidden ${!canCast ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:brightness-125"}`}
       style={{
         backgroundColor: "#231206",
         borderTop: "3px solid #9a7228",
@@ -168,8 +205,8 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
         alt={abilityMetaData.name}
       />
 
-      {/* Cooldown overlay */}
-      {isOnCooldown && (
+      {/* Standard cooldown overlay */}
+      {!isChargeSystem && isOnCooldown && (
         <>
           <div
             className="absolute bottom-0 left-0 right-0 bg-black/70"
@@ -181,6 +218,26 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
             </span>
           </div>
         </>
+      )}
+
+      {/* Charge system: regen progress bar */}
+      {isChargeSystem && localCharges < (ability.maxCharges ?? 0) && (
+        <div
+          className="absolute bottom-0 left-0 right-0 bg-amber-400/50"
+          style={{ height: `${regenProgress * 100}%` }}
+        />
+      )}
+
+      {/* Charge system: pip indicators */}
+      {isChargeSystem && (
+        <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-0.5">
+          {Array.from({ length: ability.maxCharges! }).map((_, i) => (
+            <div
+              key={i}
+              className={`size-1.5 rounded-full shadow-sm ${i < localCharges ? "bg-amber-300" : "bg-gray-700"}`}
+            />
+          ))}
+        </div>
       )}
     </button>
   );

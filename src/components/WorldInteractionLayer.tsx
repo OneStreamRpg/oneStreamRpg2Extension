@@ -232,8 +232,9 @@ export const WorldInteractionLayer: React.FC = () => {
 
       const leftPct = (worldX / 1920) * 100;
       const topPct = (worldY / 1080) * 100;
-      const scale = effectSize !== null ? effectSize / 50 : 1;
-      return { type: "aoeCircle" as const, leftPct, topPct, scale };
+      const widthPct = effectSize !== null ? (effectSize * 2 / 1920) * 100 : 0;
+      const heightPct = effectSize !== null ? (effectSize * 2 / 1080) * 100 : 0;
+      return { type: "aoeCircle" as const, leftPct, topPct, widthPct, heightPct };
     }
 
     return null;
@@ -364,7 +365,9 @@ export const WorldInteractionLayer: React.FC = () => {
           style={{
             left: `${aimIndicator.leftPct}%`,
             top: `${aimIndicator.topPct}%`,
-            transform: `translate(-50%, -50%) scale(${aimIndicator.scale})`,
+            width: `${aimIndicator.widthPct}%`,
+            height: `${aimIndicator.heightPct}%`,
+            transform: `translate(-50%, -50%)`,
           }}
         />
       )}
