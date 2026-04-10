@@ -6,6 +6,7 @@ import { useSocketStore } from "../store/socketStore";
 import { useNpcStore } from "../store/useNpcStore";
 import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
+import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
 import { InteractData } from "../types/npcInteraction";
 import { useRecipesStore } from "../store/useRecipesStore";
 import {
@@ -89,7 +90,12 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
       logger.debug(TAG, `Personal state event received: event=${data.event}`, data);
 
       if (data.event === "castStart") {
-        useSyncBarStore.getState().show(data.data.name, getStreamSyncDelay());
+        const delay = getStreamSyncDelay();
+        useSyncBarStore.getState().show(data.data.name, delay);
+        const { aimX, aimY, abilityId } = data.data;
+        if (aimX !== undefined && aimY !== undefined) {
+          useCastIndicatorStore.getState().show(aimX, aimY, abilityId, delay);
+        }
         return;
       }
 

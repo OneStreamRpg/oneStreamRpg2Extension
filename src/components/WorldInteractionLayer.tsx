@@ -8,6 +8,7 @@ import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useAimStore } from "../store/useAimStore";
 import { useSocketStore } from "../store/socketStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
+import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
 import { PathOverlay } from "./PathOverlay";
 
 const TAG = "WorldInteraction";
@@ -72,6 +73,86 @@ const PlayerSyncBar: React.FC = () => {
         />
       </div>
     </div>
+  );
+};
+
+import { CastIndicatorEntry } from "../store/useCastIndicatorStore";
+
+const CastIndicatorItem: React.FC<{
+  entry: CastIndicatorEntry;
+  gameState: any;
+  myUsername: string | null;
+}> = ({ entry, gameState, myUsername }) => {
+  const hide = useCastIndicatorStore((state) => state.hide);
+
+  useEffect(() => {
+    const timer = setTimeout(() => hide(entry.id), entry.durationMs);
+    return () => clearTimeout(timer);
+  }, [entry.id, entry.durationMs, hide]);
+
+  const abilityMeta = metadataService.getAbilitySync(entry.abilityId);
+  if (!abilityMeta) return null;
+
+  const { aimX, aimY, durationMs } = entry;
+  const leftPct = (aimX / 1920) * 100;
+  const topPct = (aimY / 1080) * 100;
+
+  if (abilityMeta.type === "skillshot") {
+    const playerPos = getPlayerWorldPos(gameState, myUsername);
+    const angle = playerPos
+      ? Math.atan2(aimX - playerPos.x, -(aimY - playerPos.y))
+      : 0;
+    return (
+      <img
+        src={`${import.meta.env.BASE_URL}media/img/indicator/skillshot.png`}
+        alt=""
+        className="absolute pointer-events-none cast-indicator-reveal"
+        style={{
+          left: `${leftPct}%`,
+          top: `${topPct}%`,
+          transform: `translate(-50%, -50%) rotate(${angle}rad)`,
+          ["--cast-duration" as string]: `${durationMs}ms`,
+        }}
+      />
+    );
+  }
+
+  if (abilityMeta.type === "aoeCircle") {
+    const effectSize = abilityMeta.effectSize ?? 0;
+    const widthPct = (effectSize * 2 / 1920) * 100;
+    const heightPct = (effectSize * 2 / 1080) * 100;
+    return (
+      <img
+        src={`${import.meta.env.BASE_URL}media/img/indicator/aoeCircle.png`}
+        alt=""
+        className="absolute pointer-events-none cast-indicator-reveal"
+        style={{
+          left: `${leftPct}%`,
+          top: `${topPct}%`,
+          width: `${widthPct}%`,
+          height: `${heightPct}%`,
+          transform: `translate(-50%, -50%)`,
+          ["--cast-duration" as string]: `${durationMs}ms`,
+        }}
+      />
+    );
+  }
+
+  return null;
+};
+
+const CastIndicatorOverlay: React.FC<{ gameState: any; myUsername: string | null }> = ({
+  gameState,
+  myUsername,
+}) => {
+  const indicators = useCastIndicatorStore((state) => state.indicators);
+
+  return (
+    <>
+      {indicators.map((entry) => (
+        <CastIndicatorItem key={entry.id} entry={entry} gameState={gameState} myUsername={myUsername} />
+      ))}
+    </>
   );
 };
 
@@ -371,6 +452,7 @@ export const WorldInteractionLayer: React.FC = () => {
           }}
         />
       )}
+      <CastIndicatorOverlay gameState={gameState} myUsername={myUsername} />
     </section>
   );
 };

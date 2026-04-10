@@ -51,3 +51,20 @@
   from { width: 0%; }
   to { width: 100%; }
 }
+
+@property --cast-sweep {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes castIndicatorReveal {
+  from { --cast-sweep: 0deg; }
+  to   { --cast-sweep: 360deg; }
+}
+
+.cast-indicator-reveal {
+  animation: castIndicatorReveal var(--cast-duration, 1000ms) linear forwards;
+  mask-image: conic-gradient(black 0deg var(--cast-sweep), transparent var(--cast-sweep) 360deg);
+  -webkit-mask-image: conic-gradient(black 0deg var(--cast-sweep), transparent var(--cast-sweep) 360deg);
+}

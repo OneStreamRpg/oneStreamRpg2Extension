@@ -261,10 +261,17 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       });
     }, 3000);
 
+    const inGameCheckInterval = setInterval(() => {
+      if (socketInstance.connected && useSocketStore.getState().inGame) {
+        socketInstance.emit("checkInGame");
+      }
+    }, 2000);
+
     return () => {
       activeTimeouts.current.forEach(clearTimeout);
       activeTimeouts.current = [];
       clearInterval(pingInterval);
+      clearInterval(inGameCheckInterval);
       socketInstance.disconnect();
       setIsConnected(false);
       setSocket(null);
