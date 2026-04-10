@@ -180,14 +180,15 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     });
 
     socketInstance.on("inGame", (data) => {
-      logger.info(TAG, `inGame state changed:`, data);
+      //logger.info(TAG, `inGame state changed:`, data);
       if (data.inGame) {
-        logger.info(TAG, `Player is now in-game, requesting initial game state...`, {
-          channelId,
-        });
         setIsDying(false);
         setinGame(data.inGame);
-        socketInstance.emit("getGameState");
+        const hasState = !!useSocketStore.getState().gameState?.players?.length;
+        if (!hasState) {
+          logger.info(TAG, `Player is now in-game, requesting initial game state...`, { channelId });
+          socketInstance.emit("getGameState");
+        }
       } else if (data.isDying) {
         logger.info(TAG, `Player is dying/respawning, waiting for respawn`);
         setIsDying(true);

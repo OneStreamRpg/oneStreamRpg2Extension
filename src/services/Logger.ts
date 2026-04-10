@@ -8,7 +8,7 @@ const LOG_LEVELS: Record<LogLevel, number> = {
 };
 
 const config = {
-    enabled: import.meta.env.DEV,
+    enabled: false,
     minLevel: "info",
 } as const;
 
