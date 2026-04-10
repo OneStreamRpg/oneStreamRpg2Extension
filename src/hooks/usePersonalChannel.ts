@@ -9,6 +9,7 @@ import { useSyncBarStore } from "../store/useSyncBarStore";
 import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
 import { InteractData } from "../types/npcInteraction";
 import { useRecipesStore } from "../store/useRecipesStore";
+import { useUIStore } from "../store/useUIStore";
 import {
   ActionAcknowledgment,
   PlayerPersonalState,
@@ -134,6 +135,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
       logger.debug(TAG, `Action acknowledgment received: actionId=${data.actionId}, success=${data.success}`, data);
 
       if (data.success) {
+        useUIStore.getState().setGroupError(null);
         confirmAction(data.actionId, data.delta);
       } else {
         rollbackAction(data.actionId, data.error);
@@ -141,12 +143,14 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
         if (useNpcStore.getState().isLoading) {
           useNpcStore.getState().setError(data.error ?? "Something went wrong.");
         }
+        useUIStore.getState().setGroupError(data.error ?? "Something went wrong.");
       }
 
       // Route playerRecipes response to recipes store
       if (data.data?.type === "playerRecipes") {
         useRecipesStore.getState().setRecipes((data.data as any).recipes ?? []);
       }
+
 
       // Route transient UI data to NPC store (only for actual popup types)
       // Delay the initial "interact" popup to sync with stream, all others are instant

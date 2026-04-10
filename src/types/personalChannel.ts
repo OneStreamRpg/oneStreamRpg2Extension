@@ -20,6 +20,9 @@ export interface PlayerPersonalState {
   pendingQuestAccept?: { questId: string; npcId: string } | null;
   classTreeChoices?: Record<string, string>;
   pendingClassTreeChoice?: PendingClassTreeChoice | null;
+  group?: GroupState | null;
+  pendingGroupInvites?: GroupInvite[];
+  outgoingGroupInvites?: OutgoingGroupInvite[];
 }
 
 export interface StateVersions {
@@ -103,6 +106,9 @@ export interface PlayerStateDelta {
   pendingNpcInteraction?: InteractionData;
   classTreeChoices?: Record<string, string>;
   pendingClassTreeChoice?: PendingClassTreeChoice | null;
+  group?: GroupState | null;
+  pendingGroupInvites?: GroupInvite[];
+  outgoingGroupInvites?: OutgoingGroupInvite[];
 }
 
 export interface PersonalChannelAction {
@@ -146,6 +152,30 @@ export interface AvailableQuest {
   npcId: string;
   npcName: string;
   questType: string;
+}
+
+export interface GroupMemberState {
+  twitchId: string;
+  username: string;
+  hp: number;
+  maxHp: number;
+  isLeader: boolean;
+  faction: "player" | "teammate";
+}
+
+export interface GroupState {
+  groupId: string;
+  members: GroupMemberState[];
+}
+
+export interface GroupInvite {
+  fromTwitchId: string;
+  fromUsername: string;
+}
+
+export interface OutgoingGroupInvite {
+  toTwitchId: string;
+  toUsername: string;
 }
 
 export interface PendingAction {

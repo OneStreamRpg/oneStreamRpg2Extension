@@ -5,11 +5,13 @@ import { LeftNav } from "./LeftNav";
 import { NpcPopup } from "./npc/NpcPopup";
 import { PotionsNav } from "./PotionsNav";
 import { ProfileNav } from "./ProfileNav";
+import { GroupPanel } from "./group/GroupPanel";
 import { QuestPanel } from "./quests/QuestPanel";
 
 export const UserInterface: React.FC = () => {
   const profileOpen = useUIStore((state) => state.profileOpen);
   const questPanelOpen = useUIStore((state) => state.questPanelOpen);
+  const groupPanelOpen = useUIStore((state) => state.groupPanelOpen);
   return (
     <main className="size-full flex flex-row pointer-events-none">
       <div className="flex-1 grid grid-cols-1 grid-rows-[auto_1fr_auto] pb-7 pt-12 px-2">
@@ -17,6 +19,7 @@ export const UserInterface: React.FC = () => {
           <div className="absolute top-0 flex flex-col gap-2 w-fit">
             {profileOpen && <ProfileNav />}
             {questPanelOpen && <QuestPanel />}
+            {groupPanelOpen && <GroupPanel />}
           </div>
         </aside>
         <section className="overflow-hidden">

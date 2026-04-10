@@ -295,6 +295,60 @@ export function usePersonalChannelActions(socket: Socket | null) {
     [sendAction]
   );
 
+  const groupInvite = useCallback(
+    (targetUsername: string) => {
+      sendAction("groupInvite", { targetUsername }, (s) => s);
+    },
+    [sendAction]
+  );
+
+  const groupAccept = useCallback(
+    (fromTwitchId: string) => {
+      sendAction("groupAccept", { fromTwitchId }, (s) => ({
+        ...s,
+        pendingGroupInvites: (s.pendingGroupInvites ?? []).filter(
+          (inv) => inv.fromTwitchId !== fromTwitchId
+        ),
+      }));
+    },
+    [sendAction]
+  );
+
+  const groupDecline = useCallback(
+    (fromTwitchId: string) => {
+      sendAction("groupDecline", { fromTwitchId }, (s) => ({
+        ...s,
+        pendingGroupInvites: (s.pendingGroupInvites ?? []).filter(
+          (inv) => inv.fromTwitchId !== fromTwitchId
+        ),
+      }));
+    },
+    [sendAction]
+  );
+
+  const groupLeave = useCallback(() => {
+    sendAction("groupLeave", {}, (s) => s);
+  }, [sendAction]);
+
+  const groupKick = useCallback(
+    (targetUsername: string) => {
+      sendAction("groupKick", { targetUsername }, (s) => s);
+    },
+    [sendAction]
+  );
+
+  const groupWithdraw = useCallback(
+    (targetUsername: string) => {
+      sendAction("groupWithdraw", { targetUsername }, (s) => ({
+        ...s,
+        outgoingGroupInvites: (s.outgoingGroupInvites ?? []).filter(
+          (inv) => inv.toUsername !== targetUsername
+        ),
+      }));
+    },
+    [sendAction]
+  );
+
   /**
    * Request full state sync
    */
@@ -326,5 +380,11 @@ export function usePersonalChannelActions(socket: Socket | null) {
     getPotionInfo,
     fetchPlayerRecipes,
     chooseClassTreeAbility,
+    groupInvite,
+    groupAccept,
+    groupDecline,
+    groupLeave,
+    groupKick,
+    groupWithdraw,
   };
 }

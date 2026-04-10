@@ -283,6 +283,9 @@ function computeDelta(
   if (delta.profile !== undefined) newState.profile = delta.profile;
   if (delta.classTreeChoices !== undefined) newState.classTreeChoices = delta.classTreeChoices;
   if (delta.pendingClassTreeChoice !== undefined) newState.pendingClassTreeChoice = delta.pendingClassTreeChoice;
+  if (delta.group !== undefined) newState.group = delta.group;
+  if (delta.pendingGroupInvites !== undefined) newState.pendingGroupInvites = delta.pendingGroupInvites;
+  if (delta.outgoingGroupInvites !== undefined) newState.outgoingGroupInvites = delta.outgoingGroupInvites;
 
   return { newState, newVersions };
 }

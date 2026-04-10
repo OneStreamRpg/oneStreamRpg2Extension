@@ -7,6 +7,8 @@ type UIState = {
   debugInventoryInfo: boolean;
   questPanelOpen: boolean;
   profileOpen: boolean;
+  groupPanelOpen: boolean;
+  groupError: string | null;
 };
 
 type UIActions = {
@@ -16,6 +18,8 @@ type UIActions = {
   toggleDebugInventoryInfo: () => void;
   toggleQuestPanel: () => void;
   toggleProfile: () => void;
+  toggleGroupPanel: () => void;
+  setGroupError: (error: string | null) => void;
 };
 export const useUIStore = create<UIState & UIActions>((set) => ({
   // State
@@ -24,6 +28,8 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
   debugInventoryInfo: true,
   questPanelOpen: true,
   profileOpen: true,
+  groupPanelOpen: false,
+  groupError: null,
 
   // Actions
   setActivePage: (page) => {
@@ -44,4 +50,8 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
   toggleProfile: () => {
     set((state) => ({ profileOpen: !state.profileOpen }));
   },
+  toggleGroupPanel: () => {
+    set((state) => ({ groupPanelOpen: !state.groupPanelOpen }));
+  },
+  setGroupError: (groupError) => set({ groupError }),
 }));
