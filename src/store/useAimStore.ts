@@ -4,12 +4,12 @@ import { AbilitySlotType } from "../services/MetadataService";
 interface AimStore {
   isAiming: boolean;
   slotType: AbilitySlotType | null;
-  abilityType: "skillshot" | "aoeCircle" | null;
+  abilityType: "skillshot" | "aoeCircle" | "slash" | null;
   range: number | null;
   effectSize: number | null;
   startAim: (
     slotType: AbilitySlotType,
-    abilityType: "skillshot" | "aoeCircle",
+    abilityType: "skillshot" | "aoeCircle" | "slash",
     range: number | null,
     effectSize: number | null
   ) => void;

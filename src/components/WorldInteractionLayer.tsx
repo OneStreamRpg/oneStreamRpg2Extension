@@ -97,14 +97,15 @@ const CastIndicatorItem: React.FC<{
   const leftPct = (aimX / 1920) * 100;
   const topPct = (aimY / 1080) * 100;
 
-  if (abilityMeta.type === "skillshot") {
+  if (abilityMeta.type === "skillshot" || abilityMeta.type === "slash") {
     const playerPos = getPlayerWorldPos(gameState, myUsername);
     const angle = playerPos
       ? Math.atan2(aimX - playerPos.x, -(aimY - playerPos.y))
       : 0;
+    const imgName = abilityMeta.type === "slash" ? "slash" : "skillshot";
     return (
       <img
-        src={`${import.meta.env.BASE_URL}media/img/indicator/skillshot.png`}
+        src={`${import.meta.env.BASE_URL}media/img/indicator/${imgName}.png`}
         alt=""
         className="absolute pointer-events-none cast-indicator-reveal"
         style={{
@@ -274,7 +275,7 @@ export const WorldInteractionLayer: React.FC = () => {
       y: (mousePosRef.current.y - bounds.top) * (1080 / bounds.height),
     };
 
-    if (abilityType === "skillshot") {
+    if (abilityType === "skillshot" || abilityType === "slash") {
       const playerPos = getPlayerWorldPos(gameState, myUsername);
       let worldX = mouse.x;
       let worldY = mouse.y;
@@ -291,7 +292,7 @@ export const WorldInteractionLayer: React.FC = () => {
       }
       const leftPct = (worldX / 1920) * 100;
       const topPct = (worldY / 1080) * 100;
-      return { type: "skillshot" as const, leftPct, topPct, angle };
+      return { type: abilityType as "skillshot" | "slash", leftPct, topPct, angle };
     }
 
     if (abilityType === "aoeCircle") {
@@ -429,6 +430,18 @@ export const WorldInteractionLayer: React.FC = () => {
       {aimIndicator?.type === "skillshot" && (
         <img
           src={`${import.meta.env.BASE_URL}media/img/indicator/skillshot.png`}
+          alt=""
+          className="absolute pointer-events-none"
+          style={{
+            left: `${aimIndicator.leftPct}%`,
+            top: `${aimIndicator.topPct}%`,
+            transform: `translate(-50%, -50%) rotate(${aimIndicator.angle}rad)`,
+          }}
+        />
+      )}
+      {aimIndicator?.type === "slash" && (
+        <img
+          src={`${import.meta.env.BASE_URL}media/img/indicator/slash.png`}
           alt=""
           className="absolute pointer-events-none"
           style={{

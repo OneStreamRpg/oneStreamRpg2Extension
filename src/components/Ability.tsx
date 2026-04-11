@@ -39,7 +39,7 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
   const [regenProgress, setRegenProgress] = useState(0);
 
   const isAimable =
-    abilityMetaData.type === "skillshot" || abilityMetaData.type === "aoeCircle";
+    abilityMetaData.type === "skillshot" || abilityMetaData.type === "aoeCircle" || abilityMetaData.type === "slash";
 
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -124,7 +124,7 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
         aimActivatedRef.current = true;
         startAim(
           ability.slot,
-          abilityMetaData.type as "skillshot" | "aoeCircle",
+          abilityMetaData.type as "skillshot" | "aoeCircle" | "slash",
           abilityMetaData.range ?? null,
           abilityMetaData.effectSize ?? null
         );
