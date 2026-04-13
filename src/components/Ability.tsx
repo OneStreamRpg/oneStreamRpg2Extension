@@ -44,6 +44,7 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const aimActivatedRef = useRef(false);
+  const [suppressTooltip, setSuppressTooltip] = useState(false);
   const { startAim, stopAim, isAiming } = useAimStore();
 
   // Sync cooldown from server data whenever lastUsed/effectiveCooldownMs props update
@@ -122,6 +123,7 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
       const dy = ev.clientY - dragStartRef.current!.y;
       if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
         aimActivatedRef.current = true;
+        setSuppressTooltip(true);
         startAim(
           ability.slot,
           abilityMetaData.type as "skillshot" | "aoeCircle" | "slash",
@@ -174,9 +176,10 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
       onClick={() => handleAbilityClick()}
       onMouseDown={isAimable ? handleMouseDown : undefined}
       disabled={!canCast}
-      data-tooltip-id={isAiming ? undefined : "ability-tooltip"}
+      data-tooltip-id={isAiming || suppressTooltip ? undefined : "ability-tooltip"}
       data-ability-id={ability.abilityId}
       data-tooltip-place="top"
+      onMouseEnter={() => setSuppressTooltip(false)}
       className={`relative size-12 overflow-hidden ${!canCast ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:brightness-125"}`}
       style={{
         backgroundColor: "#231206",
