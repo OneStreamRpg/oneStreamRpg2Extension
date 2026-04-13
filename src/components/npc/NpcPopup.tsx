@@ -67,7 +67,7 @@ const MESSAGE_TYPES = new Set([
   "sell",
 ]);
 
-const BuyToast: React.FC<{ message: string; toastKey: number }> = ({ message, toastKey }) => {
+const BuyToast: React.FC<{ message: string; toastKey: number; isError?: boolean }> = ({ message, toastKey, isError }) => {
   const [visible, setVisible] = useState(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -83,7 +83,9 @@ const BuyToast: React.FC<{ message: string; toastKey: number }> = ({ message, to
   return (
     <div
       className="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1 text-xs text-white rounded pointer-events-none z-20 whitespace-nowrap"
-      style={{ backgroundColor: "#2a5a2a", border: "1px solid #4a9a4a" }}
+      style={isError
+        ? { backgroundColor: "#5a1a1a", border: "1px solid #c04040" }
+        : { backgroundColor: "#2a5a2a", border: "1px solid #4a9a4a" }}
     >
       {message}
     </div>
@@ -196,7 +198,7 @@ export const NpcPopup: React.FC = () => {
 
       {/* Modal */}
       <div onClick={(e) => e.stopPropagation()} className="relative z-10">
-        {toast && <BuyToast message={toast.message} toastKey={toast.key} />}
+        {toast && <BuyToast message={toast.message} toastKey={toast.key} isError={toast.isError} />}
         <WindowContainer className="p-6" style={{ paddingRight: "8px" }}>
           <div className="flex justify-end mb-2">
             <button

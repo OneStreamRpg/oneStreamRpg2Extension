@@ -134,13 +134,22 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
     const handleAck = (data: ActionAcknowledgment) => {
       logger.debug(TAG, `Action acknowledgment received: actionId=${data.actionId}, success=${data.success}`, data);
 
+      // Action types that should show an inline red toast instead of replacing the popup
+      const toastableFailureTypes = new Set(["buy", "craft", "buyRecipe", "sell", "tradeItem",
+        "stashPut", "stashGet", "stashSwap", "acceptQuest", "confirmAcceptQuest"]);
+
       if (data.success) {
         useUIStore.getState().setGroupError(null);
         confirmAction(data.actionId, data.delta);
       } else {
         rollbackAction(data.actionId, data.error);
-        // If the NPC popup is waiting for a response, surface the error
-        if (useNpcStore.getState().isLoading) {
+        const actionType = (data as any).type ?? data.data?.type;
+        const npcIsLoading = useNpcStore.getState().isLoading;
+        if (npcIsLoading && actionType && toastableFailureTypes.has(actionType)) {
+          // Keep the list popup open, show a red toast
+          useNpcStore.getState().setToast(data.error ?? "Something went wrong.", true);
+          useNpcStore.getState().setLoading(false);
+        } else if (npcIsLoading) {
           useNpcStore.getState().setError(data.error ?? "Something went wrong.");
         }
         useUIStore.getState().setGroupError(data.error ?? "Something went wrong.");
@@ -168,20 +177,24 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
         } else {
           const currentType = useNpcStore.getState().activePopupType;
 
-          // Buy actions: keep shop open and show a toast
+          // Buy/craft actions: keep the list open and show a toast
           const toastTypes: Partial<Record<string, string[]>> = {
             buy: ["shop"],
             buyRecipe: ["recipes"],
+            craft: ["craftList"],
           };
 
           // Stash actions: re-fetch stash data so both panels update in place
           const stashActionTypes = new Set(["stashPut", "stashGet", "stashSwap"]);
 
           if (toastTypes[popupData.type]?.includes(currentType ?? "")) {
-            const msg = (popupData as any).message ?? "Done.";
-            useNpcStore.getState().setToast(msg);
+            const isPayloadError = (popupData as any).success === false;
+            const msg = (popupData as any).message ?? (isPayloadError ? "Something went wrong." : "Done.");
+            useNpcStore.getState().setToast(msg, isPayloadError);
 
-            if (popupData.type === "buyRecipe") {
+            if (isPayloadError) {
+              useNpcStore.getState().setLoading(false);
+            } else if (popupData.type === "buyRecipe") {
               const buyRecipePayload = popupData as any;
               if (buyRecipePayload.recipes) {
                 // Server returned a refreshed list — update the popup data in-place

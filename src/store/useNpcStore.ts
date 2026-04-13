@@ -7,7 +7,7 @@ interface NpcStore {
   popupData: InteractionData | null;
   isLoading: boolean;
   error: string | null;
-  toast: { message: string; key: number } | null;
+  toast: { message: string; key: number; isError?: boolean } | null;
 
   openPopup: (
     npcId: string,
@@ -18,7 +18,7 @@ interface NpcStore {
   closePopup: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
-  setToast: (message: string | null) => void;
+  setToast: (message: string | null, isError?: boolean) => void;
 }
 
 export const useNpcStore = create<NpcStore>((set) => ({
@@ -58,6 +58,6 @@ export const useNpcStore = create<NpcStore>((set) => ({
 
   setLoading: (loading) => set({ isLoading: loading }),
   setError: (error) => set({ error, isLoading: false }),
-  setToast: (message) =>
-    set(message !== null ? { toast: { message, key: Date.now() } } : { toast: null }),
+  setToast: (message, isError) =>
+    set(message !== null ? { toast: { message, key: Date.now(), isError } } : { toast: null }),
 }));
