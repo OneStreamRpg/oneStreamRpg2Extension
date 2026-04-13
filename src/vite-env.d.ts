@@ -1,4 +1,11 @@
 /// <reference types="vite/client" />
+/// <reference types="@types/twitch-ext" />
+
+interface Window {
+  Twitch?: {
+    ext: typeof Twitch.ext;
+  };
+}
 
 interface ImportMetaEnv {
     readonly VITE_SOCKET_URL: string

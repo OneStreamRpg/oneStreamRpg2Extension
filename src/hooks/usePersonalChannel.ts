@@ -180,7 +180,36 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
           if (toastTypes[popupData.type]?.includes(currentType ?? "")) {
             const msg = (popupData as any).message ?? "Done.";
             useNpcStore.getState().setToast(msg);
-            useNpcStore.getState().setLoading(false);
+
+            if (popupData.type === "buyRecipe") {
+              const buyRecipePayload = popupData as any;
+              if (buyRecipePayload.recipes) {
+                // Server returned a refreshed list — update the popup data in-place
+                useNpcStore.getState().updatePopupData({
+                  type: "recipes",
+                  npcId: buyRecipePayload.npcId,
+                  recipes: buyRecipePayload.recipes,
+                });
+                useNpcStore.getState().setLoading(false);
+              } else {
+                // Fallback: request a fresh recipe list from the server
+                const npcId = (useNpcStore.getState().popupData as any)?.npcId;
+                const { getNextSequence, applyOptimisticUpdate, displayedState } =
+                  usePersonalChannelStore.getState();
+                if (npcId && socket && displayedState) {
+                  const actionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                  const seq = getNextSequence();
+                  const action = { actionId, seq, type: "recipes", params: { npcId } };
+                  applyOptimisticUpdate(action, structuredClone(displayedState));
+                  useNpcStore.getState().setLoading(true);
+                  socket.emit("personalChannel:action", action);
+                } else {
+                  useNpcStore.getState().setLoading(false);
+                }
+              }
+            } else {
+              useNpcStore.getState().setLoading(false);
+            }
           } else if (stashActionTypes.has(popupData.type) && currentType === "stash") {
             const npcId = (useNpcStore.getState().popupData as any)?.npcId;
             const { getNextSequence, applyOptimisticUpdate, displayedState } =

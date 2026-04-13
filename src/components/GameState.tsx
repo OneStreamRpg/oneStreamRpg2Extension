@@ -101,7 +101,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     });
 
     if (window.Twitch && window.Twitch.ext) {
-      window.Twitch.ext.onContext((context) => {
+      window.Twitch.ext.onContext((context: Partial<Twitch.ext.Context>) => {
         if (context.hlsLatencyBroadcaster) {
           streamDelayRef.current = context.hlsLatencyBroadcaster;
           useSocketStore.getState().setStreamDelay(context.hlsLatencyBroadcaster);
@@ -138,7 +138,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     });
 
     const joinGame = (loginName: string) => {
-      const actionId = `join-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const actionId = `join-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
       setJoinStatus("joining");
 
       socketInstance.emit("personalChannel:action", {
