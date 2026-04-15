@@ -13,6 +13,7 @@ interface CastIndicatorStore {
   indicators: CastIndicatorEntry[];
   show: (aimX: number, aimY: number, abilityId: string, durationMs: number) => void;
   hide: (id: number) => void;
+  clearAll: () => void;
 }
 
 let nextId = 0;
@@ -28,4 +29,5 @@ export const useCastIndicatorStore = create<CastIndicatorStore>((set) => ({
     })),
   hide: (id) =>
     set((state) => ({ indicators: state.indicators.filter((i) => i.id !== id) })),
+  clearAll: () => set({ indicators: [] }),
 }));

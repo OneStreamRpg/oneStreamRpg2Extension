@@ -4,6 +4,11 @@ import { usePersonalChannel } from "../hooks/usePersonalChannel";
 import { logger } from "../services/Logger";
 import { metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
+import { useAimStore } from "../store/useAimStore";
+import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
+import { useNpcStore } from "../store/useNpcStore";
+import { usePathOverlayStore } from "../store/usePathOverlayStore";
+import { useSyncBarStore } from "../store/useSyncBarStore";
 import { ActionAcknowledgment } from "../types/personalChannel";
 
 const TAG = "GameState";
@@ -135,6 +140,12 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       logger.warn(TAG, "Disconnected from socket.io server");
       setIsConnected(false);
       setinGame(false);
+      setGameState({ players: [], enemies: [], npcs: [] });
+      useAimStore.getState().stopAim();
+      useCastIndicatorStore.getState().clearAll();
+      useSyncBarStore.getState().hide();
+      usePathOverlayStore.getState().clearPath();
+      useNpcStore.getState().closePopup();
     });
 
     const joinGame = (loginName: string) => {
