@@ -47,15 +47,16 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
   const [suppressTooltip, setSuppressTooltip] = useState(false);
   const { startAim, stopAim, isAiming } = useAimStore();
 
-  // Sync cooldown from server data whenever lastUsed/effectiveCooldownMs props update
+  // Sync cooldown from server data whenever lastUsed/cooldown props update
+  const resolvedCooldownMs = ability.effectiveCooldownMs ?? ability.cooldownMs ?? metadataCooldownMs;
   useEffect(() => {
-    if (!isChargeSystem && ability.lastUsed !== undefined && ability.effectiveCooldownMs !== undefined) {
-      const serverEnd = ability.lastUsed + ability.effectiveCooldownMs;
+    if (!isChargeSystem && ability.lastUsed !== undefined) {
+      const serverEnd = ability.lastUsed + resolvedCooldownMs;
       const remaining = Math.max(0, serverEnd - Date.now());
       cooldownEndRef.current = remaining > 0 ? serverEnd : 0;
       setDisplayCooldownMs(remaining);
     }
-  }, [isChargeSystem, ability.lastUsed, ability.effectiveCooldownMs]);
+  }, [isChargeSystem, ability.lastUsed, ability.effectiveCooldownMs, ability.cooldownMs]);
 
   // Sync charge count from server
   useEffect(() => {
@@ -165,7 +166,7 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
     document.addEventListener("mouseup", onMouseUp);
   };
 
-  const totalCooldownMs = ability.effectiveCooldownMs ?? metadataCooldownMs;
+  const totalCooldownMs = resolvedCooldownMs;
   const cooldownPercentage =
     totalCooldownMs > 0 ? (displayCooldownMs / totalCooldownMs) * 100 : 0;
 

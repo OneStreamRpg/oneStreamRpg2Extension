@@ -255,11 +255,16 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
     };
 
     // Listen for player movement deltas (~20Hz) — buffered by stream delay
-    const handlePlayerDelta = (data: { delta: { remainingPath: Waypoint[] }; timestamp: number }) => {
+    // May also carry ability cooldown updates (e.g. auto-attack passive shaving CD)
+    const handlePlayerDelta = (data: { delta: PlayerStateDelta & { remainingPath?: Waypoint[] }; timestamp: number }) => {
       const path = data.delta?.remainingPath;
-      if (!path) return;
-      const applyAt = Date.now() + getStreamSyncDelay();
-      usePathOverlayStore.getState().enqueueDelta(path, applyAt);
+      if (path) {
+        const applyAt = Date.now() + getStreamSyncDelay();
+        usePathOverlayStore.getState().enqueueDelta(path, applyAt);
+      }
+      if (data.delta?.abilities !== undefined) {
+        applyDelta({ abilities: data.delta.abilities });
+      }
     };
 
     // Register event listeners

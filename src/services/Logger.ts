@@ -8,7 +8,7 @@ const LOG_LEVELS: Record<LogLevel, number> = {
 };
 
 const config = {
-    enabled: false,
+    enabled: true,
     minLevel: "info",
 } as const;
 
