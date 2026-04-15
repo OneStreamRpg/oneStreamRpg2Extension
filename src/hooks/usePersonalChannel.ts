@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 import { logger } from "../services/Logger";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
-import { useSocketStore } from "../store/socketStore";
 import { useNpcStore } from "../store/useNpcStore";
 import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
@@ -10,6 +9,7 @@ import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
 import { InteractData } from "../types/npcInteraction";
 import { useRecipesStore } from "../store/useRecipesStore";
 import { useUIStore } from "../store/useUIStore";
+import { getStreamSyncDelay } from "../utils/streamSyncDelay";
 import {
   ActionAcknowledgment,
   PlayerPersonalState,
@@ -35,10 +35,6 @@ interface UsePersonalChannelOptions {
   inGame?: boolean;
 }
 
-function getStreamSyncDelay(): number {
-  const { streamDelay, pingToStreamer, ping } = useSocketStore.getState();
-  return Math.max(0, 500 + streamDelay * 1000 - pingToStreamer / 2 + (ping ?? 0) / 2);
-}
 
 export function usePersonalChannel(options: UsePersonalChannelOptions) {
   const { socket, isConnected, enabled = true, inGame = false } = options;
