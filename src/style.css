@@ -68,3 +68,12 @@
   mask-image: conic-gradient(black 0deg var(--cast-sweep), transparent var(--cast-sweep) 360deg);
   -webkit-mask-image: conic-gradient(black 0deg var(--cast-sweep), transparent var(--cast-sweep) 360deg);
 }
+
+@keyframes castIndicatorRevealLinear {
+  from { clip-path: inset(100% 0 0 0); }
+  to   { clip-path: inset(0% 0 0 0); }
+}
+
+.cast-indicator-reveal-linear {
+  animation: castIndicatorRevealLinear var(--cast-duration, 1000ms) linear forwards;
+}

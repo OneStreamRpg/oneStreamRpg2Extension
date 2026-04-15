@@ -103,11 +103,14 @@ const CastIndicatorItem: React.FC<{
       ? Math.atan2(aimX - playerPos.x, -(aimY - playerPos.y))
       : 0;
     const imgName = abilityMeta.type === "slash" ? "slash" : "skillshot";
+    const revealClass = abilityMeta.type === "skillshot"
+      ? "cast-indicator-reveal-linear"
+      : "cast-indicator-reveal";
     return (
       <img
         src={`${import.meta.env.BASE_URL}media/img/indicator/${imgName}.png`}
         alt=""
-        className="absolute pointer-events-none cast-indicator-reveal"
+        className={`absolute pointer-events-none ${revealClass}`}
         style={{
           left: `${leftPct}%`,
           top: `${topPct}%`,
