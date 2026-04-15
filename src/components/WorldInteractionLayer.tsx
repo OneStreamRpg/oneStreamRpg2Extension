@@ -5,10 +5,10 @@ import { usePersonalChannelActions } from "../hooks/usePersonalChannelActions";
 import { logger } from "../services/Logger";
 import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
-import { useAimStore } from "../store/useAimStore";
 import { useSocketStore } from "../store/socketStore";
-import { useSyncBarStore } from "../store/useSyncBarStore";
+import { useAimStore } from "../store/useAimStore";
 import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
+import { useSyncBarStore } from "../store/useSyncBarStore";
 import { PathOverlay } from "./PathOverlay";
 
 const TAG = "WorldInteraction";
@@ -133,6 +133,22 @@ const CastIndicatorItem: React.FC<{
           width: `${widthPct}%`,
           height: `${heightPct}%`,
           transform: `translate(-50%, -50%)`,
+          ["--cast-duration" as string]: `${durationMs}ms`,
+        }}
+      />
+    );
+  }
+
+  if (abilityMeta.type === "autoTarget") {
+    return (
+      <img
+        src={`${import.meta.env.BASE_URL}media/img/indicator/autoTarget.png`}
+        alt=""
+        className="absolute pointer-events-none cast-indicator-reveal"
+        style={{
+          left: `${leftPct}%`,
+          top: `${topPct}%`,
+          transform: `translate(-50%, calc(-50% - 15px))`,
           ["--cast-duration" as string]: `${durationMs}ms`,
         }}
       />
@@ -319,8 +335,30 @@ export const WorldInteractionLayer: React.FC = () => {
       return { type: "aoeCircle" as const, leftPct, topPct, widthPct, heightPct };
     }
 
+    if (abilityType === "autoTarget") {
+      let worldX = mouse.x;
+      let worldY = mouse.y;
+
+      if (range !== null) {
+        const playerPos = getPlayerWorldPos(gameState, myUsername);
+        if (playerPos) {
+          const dx = mouse.x - playerPos.x;
+          const dy = mouse.y - playerPos.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > range) {
+            worldX = playerPos.x + (dx / dist) * range;
+            worldY = playerPos.y + (dy / dist) * range;
+          }
+        }
+      }
+
+      const leftPct = (worldX / 1920) * 100;
+      const topPct = (worldY / 1080) * 100;
+      return { type: "autoTarget" as const, leftPct, topPct };
+    }
+
     return null;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAiming, abilityType, mousePos, range, effectSize, gameState, myUsername]);
 
   return (
@@ -462,6 +500,18 @@ export const WorldInteractionLayer: React.FC = () => {
             width: `${aimIndicator.widthPct}%`,
             height: `${aimIndicator.heightPct}%`,
             transform: `translate(-50%, -50%)`,
+          }}
+        />
+      )}
+      {aimIndicator?.type === "autoTarget" && (
+        <img
+          src={`${import.meta.env.BASE_URL}media/img/indicator/autoTarget.png`}
+          alt=""
+          className="absolute pointer-events-none"
+          style={{
+            left: `${aimIndicator.leftPct}%`,
+            top: `${aimIndicator.topPct}%`,
+            transform: `translate(-50%, calc(-50% - 20px))`,
           }}
         />
       )}

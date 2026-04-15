@@ -39,7 +39,7 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
   const [regenProgress, setRegenProgress] = useState(0);
 
   const isAimable =
-    abilityMetaData.type === "skillshot" || abilityMetaData.type === "aoeCircle" || abilityMetaData.type === "slash";
+    abilityMetaData.type === "skillshot" || abilityMetaData.type === "aoeCircle" || abilityMetaData.type === "slash" || abilityMetaData.type === "autoTarget";
 
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -126,7 +126,7 @@ export const Ability: React.FC<{ ability: Ability }> = ({ ability }) => {
         setSuppressTooltip(true);
         startAim(
           ability.slot,
-          abilityMetaData.type as "skillshot" | "aoeCircle" | "slash",
+          abilityMetaData.type as "skillshot" | "aoeCircle" | "slash" | "autoTarget",
           abilityMetaData.range ?? null,
           abilityMetaData.effectSize ?? null
         );
