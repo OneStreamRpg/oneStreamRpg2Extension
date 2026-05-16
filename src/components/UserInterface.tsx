@@ -3,7 +3,6 @@ import { AbilitiesNav } from "./AbilitiesNav";
 import { ActivePage } from "./ActivePage";
 import { LeftNav } from "./LeftNav";
 import { NpcPopup } from "./npc/NpcPopup";
-import { PotionsNav } from "./PotionsNav";
 import { ProfileNav } from "./ProfileNav";
 import { GroupPanel } from "./group/GroupPanel";
 import { QuestPanel } from "./quests/QuestPanel";
@@ -27,7 +26,6 @@ export const UserInterface: React.FC = () => {
         </section>
         <aside className="flex justify-center gap-2">
           <AbilitiesNav />
-          <PotionsNav />
         </aside>
       </div>
       <LeftNav />

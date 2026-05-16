@@ -1,5 +1,4 @@
 import { AbilitiesNav } from "../AbilitiesNav";
-import { PotionsNav } from "../PotionsNav";
 
 export const PanelActionsPage: React.FC = () => {
   return (
@@ -10,15 +9,6 @@ export const PanelActionsPage: React.FC = () => {
         </h2>
         <div className="flex flex-wrap gap-3 justify-center">
           <AbilitiesNav />
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-sm font-bold mb-3" style={{ color: "#c8a020" }}>
-          Potions
-        </h2>
-        <div className="flex flex-wrap gap-3 justify-center">
-          <PotionsNav />
         </div>
       </section>
     </div>

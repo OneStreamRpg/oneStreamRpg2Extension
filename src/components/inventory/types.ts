@@ -7,18 +7,6 @@ export type Item = {
   value?: number
 }
 
-export type PotionItem = Item & {
-  potionId: string
-  charges: number
-  maxCharges: number
-  cooldownRemaining: number
-  healAmount: number
-}
-
-export function isPotionItem(item: Item): item is PotionItem {
-  return item.tags.includes("potion") && "charges" in item;
-}
-
 export type ItemRequiredTagForEquipment =
   | "helmet"
   | "chest"
@@ -28,8 +16,7 @@ export type ItemRequiredTagForEquipment =
   | "amulet"
   | "gloves"
   | "ring"
-  | "holdable"
-  | "potion";
+  | "holdable";
 
 export type EquipmentSlotKey =
   | "helmet"
@@ -41,8 +28,7 @@ export type EquipmentSlotKey =
   | "gloves"
   | "firstRing"
   | "secondRing"
-  | "offHand"
-  | "potion";
+  | "offHand";
 
 export const EQUIPMENT_SLOT_CONFIG: Record<
   EquipmentSlotKey,
@@ -58,7 +44,6 @@ export const EQUIPMENT_SLOT_CONFIG: Record<
   firstRing: { requiredTag: "ring" },
   secondRing: { requiredTag: "ring" },
   offHand: { requiredTag: "holdable" },
-  potion: { requiredTag: "potion" },
 };
 
 export type InventoryChangeEvent = {

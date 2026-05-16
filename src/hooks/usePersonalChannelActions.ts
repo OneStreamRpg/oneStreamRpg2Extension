@@ -254,46 +254,11 @@ export function usePersonalChannelActions(socket: Socket | null) {
   );
 
   /**
-   * Use the equipped potion
-   */
-  const usePotion = useCallback(() => {
-    sendAction("usePotion", {}, (state) => state);
-  }, [sendAction]);
-
-  /**
-   * Set the equipped potion
-   */
-  const setPotion = useCallback(
-    (potionId: string) => {
-      sendAction("setPotion", { potionId }, (state) => state);
-    },
-    [sendAction]
-  );
-
-  /**
-   * Get potion info from server
-   */
-  const getPotionInfo = useCallback(() => {
-    sendAction("potionInfo", {}, (state) => state);
-  }, [sendAction]);
-
-  /**
    * Fetch player's learned recipes
    */
   const fetchPlayerRecipes = useCallback(() => {
     sendAction("playerRecipes", {}, (state) => state);
   }, [sendAction]);
-
-  /**
-   * Choose a class tree ability at a pending milestone level.
-   * choiceIndex: 1 = left option, 2 = right option
-   */
-  const chooseClassTreeAbility = useCallback(
-    (choiceIndex: 1 | 2 | 3) => {
-      sendAction("chooseClassTreeAbility", { choiceIndex }, (state) => state);
-    },
-    [sendAction]
-  );
 
   const groupInvite = useCallback(
     (targetUsername: string) => {
@@ -375,11 +340,7 @@ export function usePersonalChannelActions(socket: Socket | null) {
     setTargetEnemy,
     getQuests,
     cancelQuest,
-    usePotion,
-    setPotion,
-    getPotionInfo,
     fetchPlayerRecipes,
-    chooseClassTreeAbility,
     groupInvite,
     groupAccept,
     groupDecline,

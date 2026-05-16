@@ -1,7 +1,6 @@
 import { useUIStore } from "../store/useUIStore";
 import { Page } from "../types/ui";
 import { AbilitiesPage } from "./abilities/AbilitiesPage";
-import { ClassTree } from "./ClassTree";
 import { Inventory } from "./inventory/Inventory";
 import { PageLayout } from "./PageLayout";
 import { RecipesPage } from "./recipes/RecipesPage";
@@ -17,7 +16,6 @@ export const ActivePage: React.FC = () => {
         {activePage === Page.SkillTree && <SkillTree />}
         {activePage === Page.Abilities && <AbilitiesPage />}
         {activePage === Page.Recipes && <RecipesPage />}
-        {activePage === Page.ClassTree && <ClassTree />}
       </PageLayout>
     )
   );
