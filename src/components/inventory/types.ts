@@ -5,6 +5,8 @@ export type Item = {
   tags: string[]
   scalings?: Record<string, number>
   value?: number
+  durability?: number
+  maxDurability?: number
 }
 
 export type ItemRequiredTagForEquipment =
