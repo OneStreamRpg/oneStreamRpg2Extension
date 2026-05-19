@@ -30,6 +30,7 @@ export interface NPC extends BaseEntity {
   npcId: string;
   name: string;
   type: "npc";
+  upgradeLevel?: number;
 }
 
 export type GameObject = Player | Enemy | NPC;

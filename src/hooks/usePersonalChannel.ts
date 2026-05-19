@@ -6,8 +6,7 @@ import { useNpcStore } from "../store/useNpcStore";
 import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
 import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
-import { InteractData } from "../types/npcInteraction";
-import { useRecipesStore } from "../store/useRecipesStore";
+import { InteractData, NpcDepositData, NpcUpgradeData } from "../types/npcInteraction";
 import { useUIStore } from "../store/useUIStore";
 import { getStreamSyncDelay } from "../utils/streamSyncDelay";
 import {
@@ -20,12 +19,13 @@ const TAG = "PersonalChannel";
 
 // Data types that should update the NPC popup UI
 const NPC_POPUP_TYPES = new Set<string>([
-  "interact", "shop", "buy", "recipes", "buyRecipe", "craftList", "craft",
+  "interact", "shop", "buy", "craftList", "craft",
   "dialogue", "dialogueAnswer",
   "arena", "spawnArena", "summon", "trade", "tradeItem",
   "stash", "stashPut", "stashGet", "stashSwap",
   "acceptQuest", "questPreview", "confirmAcceptQuest", "declineQuest",
   "sellMenu", "sell", "sellMany",
+  "npcUpgrade",
 ]);
 
 interface UsePersonalChannelOptions {
@@ -123,7 +123,9 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
           useNpcStore.getState().openPopup(interactData.npcId, "interact", interactData);
           interactDelayTimeout.current = null;
         }, 0);
+        return;
       }
+
     };
 
     // Listen for action acknowledgments
@@ -131,7 +133,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
       logger.debug(TAG, `Action acknowledgment received: actionId=${data.actionId}, success=${data.success}`, data);
 
       // Action types that should show an inline red toast instead of replacing the popup
-      const toastableFailureTypes = new Set(["buy", "craft", "buyRecipe", "sell", "tradeItem",
+      const toastableFailureTypes = new Set(["buy", "craft", "sell", "tradeItem",
         "stashPut", "stashGet", "stashSwap", "acceptQuest", "confirmAcceptQuest"]);
 
       if (data.success) {
@@ -151,11 +153,33 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
         useUIStore.getState().setGroupError(data.error ?? "Something went wrong.");
       }
 
-      // Route playerRecipes response to recipes store
-      if (data.data?.type === "playerRecipes") {
-        useRecipesStore.getState().setRecipes((data.data as any).recipes ?? []);
+      // Route npcDeposit responses: refresh the upgrade popup in-place and show a toast
+      if (data.data?.type === "npcDeposit") {
+        const d = data.data as NpcDepositData;
+        if (!d.success) {
+          useNpcStore.getState().setToast(d.message, true);
+          useNpcStore.getState().setLoading(false);
+        } else {
+          const currentData = useNpcStore.getState().popupData as NpcUpgradeData | null;
+          if (currentData?.type === "npcUpgrade") {
+            useNpcStore.getState().updatePopupData({
+              type: "npcUpgrade",
+              npcId: d.npcId,
+              name: currentData.name,
+              level: d.newLevel,
+              maxLevel: !d.upgradeRequirements,
+              depositedAmounts: d.depositedAmounts,
+              upgradeRequirements: d.upgradeRequirements,
+            });
+          }
+          if (d.upgraded) {
+            useNpcStore.getState().setToast(`Upgraded to level ${d.newLevel}!`);
+          } else {
+            useNpcStore.getState().setToast(d.message);
+          }
+          useNpcStore.getState().setLoading(false);
+        }
       }
-
 
       // Route transient UI data to NPC store (only for actual popup types)
       // Delay the initial "interact" popup to sync with stream, all others are instant
@@ -176,7 +200,6 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
           // Buy/craft actions: keep the list open and show a toast
           const toastTypes: Partial<Record<string, string[]>> = {
             buy: ["shop"],
-            buyRecipe: ["recipes"],
             craft: ["craftList"],
           };
 
@@ -187,38 +210,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
             const isPayloadError = (popupData as any).success === false;
             const msg = (popupData as any).message ?? (isPayloadError ? "Something went wrong." : "Done.");
             useNpcStore.getState().setToast(msg, isPayloadError);
-
-            if (isPayloadError) {
-              useNpcStore.getState().setLoading(false);
-            } else if (popupData.type === "buyRecipe") {
-              const buyRecipePayload = popupData as any;
-              if (buyRecipePayload.recipes) {
-                // Server returned a refreshed list — update the popup data in-place
-                useNpcStore.getState().updatePopupData({
-                  type: "recipes",
-                  npcId: buyRecipePayload.npcId,
-                  recipes: buyRecipePayload.recipes,
-                });
-                useNpcStore.getState().setLoading(false);
-              } else {
-                // Fallback: request a fresh recipe list from the server
-                const npcId = (useNpcStore.getState().popupData as any)?.npcId;
-                const { getNextSequence, applyOptimisticUpdate, displayedState } =
-                  usePersonalChannelStore.getState();
-                if (npcId && socket && displayedState) {
-                  const actionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-                  const seq = getNextSequence();
-                  const action = { actionId, seq, type: "recipes", params: { npcId } };
-                  applyOptimisticUpdate(action, structuredClone(displayedState));
-                  useNpcStore.getState().setLoading(true);
-                  socket.emit("personalChannel:action", action);
-                } else {
-                  useNpcStore.getState().setLoading(false);
-                }
-              }
-            } else {
-              useNpcStore.getState().setLoading(false);
-            }
+            useNpcStore.getState().setLoading(false);
           } else if (stashActionTypes.has(popupData.type) && currentType === "stash") {
             const npcId = (useNpcStore.getState().popupData as any)?.npcId;
             const { getNextSequence, applyOptimisticUpdate, displayedState } =

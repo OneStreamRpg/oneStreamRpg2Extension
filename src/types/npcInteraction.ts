@@ -4,7 +4,6 @@ import { Item } from "../components/inventory/types";
 export type NpcPopupType =
   | "interact"
   | "shop"
-  | "recipes"
   | "dialogue"
   | "dialogueAnswer"
   | "arena"
@@ -13,7 +12,8 @@ export type NpcPopupType =
   | "craftList"
   | "stash"
   | "questPreview"
-  | "sellMenu";
+  | "sellMenu"
+  | "npcUpgrade";
 
 // Data response shapes from server ack `data` field
 // Matches actual server responses exactly
@@ -64,17 +64,6 @@ export interface SellManyData {
   totalGold: number;
   soldItems: { itemId: string; name: string; gold: number }[];
   skipped: number;
-}
-
-export interface RecipesData {
-  type: "recipes";
-  npcId: string;
-  recipes: RecipeItem[];
-}
-
-export interface RecipeItem {
-  recipeId: string;
-  goldPrice?: number;
 }
 
 export interface DialogueData {
@@ -144,7 +133,7 @@ export interface CraftListData {
 export interface CraftRecipe {
   recipeId: string;
   name: string;
-  description: string;
+  description?: string;
   inputs: { itemId: string; quantity: number }[];
   output: { itemId: string; quantity: number };
 }
@@ -234,6 +223,27 @@ export interface CancelQuestData {
   message?: string;
 }
 
+export interface NpcUpgradeData {
+  type: "npcUpgrade";
+  npcId: string;
+  name: string;
+  level: number;
+  maxLevel: boolean;
+  depositedAmounts: Record<string, number>;
+  upgradeRequirements?: { itemId: string; quantity: number }[];
+}
+
+export interface NpcDepositData {
+  type: "npcDeposit";
+  success: boolean;
+  message: string;
+  upgraded: boolean;
+  npcId: string;
+  newLevel: number;
+  depositedAmounts: Record<string, number>;
+  upgradeRequirements?: { itemId: string; quantity: number }[];
+}
+
 // Union type for all interaction data
 export type InteractionData =
   | InteractData
@@ -242,7 +252,6 @@ export type InteractionData =
   | SellMenuData
   | SellData
   | SellManyData
-  | RecipesData
   | DialogueData
   | ArenaData
   | SpawnArenaData
@@ -257,4 +266,6 @@ export type InteractionData =
   | DeclineQuestData
   | GetQuestsData
   | CancelQuestData
+  | NpcUpgradeData
+  | NpcDepositData
   | { type: string; [key: string]: any };

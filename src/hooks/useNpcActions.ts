@@ -72,17 +72,6 @@ export function useNpcActions(socket: Socket | null) {
     [sendNpcAction]
   );
 
-  const recipes = useCallback(
-    (npcId?: string) => sendNpcAction("recipes", { npcId }),
-    [sendNpcAction]
-  );
-
-  const buyRecipe = useCallback(
-    (npcId: string, recipeIndex: number) =>
-      sendNpcAction("buyRecipe", { npcId, recipeIndex }),
-    [sendNpcAction]
-  );
-
   const craftList = useCallback(
     (npcId?: string) => sendNpcAction("craftList", { npcId }),
     [sendNpcAction]
@@ -184,6 +173,17 @@ export function useNpcActions(socket: Socket | null) {
     [sendNpcAction]
   );
 
+  const npcUpgrade = useCallback(
+    (npcId: string) => sendNpcAction("npcUpgrade", { npcId }),
+    [sendNpcAction]
+  );
+
+  const npcDeposit = useCallback(
+    (npcId: string, itemId: string, quantity: number) =>
+      sendNpcAction("npcDeposit", { npcId, itemId, quantity }),
+    [sendNpcAction]
+  );
+
   const setTargetNpc = useCallback(
     (npcId: string) => {
       if (!socket || !isReady || !displayedState) {
@@ -215,8 +215,6 @@ export function useNpcActions(socket: Socket | null) {
     buy,
     sell,
     sellMany,
-    recipes,
-    buyRecipe,
     craftList,
     craft,
     dialogue,
@@ -235,6 +233,8 @@ export function useNpcActions(socket: Socket | null) {
     stashPut,
     stashGet,
     stashSwap,
+    npcUpgrade,
+    npcDeposit,
     setTargetNpc,
   };
 }

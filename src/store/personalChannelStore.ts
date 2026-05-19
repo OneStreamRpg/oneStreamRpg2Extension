@@ -280,6 +280,10 @@ function computeDelta(
     newState.quests = delta.quests;
     if (delta.versions?.questsVersion !== undefined) newVersions.questsVersion = delta.versions.questsVersion;
   }
+  if (delta.craftRecipes !== undefined) {
+    newState.craftRecipes = delta.craftRecipes;
+    if (delta.versions?.craftRecipesVersion !== undefined) newVersions.craftRecipesVersion = delta.versions.craftRecipesVersion;
+  }
   if (delta.profile !== undefined) newState.profile = delta.profile;
   if (delta.classTreeChoices !== undefined) newState.classTreeChoices = delta.classTreeChoices;
   if (delta.pendingClassTreeChoice !== undefined) newState.pendingClassTreeChoice = delta.pendingClassTreeChoice;

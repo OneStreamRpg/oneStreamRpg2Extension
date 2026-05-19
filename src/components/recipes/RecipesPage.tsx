@@ -1,9 +1,7 @@
-import { useEffect } from "react";
 import { Tooltip } from "react-tooltip";
-import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
 import { useNpcActions } from "../../hooks/useNpcActions";
 import { metadataService } from "../../services/MetadataService";
-import { useRecipesStore } from "../../store/useRecipesStore";
+import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
 import { CalcBreakdown } from "../ui/CalcBreakdown";
 import { ResolvedToken } from "../../utils/resolveScaling";
@@ -16,16 +14,14 @@ function makeItem(itemId: string, quantity: number): Item {
 
 export const RecipesPage: React.FC = () => {
   const socket = useSocketStore((state) => state.socket);
-  const { fetchPlayerRecipes } = usePersonalChannelActions(socket);
   const { setTargetNpc } = useNpcActions(socket);
-  const recipes = useRecipesStore((state) => state.recipes);
-  const isLoading = useRecipesStore((state) => state.isLoading);
-  const setLoading = useRecipesStore((state) => state.setLoading);
+  const craftRecipes = usePersonalChannelStore(
+    (state) => state.displayedState?.craftRecipes ?? []
+  );
 
-  useEffect(() => {
-    setLoading(true);
-    fetchPlayerRecipes();
-  }, []);
+  const allRecipes = craftRecipes.flatMap((npc) =>
+    npc.recipes.map((recipe) => ({ recipe, npc }))
+  );
 
   return (
     <>
@@ -41,17 +37,15 @@ export const RecipesPage: React.FC = () => {
           </button>
         </div>
 
-        {isLoading && <p className="text-center text-sm text-gray-400 py-4">Loading recipes...</p>}
-
-        {!isLoading && recipes !== null && recipes.length === 0 && (
-          <p className="text-center text-sm text-gray-400 py-4">No recipes learned yet.</p>
+        {allRecipes.length === 0 && (
+          <p className="text-center text-sm text-gray-400 py-4">No recipes unlocked yet.</p>
         )}
 
-        {recipes?.map((recipe) => {
+        {allRecipes.map(({ recipe, npc }) => {
           const outputMeta = metadataService.getItemSync(recipe.output.itemId);
           return (
             <div
-              key={recipe.recipeId}
+              key={`${npc.npcId}-${recipe.recipeId}`}
               className="rounded p-2"
               style={{ backgroundColor: "rgba(0,0,0,0.3)", border: "1px solid #3d2a0a" }}
             >

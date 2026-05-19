@@ -26,13 +26,13 @@ export const NpcInteractMenu: React.FC<{ data: InteractData }> = ({
 
     const actionMap: Record<string, (npcId?: string) => void> = {
       shop: npcActions.shop,
-      recipes: npcActions.recipes,
       craft: npcActions.craftList,
       dialogue: npcActions.dialogue,
       arena: npcActions.arena,
       summon: npcActions.summon,
       trade: npcActions.trade,
       stash: npcActions.stash,
+      upgrade: (npcId) => npcId && npcActions.npcUpgrade(npcId),
     };
 
     const action = actionMap[type];

@@ -253,13 +253,6 @@ export function usePersonalChannelActions(socket: Socket | null) {
     [sendAction]
   );
 
-  /**
-   * Fetch player's learned recipes
-   */
-  const fetchPlayerRecipes = useCallback(() => {
-    sendAction("playerRecipes", {}, (state) => state);
-  }, [sendAction]);
-
   const groupInvite = useCallback(
     (targetUsername: string) => {
       sendAction("groupInvite", { targetUsername }, (s) => s);
@@ -340,7 +333,6 @@ export function usePersonalChannelActions(socket: Socket | null) {
     setTargetEnemy,
     getQuests,
     cancelQuest,
-    fetchPlayerRecipes,
     groupInvite,
     groupAccept,
     groupDecline,

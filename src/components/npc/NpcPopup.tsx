@@ -6,8 +6,8 @@ import {
   CraftListData,
   DialogueData,
   InteractData,
+  NpcUpgradeData,
   QuestPreviewData,
-  RecipesData,
   SellManyData,
   SellMenuData,
   ShopData,
@@ -26,12 +26,12 @@ import { NpcCraft } from "./NpcCraft";
 import { NpcDialogue } from "./NpcDialogue";
 import { NpcInteractMenu } from "./NpcInteractMenu";
 import { NpcQuestPreview } from "./NpcQuestPreview";
-import { NpcRecipes } from "./NpcRecipes";
 import { NpcSell } from "./NpcSell";
 import { NpcShop } from "./NpcShop";
 import { NpcStash } from "./NpcStash";
 import { NpcSummon } from "./NpcSummon";
 import { NpcTrade } from "./NpcTrade";
+import { NpcUpgrade } from "./NpcUpgrade";
 
 function makeItem(itemId: string, quantity = 1): Item {
   return { id: itemId, itemId, quantity, tags: [] };
@@ -61,7 +61,7 @@ const SpawnArenaCountdown: React.FC<{ message: string; onDone: () => void }> = (
 
 // Response types that show a transient message instead of a full UI
 const MESSAGE_TYPES = new Set([
-  "buy", "buyRecipe", "craft", "acceptQuest",
+  "buy", "craft", "acceptQuest",
   "stashPut", "stashGet", "stashSwap", "tradeItem",
   "confirmAcceptQuest", "declineQuest",
   "sell",
@@ -141,8 +141,6 @@ export const NpcPopup: React.FC = () => {
         return <NpcInteractMenu data={popupData as InteractData} />;
       case "shop":
         return <NpcShop data={popupData as ShopData} />;
-      case "recipes":
-        return <NpcRecipes data={popupData as RecipesData} />;
       case "craftList":
         return <NpcCraft data={popupData as CraftListData} />;
       case "dialogue":
@@ -165,6 +163,8 @@ export const NpcPopup: React.FC = () => {
         return <NpcQuestPreview data={popupData as QuestPreviewData} />;
       case "sellMenu":
         return <NpcSell data={popupData as SellMenuData} />;
+      case "npcUpgrade":
+        return <NpcUpgrade data={popupData as NpcUpgradeData} />;
       case "sellMany": {
         const d = popupData as SellManyData;
         return (

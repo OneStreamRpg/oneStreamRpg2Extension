@@ -1,11 +1,18 @@
 // Personal Player Channel Types
 
 import { EquipmentSlotKey, Item } from "../components/inventory/types";
-import { InteractionData } from "./npcInteraction";
+import { CraftRecipe, InteractionData } from "./npcInteraction";
 
 export interface PendingClassTreeChoice {
   level: number;
   choices: string[]; // 1–3 abilityIds; length 1 is auto-resolved server-side
+}
+
+export interface NpcCraftRecipes {
+  npcId: string;
+  npcName: string;
+  level: number;
+  recipes: CraftRecipe[];
 }
 
 export interface PlayerPersonalState {
@@ -23,6 +30,7 @@ export interface PlayerPersonalState {
   group?: GroupState | null;
   pendingGroupInvites?: GroupInvite[];
   outgoingGroupInvites?: OutgoingGroupInvite[];
+  craftRecipes: NpcCraftRecipes[];
 }
 
 export interface StateVersions {
@@ -32,6 +40,7 @@ export interface StateVersions {
   abilities: number;
   stats: number;
   questsVersion: number;
+  craftRecipesVersion: number;
 }
 
 export interface InventoryState {
@@ -109,6 +118,7 @@ export interface PlayerStateDelta {
   group?: GroupState | null;
   pendingGroupInvites?: GroupInvite[];
   outgoingGroupInvites?: OutgoingGroupInvite[];
+  craftRecipes?: NpcCraftRecipes[];
 }
 
 export interface PersonalChannelAction {
