@@ -1,14 +1,17 @@
 import { useDroppable } from "@dnd-kit/core";
 import { useMemo } from "react";
+import { MaterialMap } from "../../types/personalChannel";
 import { DraggableItem } from "./DraggableItem";
-import { getItemEquippedSlotTag, isEmptyItem } from "./inventoryService";
+import { getItemEquippedSlotTag, getMaterialCategory, isEmptyItem } from "./inventoryService";
 import { Item } from "./types";
 
 export const InventorySlot: React.FC<{
   item: Item | null;
   index: number;
   isDraggingActive: boolean;
-}> = ({ item, index, isDraggingActive }) => {
+  materialCaps?: MaterialMap;
+  materialCounts?: MaterialMap;
+}> = ({ item, index, isDraggingActive, materialCaps, materialCounts }) => {
   const slotId = `inventory-${index}`;
   const { setNodeRef, isOver, active } = useDroppable({
     id: slotId,
@@ -42,6 +45,15 @@ export const InventorySlot: React.FC<{
   const canPlaceHere = isOver && isCompatible;
   const hasItem = item && !isEmptyItem(item);
 
+  const atCap = useMemo(() => {
+    if (!hasItem || !materialCaps || !materialCounts) return false;
+    const cat = getMaterialCategory(item!.itemId);
+    if (!cat) return false;
+    const cap = materialCaps[cat] ?? 0;
+    const count = materialCounts[cat] ?? 0;
+    return cap > 0 && count >= cap;
+  }, [hasItem, item, materialCaps, materialCounts]);
+
   return (
     <div
       ref={setNodeRef}
@@ -50,6 +62,8 @@ export const InventorySlot: React.FC<{
           ? "outline-2 outline-blue-500"
           : isDraggingActive && isCompatible
           ? "outline-2 outline-green-500"
+          : atCap
+          ? "outline-2 outline-red-500 bg-red-500/20"
           : ""
       }`}
     >

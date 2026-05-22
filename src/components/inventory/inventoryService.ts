@@ -1,4 +1,5 @@
-import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item, ItemRequiredTagForEquipment } from "./types";
+import { metadataService } from "../../services/MetadataService";
+import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item, ItemRequiredTagForEquipment, MaterialCategory } from "./types";
 
 /**
  * Checks whether an item can be placed into the given equipment slot
@@ -21,5 +22,12 @@ export const getItemEquippedSlotTag = (item: Item): ItemRequiredTagForEquipment 
       return config.requiredTag;
     }
   }
+  return null;
+};
+
+export const getMaterialCategory = (itemId: string): MaterialCategory | null => {
+  const def = metadataService.getItemSync(itemId);
+  const cat = def?.materialCategory;
+  if (cat === "wood" || cat === "stone" || cat === "fish") return cat;
   return null;
 };

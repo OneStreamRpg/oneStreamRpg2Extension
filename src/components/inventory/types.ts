@@ -9,6 +9,16 @@ export type Item = {
   maxDurability?: number
 }
 
+export type MaterialCategory = "wood" | "stone" | "fish";
+
+export const MATERIAL_CATEGORIES: MaterialCategory[] = ["wood", "stone", "fish"];
+
+export const MATERIAL_CATEGORY_EMOJI: Record<MaterialCategory, string> = {
+  wood: "🪵",
+  stone: "🪨",
+  fish: "🐟",
+};
+
 export type ItemRequiredTagForEquipment =
   | "helmet"
   | "chest"
@@ -18,7 +28,7 @@ export type ItemRequiredTagForEquipment =
   | "amulet"
   | "gloves"
   | "ring"
-  | "holdable";
+  | "backpack";
 
 export type EquipmentSlotKey =
   | "helmet"
@@ -30,7 +40,7 @@ export type EquipmentSlotKey =
   | "gloves"
   | "firstRing"
   | "secondRing"
-  | "offHand";
+  | "backpack";
 
 export const EQUIPMENT_SLOT_CONFIG: Record<
   EquipmentSlotKey,
@@ -45,7 +55,7 @@ export const EQUIPMENT_SLOT_CONFIG: Record<
   gloves: { requiredTag: "gloves" },
   firstRing: { requiredTag: "ring" },
   secondRing: { requiredTag: "ring" },
-  offHand: { requiredTag: "holdable" },
+  backpack: { requiredTag: "backpack" },
 };
 
 export type InventoryChangeEvent = {

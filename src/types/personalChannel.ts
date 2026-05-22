@@ -1,7 +1,9 @@
 // Personal Player Channel Types
 
-import { EquipmentSlotKey, Item } from "../components/inventory/types";
+import { EquipmentSlotKey, Item, MaterialCategory } from "../components/inventory/types";
 import { CraftRecipe, InteractionData } from "./npcInteraction";
+
+export type MaterialMap = Record<MaterialCategory, number>;
 
 export interface PendingClassTreeChoice {
   level: number;
@@ -46,6 +48,8 @@ export interface StateVersions {
 export interface InventoryState {
   items: (Item | null)[];
   maxSize: number;
+  materialCaps: MaterialMap;
+  materialCounts: MaterialMap;
 }
 
 export type EquipmentState = Record<EquipmentSlotKey, Item | null>

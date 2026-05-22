@@ -8,7 +8,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Tooltip } from "react-tooltip";
 import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
 import { logger } from "../../services/Logger";
@@ -23,7 +23,8 @@ import {
 import { InventorySlot } from "./InventorySlot";
 import { InventoryTooltip } from "./InventoryTooltip";
 import { ItemDisplay } from "./ItemDisplay";
-import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
+import { MaterialBar } from "./MaterialBar";
+import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item, MATERIAL_CATEGORIES, MATERIAL_CATEGORY_EMOJI } from "./types";
 import { CalcBreakdown } from "../ui/CalcBreakdown";
 import { ResolvedToken } from "../../utils/resolveScaling";
 
@@ -48,6 +49,39 @@ export const Inventory: React.FC = () => {
   // State to hold the item being currently dragged.
   // This is used for highlighting compatible slots and for the DragOverlay.
   const [activeItem, setActiveItem] = useState<Item | null>(null);
+
+  const [capToast, setCapToast] = useState<string | null>(null);
+  const capToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevCountsRef = useRef<Record<string, number> | null>(null);
+
+  const currentCounts = displayedState?.inventory.materialCounts;
+  const currentCaps = displayedState?.inventory.materialCaps;
+
+  useEffect(() => {
+    if (!currentCounts || !currentCaps) return;
+    const prev = prevCountsRef.current;
+    if (prev) {
+      for (const cat of MATERIAL_CATEGORIES) {
+        const cap = currentCaps[cat] ?? 0;
+        if (cap <= 0) continue;
+        const wasBelow = (prev[cat] ?? 0) < cap;
+        const nowAt = (currentCounts[cat] ?? 0) >= cap;
+        if (wasBelow && nowAt) {
+          const msg = `${MATERIAL_CATEGORY_EMOJI[cat]} ${cat} cap reached!`;
+          setCapToast(msg);
+          if (capToastTimer.current) clearTimeout(capToastTimer.current);
+          capToastTimer.current = setTimeout(() => setCapToast(null), 3000);
+        }
+      }
+    }
+    prevCountsRef.current = { ...currentCounts };
+  }, [currentCounts, currentCaps]);
+
+  useEffect(() => {
+    return () => {
+      if (capToastTimer.current) clearTimeout(capToastTimer.current);
+    };
+  }, []);
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
@@ -182,8 +216,14 @@ export const Inventory: React.FC = () => {
 
   const inventoryItems = displayedState.inventory.items;
   const equipmentSlots = displayedState.equipment;
+  const { materialCaps, materialCounts } = displayedState.inventory;
   return (
     <>
+      {capToast && (
+        <div className="mb-2 px-2 py-1 text-xs font-bold text-center bg-red-600 text-white rounded shadow">
+          {capToast}
+        </div>
+      )}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <section className="grid grid-cols-[auto_1fr_auto] gap-2 mb-4">
           <section className="flex flex-col items-center gap-y-2">
@@ -232,9 +272,17 @@ export const Inventory: React.FC = () => {
             ))}
           </section>
         </section>
+        <MaterialBar caps={materialCaps} counts={materialCounts} />
         <section className="grid grid-cols-4 gap-2">
           {inventoryItems.map((item, index) => (
-            <InventorySlot key={index} index={index} item={item} isDraggingActive={activeItem !== null} />
+            <InventorySlot
+              key={index}
+              index={index}
+              item={item}
+              isDraggingActive={activeItem !== null}
+              materialCaps={materialCaps}
+              materialCounts={materialCounts}
+            />
           ))}
         </section>
 
