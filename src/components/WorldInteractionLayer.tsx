@@ -296,6 +296,54 @@ export const WorldInteractionLayer: React.FC = () => {
     };
   }, []);
 
+  // Among all gameObjects whose rendered hitbox contains the cursor, pick the one
+  // whose center is closest to the cursor. This prevents the DOM-stacking-order
+  // determining which overlapping target gets the hover/click.
+  const pickBestObject = useCallback((clientX: number, clientY: number) => {
+    const section = sectionRef.current;
+    if (!section) return null;
+    const bounds = section.getBoundingClientRect();
+    const worldX = (clientX - bounds.left) * (1920 / bounds.width);
+    const worldY = (clientY - bounds.top) * (1080 / bounds.height);
+
+    // 2vw click target for jobSpaces — convert to world units using the section scale.
+    const jsHalfW = (0.02 * window.innerWidth) * (1920 / bounds.width) / 2;
+    const jsHalfH = (0.02 * window.innerWidth) * (1080 / bounds.height) / 2;
+
+    let best: typeof gameObjects[number] | null = null;
+    let bestDistSq = Infinity;
+    for (const obj of gameObjects) {
+      if (!obj.hitbox) continue;
+      let left: number, top: number, width: number, height: number, cx: number, cy: number;
+      if (obj.type === "jobSpace") {
+        cx = obj.hitbox.x;
+        cy = obj.hitbox.y;
+        width = jsHalfW * 2;
+        height = jsHalfH * 2;
+        left = cx - jsHalfW;
+        top = cy - jsHalfH;
+      } else {
+        const xOff = obj.hitbox.xOffsetRatio ?? 0;
+        const yOff = obj.hitbox.yOffsetRatio ?? 0;
+        width = obj.hitbox.width;
+        height = obj.hitbox.height;
+        left = obj.hitbox.x - width * xOff;
+        top = obj.hitbox.y - height * yOff;
+        cx = left + width / 2;
+        cy = top + height / 2;
+      }
+      if (worldX < left || worldX > left + width || worldY < top || worldY > top + height) continue;
+      const dx = worldX - cx;
+      const dy = worldY - cy;
+      const distSq = dx * dx + dy * dy;
+      if (distSq < bestDistSq) {
+        bestDistSq = distSq;
+        best = obj;
+      }
+    }
+    return best;
+  }, [gameObjects]);
+
   // Track mouse and handle aim cast via mouseup when aiming
   useEffect(() => {
     if (!isAiming) return;
@@ -344,28 +392,51 @@ export const WorldInteractionLayer: React.FC = () => {
         return;
       }
 
+      const best = pickBestObject(e.clientX, e.clientY);
+      if (best) {
+        logger.debug(TAG, `Game object clicked: `, { obj: best });
+        if (best.type === "enemy") setTargetEnemy(best.id);
+        else if (best.type === "npc") setTargetNpc(best.npcId);
+        else if (best.type === "jobSpace") setTargetJobSpace(best.id);
+        return;
+      }
+
       const bounds = section.getBoundingClientRect();
-
-      // Raw coordinates for screen display (marker position)
-      const rawX = e.clientX - bounds.left;
-      const rawY = e.clientY - bounds.top;
-
-      // Scaled coordinates for backend (1920x1080)
-      const scaleX = 1920 / bounds.width;
-      const scaleY = 1080 / bounds.height;
-      const scaledX = rawX * scaleX;
-      const scaledY = rawY * scaleY;
+      const scaledX = (e.clientX - bounds.left) * (1920 / bounds.width);
+      const scaledY = (e.clientY - bounds.top) * (1080 / bounds.height);
 
       logger.debug(
         TAG,
-        `Player move requested: x=${Math.round(scaledX)}, y=${Math.round(
-          scaledY
-        )}`
+        `Player move requested: x=${Math.round(scaledX)}, y=${Math.round(scaledY)}`
       );
       movePlayer(scaledX, scaledY);
     },
-    [movePlayer, isAiming]
+    [movePlayer, isAiming, pickBestObject, setTargetEnemy, setTargetNpc, setTargetJobSpace]
   );
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const best = pickBestObject(e.clientX, e.clientY);
+      setHoveredId((prev) => (prev === (best?.id ?? null) ? prev : best?.id ?? null));
+    },
+    [pickBestObject]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    setHoveredId(null);
+  }, []);
+
+  const hoveredObj = useMemo(
+    () => gameObjects.find((o) => o.id === hoveredId) ?? null,
+    [gameObjects, hoveredId]
+  );
+  const sectionCursor = isAiming
+    ? "crosshair"
+    : hoveredObj?.type === "enemy"
+      ? "crosshair"
+      : hoveredObj
+        ? "pointer"
+        : "default";
 
   // Compute aim indicator position and properties
   const aimIndicator = useMemo(() => {
@@ -453,55 +524,32 @@ export const WorldInteractionLayer: React.FC = () => {
     <section
       ref={sectionRef}
       onClick={handleClick}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       className="size-full bg-cover bg-center bg-no-repeat relative"
-      style={isAiming ? { cursor: "crosshair" } : {}}
+      style={{ cursor: sectionCursor }}
     >
       <PathOverlay />
 
       {gameObjects.filter((obj) => obj.hitbox).map((obj) => {
-        let metadata = null;
         let displayName: string | null = null;
         if (obj.type === "npc") {
           const npc = metadataService.getNpcSync(obj.npcId);
           displayName = npc?.name ?? null;
-          metadata = `${npc ? npc.name + " (NPC)" : "Unknown NPC, npcId is: " + obj.npcId
-            }`;
         } else if (obj.type === "enemy") {
           const enemy = metadataService.getEnemySync(obj.enemyId);
           displayName = enemy?.name ?? null;
-          metadata = `${enemy
-            ? enemy.name + " (Enemy)"
-            : "Unknown Enemy, enemyId is: " + obj.enemyId
-            }`;
         } else if (obj.type === "jobSpace") {
           displayName = JOB_SPACE_LABELS[obj.jobSpaceType] ?? obj.jobSpaceType;
-          metadata = `${obj.jobSpaceType} (JobSpace ${obj.id})`;
         }
 
         const isHovered = hoveredId === obj.id;
         const showTooltip = isHovered && displayName;
 
-        const cursorClass =
-          obj.type === "enemy" ? "cursor-crosshair" : "cursor-pointer";
-
         return (
           <div
             key={obj.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              logger.debug(TAG, `Game object clicked: `, { obj, metadata });
-
-              if (obj.type === "enemy") {
-                setTargetEnemy(obj.id);
-              } else if (obj.type === "npc") {
-                setTargetNpc(obj.npcId);
-              } else if (obj.type === "jobSpace") {
-                setTargetJobSpace(obj.id);
-              }
-            }}
-            onMouseEnter={() => setHoveredId(obj.id)}
-            onMouseLeave={() => setHoveredId(null)}
-            className={`absolute pointer-events-auto ${cursorClass} ${DEBUG ? "hover:bg-white/20 border border-white/30" : ""} ${!obj.id ? "bg-red-500" : ""}`}
+            className={`absolute pointer-events-none ${DEBUG ? "border border-white/30" : ""} ${!obj.id ? "bg-red-500" : ""}`}
             style={obj.type === "jobSpace" ? {
               left: `${(obj.hitbox.x / 1920) * 100}%`,
               top: `${(obj.hitbox.y / 1080) * 100}%`,

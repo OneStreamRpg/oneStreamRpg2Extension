@@ -31,6 +31,8 @@ export const NpcUpgrade: React.FC<{ data: NpcUpgradeData }> = ({ data }) => {
 
   const requirements = data.upgradeRequirements ?? [];
   const nextDescription = data.upgradeDescription?.trim();
+  const dependencies = data.dependencies ?? [];
+  const locked = data.dependenciesMet === false;
 
   return (
     <div className="flex flex-col gap-3 min-w-64 p-2">
@@ -50,12 +52,43 @@ export const NpcUpgrade: React.FC<{ data: NpcUpgradeData }> = ({ data }) => {
         </p>
       )}
 
+      {dependencies.length > 0 && (
+        <div
+          className="flex flex-col gap-1 px-2 py-2 rounded"
+          style={{
+            background: "rgba(0,0,0,0.3)",
+            border: `1px solid ${locked ? "#9a3a3a" : "rgba(74,154,74,0.4)"}`,
+          }}
+        >
+          <p
+            className="text-xs font-semibold"
+            style={{ color: locked ? "#f0a0a0" : "#a0d0a0" }}
+          >
+            {locked ? "Locked — requires:" : "Requirements met:"}
+          </p>
+          {dependencies.map((dep) => (
+            <div
+              key={dep.npcId}
+              className="flex justify-between items-center text-xs"
+              style={{ color: dep.met ? "#4a9a4a" : "#f0a0a0" }}
+            >
+              <span>
+                {dep.met ? "✓" : "✗"} {dep.name} — Lv.{dep.requiredLevel}
+              </span>
+              <span className="text-gray-400">
+                (you have Lv.{dep.currentLevel})
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="flex flex-col gap-3">
         {requirements.map((req) => {
           const deposited = data.depositedAmounts[req.itemId] ?? 0;
           const remaining = req.quantity - deposited;
           const playerHas = getPlayerQty(req.itemId);
-          const maxDeposit = Math.min(remaining, playerHas);
+          const maxDeposit = locked ? 0 : Math.min(remaining, playerHas);
           const qty = quantities[req.itemId] ?? Math.min(1, maxDeposit);
           const pct = Math.min(100, (deposited / req.quantity) * 100);
 

@@ -223,6 +223,14 @@ export interface CancelQuestData {
   message?: string;
 }
 
+export interface NpcUpgradeDependency {
+  npcId: string;
+  name: string;
+  requiredLevel: number;
+  currentLevel: number;
+  met: boolean;
+}
+
 export interface NpcUpgradeData {
   type: "npcUpgrade";
   npcId: string;
@@ -232,6 +240,8 @@ export interface NpcUpgradeData {
   depositedAmounts: Record<string, number>;
   upgradeRequirements?: { itemId: string; quantity: number }[];
   upgradeDescription?: string;
+  dependencies?: NpcUpgradeDependency[];
+  dependenciesMet?: boolean;
 }
 
 export interface NpcDepositData {
@@ -244,6 +254,8 @@ export interface NpcDepositData {
   depositedAmounts: Record<string, number>;
   upgradeRequirements?: { itemId: string; quantity: number }[];
   upgradeDescription?: string;
+  dependencies?: NpcUpgradeDependency[];
+  dependenciesMet?: boolean;
 }
 
 // Union type for all interaction data

@@ -186,6 +186,8 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
               // On upgraded=true the description refers to the level just reached
               // (shown in the toast below), so don't carry it into the panel state.
               upgradeDescription: d.upgraded ? undefined : d.upgradeDescription,
+              dependencies: d.dependencies,
+              dependenciesMet: d.dependenciesMet,
             });
           }
           if (d.upgraded) {
