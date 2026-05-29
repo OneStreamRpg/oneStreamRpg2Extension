@@ -231,6 +231,7 @@ export interface NpcUpgradeData {
   maxLevel: boolean;
   depositedAmounts: Record<string, number>;
   upgradeRequirements?: { itemId: string; quantity: number }[];
+  upgradeDescription?: string;
 }
 
 export interface NpcDepositData {
@@ -242,6 +243,7 @@ export interface NpcDepositData {
   newLevel: number;
   depositedAmounts: Record<string, number>;
   upgradeRequirements?: { itemId: string; quantity: number }[];
+  upgradeDescription?: string;
 }
 
 // Union type for all interaction data

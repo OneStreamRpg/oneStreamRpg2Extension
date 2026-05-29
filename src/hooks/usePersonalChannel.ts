@@ -4,6 +4,7 @@ import { logger } from "../services/Logger";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useNpcStore } from "../store/useNpcStore";
 import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
+import { usePlayerStore } from "../store/usePlayerStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
 import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
 import { InteractData, NpcDepositData, NpcUpgradeData } from "../types/npcInteraction";
@@ -107,10 +108,22 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
           usePathOverlayStore.getState().setPath(path, data.data?.targetType);
         }
         const targetType = data.data?.targetType as string | undefined;
-        const label = targetType === "enemy" ? "Attacking..." : targetType === "npc" ? "Talking..." : "Moving...";
+        const label =
+          targetType === "enemy" ? "Attacking..."
+          : targetType === "npc" ? "Talking..."
+          : targetType === "jobSpace" ? "Farming..."
+          : "Moving...";
         const delay = getStreamSyncDelay();
         console.log("[SyncBar] moveStart received, delay=", delay, { targetType, label });
         useSyncBarStore.getState().show(label, delay);
+        return;
+      }
+
+      if (data.event === "jobSpaceError") {
+        const reason = data.data?.reason as string | undefined;
+        if (reason) {
+          useUIStore.getState().setWorldToast(reason, true);
+        }
         return;
       }
 
@@ -170,10 +183,20 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
               maxLevel: !d.upgradeRequirements,
               depositedAmounts: d.depositedAmounts,
               upgradeRequirements: d.upgradeRequirements,
+              // On upgraded=true the description refers to the level just reached
+              // (shown in the toast below), so don't carry it into the panel state.
+              upgradeDescription: d.upgraded ? undefined : d.upgradeDescription,
             });
           }
           if (d.upgraded) {
-            useNpcStore.getState().setToast(`Upgraded to level ${d.newLevel}!`);
+            const desc = d.upgradeDescription?.trim();
+            useNpcStore
+              .getState()
+              .setToast(
+                desc
+                  ? `Upgraded to level ${d.newLevel}! ${desc}`
+                  : `Upgraded to level ${d.newLevel}!`
+              );
           } else {
             useNpcStore.getState().setToast(d.message);
           }
@@ -248,14 +271,21 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
 
     // Listen for player movement deltas (~20Hz) — buffered by stream delay
     // May also carry ability cooldown updates (e.g. auto-attack passive shaving CD)
-    const handlePlayerDelta = (data: { delta: PlayerStateDelta & { remainingPath?: Waypoint[] }; timestamp: number }) => {
-      const path = data.delta?.remainingPath;
+    const handlePlayerDelta = (data: { delta: any; timestamp: number }) => {
+      const delta = data.delta ?? {};
+      const path = delta.remainingPath as Waypoint[] | undefined;
+      const applyAt = Date.now() + getStreamSyncDelay();
+
       if (path) {
-        const applyAt = Date.now() + getStreamSyncDelay();
         usePathOverlayStore.getState().enqueueDelta(path, applyAt);
       }
-      if (data.delta?.abilities !== undefined) {
-        applyDelta({ abilities: data.delta.abilities });
+      if (delta.abilities !== undefined) {
+        applyDelta({ abilities: delta.abilities });
+      }
+
+      const { remainingPath: _rp, abilities: _ab, ...playerKeys } = delta;
+      if (Object.keys(playerKeys).length > 0) {
+        usePlayerStore.getState().enqueueDelta(playerKeys, applyAt);
       }
     };
 

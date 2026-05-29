@@ -30,11 +30,25 @@ export const NpcUpgrade: React.FC<{ data: NpcUpgradeData }> = ({ data }) => {
   }
 
   const requirements = data.upgradeRequirements ?? [];
+  const nextDescription = data.upgradeDescription?.trim();
 
   return (
     <div className="flex flex-col gap-3 min-w-64 p-2">
       <h2 className="text-lg font-bold text-center">{data.name}</h2>
       <p className="text-sm text-center text-gray-400">Level {data.level}</p>
+
+      {nextDescription && (
+        <p
+          className="text-xs px-2 py-1 rounded"
+          style={{
+            background: "rgba(0,0,0,0.3)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            color: "#a0d0ff",
+          }}
+        >
+          <span className="font-semibold">Next level:</span> {nextDescription}
+        </p>
+      )}
 
       <div className="flex flex-col gap-3">
         {requirements.map((req) => {

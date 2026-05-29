@@ -207,6 +207,16 @@ export function usePersonalChannelActions(socket: Socket | null) {
     );
   }, [sendAction])
 
+  const setTargetJobSpace = useCallback((id: string) => {
+    sendAction(
+      "setTargetJobSpace",
+      { id } as { id: string },
+      (state) => {
+        return state;
+      }
+    );
+  }, [sendAction])
+
 
   /**
    * Equip an ability to hotbar (server auto-detects slot from ability's slotType)
@@ -331,6 +341,7 @@ export function usePersonalChannelActions(socket: Socket | null) {
     movePlayer,
     castAbility,
     setTargetEnemy,
+    setTargetJobSpace,
     getQuests,
     cancelQuest,
     groupInvite,

@@ -5,20 +5,20 @@ import type { GameObject } from "../../types/gameState";
 const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23555'/%3E%3Ctext x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' fill='%23ccc' font-size='16'%3E%3F%3C/text%3E%3C/svg%3E";
 
 const BORDER_COLORS: Record<string, string> = {
-  player: "#4ade80",
   npc: "#c8a020",
   enemy: "#e05050",
+  jobSpace: "#78dc78",
 };
 
 function getEntityImageUrl(obj: GameObject): string {
-  if (obj.type === "player") {
-    return "https://cdn.onestreamrpg.com/images/player/player.png";
-  }
   if (obj.type === "npc") {
     return `https://cdn.onestreamrpg.com/images/npc/${obj.npcId}.png`;
   }
   if (obj.type === "enemy") {
     return `https://cdn.onestreamrpg.com/images/enemies/${obj.enemyId}.png`;
+  }
+  if (obj.type === "jobSpace") {
+    return `${import.meta.env.BASE_URL}media/img/icons/${obj.jobSpaceType.toLowerCase()}.png`;
   }
   return PLACEHOLDER_IMG;
 }
@@ -30,28 +30,26 @@ function getEntityDisplayName(obj: GameObject): string | null {
   if (obj.type === "enemy") {
     return metadataService.getEnemySync(obj.enemyId)?.name ?? obj.enemyId;
   }
-  if (obj.type === "player") {
-    return obj.username;
+  if (obj.type === "jobSpace") {
+    return obj.jobSpaceType;
   }
   return null;
 }
 
 interface PanelEntityCircleProps {
   obj: GameObject;
-  isMe: boolean;
   hasQuest: boolean;
   onClickEnemy: (id: string) => void;
   onClickNpc: (npcId: string) => void;
-  syncBar?: React.ReactNode;
+  onClickJobSpace: (id: string) => void;
 }
 
 export const PanelEntityCircle: React.FC<PanelEntityCircleProps> = ({
   obj,
-  isMe,
   hasQuest,
   onClickEnemy,
   onClickNpc,
-  syncBar,
+  onClickJobSpace,
 }) => {
   const [imgError, setImgError] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -70,19 +68,17 @@ export const PanelEntityCircle: React.FC<PanelEntityCircleProps> = ({
         transform: "translate(-50%, -50%)",
         width: "clamp(24px, 4vw, 40px)",
         height: "clamp(24px, 4vw, 40px)",
-        zIndex: isMe ? 10 : obj.type === "player" ? 5 : 1,
+        zIndex: 1,
       }}
       onClick={(e) => {
         e.stopPropagation();
         if (obj.type === "enemy") onClickEnemy(obj.id);
         else if (obj.type === "npc") onClickNpc(obj.npcId);
+        else if (obj.type === "jobSpace") onClickJobSpace(obj.id);
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Sync bar for own player */}
-      {isMe && syncBar}
-
       {/* Quest indicator */}
       {hasQuest && (
         <img
@@ -104,7 +100,7 @@ export const PanelEntityCircle: React.FC<PanelEntityCircleProps> = ({
         className="w-full h-full rounded-full overflow-hidden"
         style={{
           border: `2px solid ${borderColor}`,
-          boxShadow: isMe ? `0 0 6px ${borderColor}` : "0 0 3px rgba(0,0,0,0.8)",
+          boxShadow: "0 0 3px rgba(0,0,0,0.8)",
         }}
       >
         {imgError ? (
@@ -123,7 +119,7 @@ export const PanelEntityCircle: React.FC<PanelEntityCircleProps> = ({
       </div>
 
       {/* Tooltip on hover */}
-      {hovered && displayName && obj.type !== "player" && (
+      {hovered && displayName && (
         <div
           className="absolute pointer-events-none"
           style={{
@@ -133,7 +129,7 @@ export const PanelEntityCircle: React.FC<PanelEntityCircleProps> = ({
             marginBottom: "4px",
             whiteSpace: "nowrap",
             background: "rgba(0,0,0,0.85)",
-            color: obj.type === "npc" ? "#c8a020" : "#e05050",
+            color: obj.type === "npc" ? "#c8a020" : obj.type === "jobSpace" ? "#78dc78" : "#e05050",
             padding: "2px 6px",
             borderRadius: "4px",
             fontSize: "10px",

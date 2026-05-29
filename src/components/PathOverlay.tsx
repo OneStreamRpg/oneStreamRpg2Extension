@@ -4,6 +4,7 @@ import { usePathOverlayStore } from "../store/usePathOverlayStore";
 const PATH_COLORS: Record<string, string> = {
   enemy: "rgba(255, 60, 60, 0.85)",
   npc: "rgba(255, 220, 50, 0.85)",
+  jobSpace: "rgba(120, 220, 120, 0.85)",
 };
 
 export const PathOverlay: React.FC = () => {

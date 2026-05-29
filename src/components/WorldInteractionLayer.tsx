@@ -8,8 +8,56 @@ import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
 import { useAimStore } from "../store/useAimStore";
 import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
+import { usePlayerStore } from "../store/usePlayerStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
+import { useUIStore } from "../store/useUIStore";
+import { JobSpaceType } from "../types/gameState";
 import { PathOverlay } from "./PathOverlay";
+
+const JOB_SPACE_ICONS: Record<JobSpaceType, string> = {
+  Lumber: "tree",
+  Miner: "rock",
+  Fisher: "pond",
+};
+
+const JOB_SPACE_LABELS: Record<JobSpaceType, string> = {
+  Lumber: "Chop",
+  Miner: "Mine",
+  Fisher: "Fish",
+};
+
+const WorldToast: React.FC = () => {
+  const toast = useUIStore((state) => state.worldToast);
+  const setWorldToast = useUIStore((state) => state.setWorldToast);
+  const [visible, setVisible] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    setVisible(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setVisible(false);
+      setWorldToast(null);
+    }, 3000);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [toast?.key, toast, setWorldToast]);
+
+  if (!toast || !visible) return null;
+
+  return (
+    <div
+      className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 text-sm text-white rounded pointer-events-none z-50 whitespace-nowrap"
+      style={toast.isError
+        ? { backgroundColor: "#5a1a1a", border: "1px solid #c04040" }
+        : { backgroundColor: "#2a5a2a", border: "1px solid #4a9a4a" }}
+    >
+      {toast.message}
+    </div>
+  );
+};
 
 const TAG = "WorldInteraction";
 const DEBUG = import.meta.env.VITE_DEBUG_WORLD_INTERACTION === "true";
@@ -31,11 +79,12 @@ const PlayerSyncBar: React.FC = () => {
     <div
       className="absolute pointer-events-none"
       style={{
-        bottom: "190%",
+        bottom: "225%",
         left: "50%",
         transform: "translateX(-50%)",
         width: "140%",
         minWidth: "60px",
+        marginBottom: "4px",
       }}
     >
       <div
@@ -76,6 +125,42 @@ const PlayerSyncBar: React.FC = () => {
   );
 };
 
+const PlayerAnchor: React.FC = () => {
+  const hitbox = usePlayerStore((state) => state.player?.hitbox);
+  const processQueue = usePlayerStore((state) => state.processQueue);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const tick = () => {
+      processQueue(Date.now());
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, [processQueue]);
+
+  if (!hitbox) return null;
+
+  const xOffsetRatio = hitbox.xOffsetRatio ?? 0;
+  const yOffsetRatio = hitbox.yOffsetRatio ?? 0;
+
+  return (
+    <div
+      className="absolute pointer-events-none"
+      style={{
+        left: `${((hitbox.x - hitbox.width * xOffsetRatio) / 1920) * 100}%`,
+        top: `${((hitbox.y - hitbox.height * yOffsetRatio) / 1080) * 100}%`,
+        width: `${(hitbox.width / 1920) * 100}%`,
+        height: `${(hitbox.height / 1080) * 100}%`,
+      }}
+    >
+      <PlayerSyncBar />
+    </div>
+  );
+};
+
 import { CastIndicatorEntry } from "../store/useCastIndicatorStore";
 
 const CastIndicatorItem: React.FC<{
@@ -98,7 +183,7 @@ const CastIndicatorItem: React.FC<{
   const topPct = (aimY / 1080) * 100;
 
   if (abilityMeta.type === "skillshot" || abilityMeta.type === "slash") {
-    const playerPos = getPlayerWorldPos(gameState, myUsername);
+    const playerPos = getPlayerWorldPos();
     const angle = playerPos
       ? Math.atan2(aimX - playerPos.x, -(aimY - playerPos.y))
       : 0;
@@ -195,7 +280,7 @@ export const WorldInteractionLayer: React.FC = () => {
     () => new Set(availableQuests.map((q) => q.npcId)),
     [availableQuests]
   );
-  const { movePlayer, setTargetEnemy, castAbility } = usePersonalChannelActions(socket);
+  const { movePlayer, setTargetEnemy, setTargetJobSpace, castAbility } = usePersonalChannelActions(socket);
   const { setTargetNpc } = useNpcActions(socket);
 
   const { isAiming, slotType, abilityType, range, effectSize, stopAim } = useAimStore();
@@ -226,7 +311,7 @@ export const WorldInteractionLayer: React.FC = () => {
       let { x: aimX, y: aimY } = clientToWorld(e.clientX, e.clientY);
 
       if (range !== null) {
-        const playerPos = getPlayerWorldPos(gameState, myUsername);
+        const playerPos = getPlayerWorldPos();
         if (playerPos) {
           const dx = aimX - playerPos.x;
           const dy = aimY - playerPos.y;
@@ -295,7 +380,7 @@ export const WorldInteractionLayer: React.FC = () => {
     };
 
     if (abilityType === "skillshot" || abilityType === "slash") {
-      const playerPos = getPlayerWorldPos(gameState, myUsername);
+      const playerPos = getPlayerWorldPos();
       let worldX = mouse.x;
       let worldY = mouse.y;
       let angle = 0;
@@ -319,7 +404,7 @@ export const WorldInteractionLayer: React.FC = () => {
       let worldY = mouse.y;
 
       if (range !== null) {
-        const playerPos = getPlayerWorldPos(gameState, myUsername);
+        const playerPos = getPlayerWorldPos();
         if (playerPos) {
           const dx = mouse.x - playerPos.x;
           const dy = mouse.y - playerPos.y;
@@ -343,7 +428,7 @@ export const WorldInteractionLayer: React.FC = () => {
       let worldY = mouse.y;
 
       if (range !== null) {
-        const playerPos = getPlayerWorldPos(gameState, myUsername);
+        const playerPos = getPlayerWorldPos();
         if (playerPos) {
           const dx = mouse.x - playerPos.x;
           const dy = mouse.y - playerPos.y;
@@ -388,10 +473,16 @@ export const WorldInteractionLayer: React.FC = () => {
             ? enemy.name + " (Enemy)"
             : "Unknown Enemy, enemyId is: " + obj.enemyId
             }`;
+        } else if (obj.type === "jobSpace") {
+          displayName = JOB_SPACE_LABELS[obj.jobSpaceType] ?? obj.jobSpaceType;
+          metadata = `${obj.jobSpaceType} (JobSpace ${obj.id})`;
         }
 
         const isHovered = hoveredId === obj.id;
-        const showTooltip = isHovered && displayName && obj.type !== "player";
+        const showTooltip = isHovered && displayName;
+
+        const cursorClass =
+          obj.type === "enemy" ? "cursor-crosshair" : "cursor-pointer";
 
         return (
           <div
@@ -404,18 +495,21 @@ export const WorldInteractionLayer: React.FC = () => {
                 setTargetEnemy(obj.id);
               } else if (obj.type === "npc") {
                 setTargetNpc(obj.npcId);
+              } else if (obj.type === "jobSpace") {
+                setTargetJobSpace(obj.id);
               }
             }}
-            onMouseEnter={() => obj.type !== "player" && setHoveredId(obj.id)}
+            onMouseEnter={() => setHoveredId(obj.id)}
             onMouseLeave={() => setHoveredId(null)}
-            className={`absolute pointer-events-auto ${obj.type === "enemy"
-              ? "cursor-crosshair"
-              : obj.type === "npc"
-                ? "cursor-pointer"
-                : "cursor-pointer"
-              } ${DEBUG ? ("hover:bg-white/20 border border-white/30" + (obj.type === "player" ? " bg-green-500/20" : "")) : ""} ${!obj.id ? "bg-red-500" : ""
-              }`}
-            style={{
+            className={`absolute pointer-events-auto ${cursorClass} ${DEBUG ? "hover:bg-white/20 border border-white/30" : ""} ${!obj.id ? "bg-red-500" : ""}`}
+            style={obj.type === "jobSpace" ? {
+              left: `${(obj.hitbox.x / 1920) * 100}%`,
+              top: `${(obj.hitbox.y / 1080) * 100}%`,
+              width: "2vw",
+              height: "2vw",
+              transform: "translate(-50%, -50%)",
+              zIndex: 5,
+            } : {
               left: `${((obj.hitbox.x - obj.hitbox.width * obj.hitbox.xOffsetRatio) /
                 1920) *
                 100
@@ -428,7 +522,20 @@ export const WorldInteractionLayer: React.FC = () => {
               height: `${(obj.hitbox.height / 1080) * 100}%`,
             }}
           >
-            {obj.type === "player" && obj.username === myUsername && <PlayerSyncBar />}
+            {obj.type === "jobSpace" && (
+              <img
+                src={`${import.meta.env.BASE_URL}media/img/icons/${JOB_SPACE_ICONS[obj.jobSpaceType]}.png`}
+                className="absolute pointer-events-none"
+                style={{
+                  bottom: "100%",
+                  left: "50%",
+                  transform: "translateX(-50%) translateY(-10%)",
+                  width: "1.8vw",
+                  height: "auto",
+                }}
+                alt=""
+              />
+            )}
             {obj.type === "npc" && questNpcIds.has(obj.npcId) && (
               <img
                 src={`${import.meta.env.BASE_URL}media/img/icons/questionmark.png`}
@@ -453,7 +560,7 @@ export const WorldInteractionLayer: React.FC = () => {
                   marginBottom: "4px",
                   whiteSpace: "nowrap",
                   background: "rgba(0,0,0,0.75)",
-                  color: obj.type === "npc" ? "#c8a020" : "#e05050",
+                  color: obj.type === "npc" ? "#c8a020" : obj.type === "jobSpace" ? "#78dc78" : "#e05050",
                   padding: "2px 8px",
                   borderRadius: "4px",
                   fontSize: "12px",
@@ -519,17 +626,14 @@ export const WorldInteractionLayer: React.FC = () => {
         />
       )}
       <CastIndicatorOverlay gameState={gameState} myUsername={myUsername} />
+      <PlayerAnchor />
+      <WorldToast />
     </section>
   );
 };
 
-function getPlayerWorldPos(
-  gameState: any,
-  myUsername: string | null
-): { x: number; y: number } | null {
-  if (!gameState || !myUsername) return null;
-  const players: any[] = gameState.players ?? [];
-  const me = players.find((p) => p.username === myUsername);
-  if (!me?.hitbox) return null;
-  return { x: me.hitbox.x, y: me.hitbox.y };
+function getPlayerWorldPos(): { x: number; y: number } | null {
+  const hitbox = usePlayerStore.getState().player?.hitbox;
+  if (!hitbox) return null;
+  return { x: hitbox.x, y: hitbox.y };
 }

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type PathTargetType = "enemy" | "npc" | undefined;
+export type PathTargetType = "enemy" | "npc" | "jobSpace" | undefined;
 
 export interface Waypoint {
   x: number;

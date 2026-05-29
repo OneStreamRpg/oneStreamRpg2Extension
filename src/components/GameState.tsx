@@ -8,6 +8,7 @@ import { useAimStore } from "../store/useAimStore";
 import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
 import { useNpcStore } from "../store/useNpcStore";
 import { usePathOverlayStore } from "../store/usePathOverlayStore";
+import { usePlayerStore } from "../store/usePlayerStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
 import { ActionAcknowledgment } from "../types/personalChannel";
 
@@ -49,21 +50,6 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
 
   const streamDelayRef = useRef(0);
   const activeTimeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  const updatePlayersState = (
-    players: Array<{ id: string;[key: string]: any }>,
-    previousPlayers: Array<{ id: string;[key: string]: any }>
-  ) => {
-    const playerMap = new Map(previousPlayers.map((p) => [p.id, p]));
-    players.forEach((playerUpdate) => {
-      const existingPlayer = playerMap.get(playerUpdate.id);
-      if (existingPlayer) {
-        Object.assign(existingPlayer, playerUpdate);
-      }
-    });
-    logger.debug(TAG, "Updated players", Array.from(playerMap.values()));
-    return Array.from(playerMap.values());
-  };
 
   const updateEnemiesState = (
     enemies: Array<{ id: string;[key: string]: any }>,
@@ -140,11 +126,12 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       logger.warn(TAG, "Disconnected from socket.io server");
       setIsConnected(false);
       setinGame(false);
-      setGameState({ players: [], enemies: [], npcs: [] });
+      setGameState({ enemies: [], npcs: [], jobSpaces: [] });
       useAimStore.getState().stopAim();
       useCastIndicatorStore.getState().clearAll();
       useSyncBarStore.getState().hide();
       usePathOverlayStore.getState().clearPath();
+      usePlayerStore.getState().clear();
       useNpcStore.getState().closePopup();
     });
 
@@ -188,6 +175,9 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       if (data.gameState) {
         setGameState(data.gameState);
       }
+      if (data.player) {
+        usePlayerStore.getState().setPlayer(data.player);
+      }
     });
 
     socketInstance.on("inGame", (data) => {
@@ -195,7 +185,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       if (data.inGame) {
         setIsDying(false);
         setinGame(data.inGame);
-        const hasState = !!useSocketStore.getState().gameState?.players?.length;
+        const hasState = !!useSocketStore.getState().gameState?.npcs?.length;
         if (!hasState) {
           logger.info(TAG, `Player is now in-game, requesting initial game state...`, { channelId });
           socketInstance.emit("getGameState");
@@ -204,12 +194,14 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         logger.info(TAG, `Player is dying/respawning, waiting for respawn`);
         setIsDying(true);
         setinGame(false);
-        setGameState({ players: [], enemies: [], npcs: [] });
+        setGameState({ enemies: [], npcs: [], jobSpaces: [] });
+        usePlayerStore.getState().clear();
       } else {
         logger.info(TAG, `Player left the game, clearing game state`);
         setIsDying(false);
         setinGame(false);
-        setGameState({ players: [], enemies: [], npcs: [] });
+        setGameState({ enemies: [], npcs: [], jobSpaces: [] });
+        usePlayerStore.getState().clear();
       }
     });
 
@@ -224,7 +216,6 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
             logger.warn(TAG, "No previous game state, skipping delta application");
             return
           };
-          let players = [...(previousState.players || [])];
           let enemies = [...(previousState.enemies || [])];
           let npcs = [...(previousState.npcs || [])];
 
@@ -234,28 +225,26 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
                 case "spawnEnemy":
                   if (command.enemy) enemies.push(command.enemy);
                   break;
-                case "spawnPlayer":
-                  if (command.player) players.push(command.player);
+                case "spawnNpc":
+                  if (command.npc) npcs.push(command.npc);
                   break;
                 case "destroyEnemy":
                   enemies = enemies.filter((e) => e.id !== command.id);
-                  break;
-                case "kickPlayer":
-                  players = players.filter((p) => p.id !== command.id);
                   break;
               }
             });
           }
 
-          players = updatePlayersState(data.delta.players || [], players);
           enemies = updateEnemiesState(data.delta.enemies || [], enemies);
           npcs = updateNpcsState(data.delta.npcs || [], npcs);
 
+          const jobSpaces = data.delta.jobSpaces ?? previousState.jobSpaces ?? [];
+
           setGameState({
             ...previousState,
-            players,
             enemies,
             npcs,
+            jobSpaces,
           });
         }, 500 + streamDelayRef.current * 1000 - pingToStreamer / 2 + (useSocketStore.getState().ping ?? 0) / 2);
 

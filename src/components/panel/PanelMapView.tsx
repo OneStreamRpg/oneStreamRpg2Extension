@@ -5,6 +5,7 @@ import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions
 import { logger } from "../../services/Logger";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
+import { usePlayerStore } from "../../store/usePlayerStore";
 import { useSyncBarStore } from "../../store/useSyncBarStore";
 import { PathOverlay } from "../PathOverlay";
 import { PanelEntityCircle } from "./PanelEntityCircle";
@@ -12,7 +13,7 @@ import { PanelEntityCircle } from "./PanelEntityCircle";
 const TAG = "PanelMapView";
 const EMPTY_QUESTS: { npcId: string }[] = [];
 
-const PlayerSyncBar: React.FC = () => {
+const PanelPlayerSyncBar: React.FC = () => {
   const bar = useSyncBarStore((state) => state.bar);
   const hide = useSyncBarStore((state) => state.hide);
 
@@ -28,11 +29,12 @@ const PlayerSyncBar: React.FC = () => {
     <div
       className="absolute pointer-events-none"
       style={{
-        bottom: "110%",
+        bottom: "225%",
         left: "50%",
         transform: "translateX(-50%)",
         width: "200%",
         minWidth: "40px",
+        marginBottom: "2px",
       }}
     >
       <div
@@ -73,15 +75,36 @@ const PlayerSyncBar: React.FC = () => {
   );
 };
 
+const PanelPlayerAnchor: React.FC = () => {
+  const hitbox = usePlayerStore((state) => state.player?.hitbox);
+  if (!hitbox) return null;
+
+  const centerX = (hitbox.x / 1920) * 100;
+  const centerY = (hitbox.y / 1080) * 100;
+
+  return (
+    <div
+      className="absolute pointer-events-none"
+      style={{
+        left: `${centerX}%`,
+        top: `${centerY}%`,
+        transform: "translate(-50%, -50%)",
+        width: "clamp(24px, 4vw, 40px)",
+        height: "clamp(24px, 4vw, 40px)",
+        zIndex: 10,
+      }}
+    >
+      <PanelPlayerSyncBar />
+    </div>
+  );
+};
+
 export const PanelMapView: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const socket = useSocketStore((state) => state.socket);
   const gameState = useSocketStore((state) => state.gameState);
   const gameObjects = useGameObjects(gameState);
-  const myUsername = usePersonalChannelStore(
-    (state) => state.displayedState?.profile?.username ?? null
-  );
   const availableQuests = usePersonalChannelStore(
     (state) => state.displayedState?.quests?.available ?? EMPTY_QUESTS
   );
@@ -89,7 +112,7 @@ export const PanelMapView: React.FC = () => {
     () => new Set(availableQuests.map((q) => q.npcId)),
     [availableQuests]
   );
-  const { movePlayer, setTargetEnemy } = usePersonalChannelActions(socket);
+  const { movePlayer, setTargetEnemy, setTargetJobSpace } = usePersonalChannelActions(socket);
   const { setTargetNpc } = useNpcActions(socket);
 
   const handleClick = useCallback(
@@ -130,21 +153,21 @@ export const PanelMapView: React.FC = () => {
         <PathOverlay />
 
         {gameObjects.map((obj) => {
-          const isMe = obj.type === "player" && obj.username === myUsername;
           const hasQuest = obj.type === "npc" && questNpcIds.has(obj.npcId);
 
           return (
             <PanelEntityCircle
               key={obj.id}
               obj={obj}
-              isMe={isMe}
               hasQuest={hasQuest}
               onClickEnemy={setTargetEnemy}
               onClickNpc={setTargetNpc}
-              syncBar={isMe ? <PlayerSyncBar /> : undefined}
+              onClickJobSpace={setTargetJobSpace}
             />
           );
         })}
+
+        <PanelPlayerAnchor />
       </div>
     </div>
   );

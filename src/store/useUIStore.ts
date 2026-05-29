@@ -9,6 +9,7 @@ type UIState = {
   profileOpen: boolean;
   groupPanelOpen: boolean;
   groupError: string | null;
+  worldToast: { message: string; key: number; isError?: boolean } | null;
 };
 
 type UIActions = {
@@ -20,6 +21,7 @@ type UIActions = {
   toggleProfile: () => void;
   toggleGroupPanel: () => void;
   setGroupError: (error: string | null) => void;
+  setWorldToast: (message: string | null, isError?: boolean) => void;
 };
 export const useUIStore = create<UIState & UIActions>((set) => ({
   // State
@@ -30,6 +32,7 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
   profileOpen: true,
   groupPanelOpen: false,
   groupError: null,
+  worldToast: null,
 
   // Actions
   setActivePage: (page) => {
@@ -54,4 +57,6 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
     set((state) => ({ groupPanelOpen: !state.groupPanelOpen }));
   },
   setGroupError: (groupError) => set({ groupError }),
+  setWorldToast: (message, isError) =>
+    set(message !== null ? { worldToast: { message, key: Date.now(), isError } } : { worldToast: null }),
 }));

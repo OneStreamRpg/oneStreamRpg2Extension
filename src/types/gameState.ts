@@ -15,11 +15,6 @@ export interface BaseEntity {
   maxHp: number;
 }
 
-export interface Player extends BaseEntity {
-  username: string;
-  type: "player";
-}
-
 export interface Enemy extends BaseEntity {
   enemyId: string;
   name: string;
@@ -33,10 +28,19 @@ export interface NPC extends BaseEntity {
   upgradeLevel?: number;
 }
 
-export type GameObject = Player | Enemy | NPC;
+export type JobSpaceType = "Lumber" | "Miner" | "Fisher";
+
+export interface JobSpace {
+  id: string;
+  hitbox: Hitbox;
+  jobSpaceType: JobSpaceType;
+  type: "jobSpace";
+}
+
+export type GameObject = Enemy | NPC | JobSpace;
 
 export interface GameState {
-  players: any[]; // original API data
   enemies: any[];
   npcs: any[];
+  jobSpaces: any[];
 }

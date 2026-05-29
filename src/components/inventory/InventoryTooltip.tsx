@@ -22,6 +22,12 @@ export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
     ? Math.max(...setData.effects.map((e) => e.piecesRequired))
     : 0;
 
+  const hasDurability =
+    item.durability !== undefined && item.maxDurability !== undefined && item.maxDurability > 0;
+  const durabilityPct = hasDurability ? item.durability! / item.maxDurability! : 1;
+  const durabilityColor =
+    durabilityPct > 0.5 ? "text-green-400" : durabilityPct > 0.25 ? "text-yellow-400" : "text-red-400";
+
   if (!itemData) {
     return (
       <div className="w-80 p-4">
@@ -53,6 +59,14 @@ export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
                 </p>
               ))}
             </>
+          )}
+          {hasDurability && (
+            <p>
+              Durability:{" "}
+              <span className={durabilityColor}>
+                {item.durability} / {item.maxDurability}
+              </span>
+            </p>
           )}
         </section>
       </header>
