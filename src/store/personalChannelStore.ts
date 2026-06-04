@@ -290,6 +290,10 @@ function computeDelta(
   if (delta.group !== undefined) newState.group = delta.group;
   if (delta.pendingGroupInvites !== undefined) newState.pendingGroupInvites = delta.pendingGroupInvites;
   if (delta.outgoingGroupInvites !== undefined) newState.outgoingGroupInvites = delta.outgoingGroupInvites;
+  if (delta.nearbyPlayers !== undefined) newState.nearbyPlayers = delta.nearbyPlayers;
+  if (delta.pendingTradeInvites !== undefined) newState.pendingTradeInvites = delta.pendingTradeInvites;
+  if (delta.outgoingTradeInvites !== undefined) newState.outgoingTradeInvites = delta.outgoingTradeInvites;
+  if (delta.tradeSession !== undefined) newState.tradeSession = delta.tradeSession;
 
   return { newState, newVersions };
 }

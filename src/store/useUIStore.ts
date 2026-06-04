@@ -8,7 +8,9 @@ type UIState = {
   questPanelOpen: boolean;
   profileOpen: boolean;
   groupPanelOpen: boolean;
+  tradePanelOpen: boolean;
   groupError: string | null;
+  tradeError: string | null;
   worldToast: { message: string; key: number; isError?: boolean } | null;
 };
 
@@ -20,7 +22,9 @@ type UIActions = {
   toggleQuestPanel: () => void;
   toggleProfile: () => void;
   toggleGroupPanel: () => void;
+  toggleTradePanel: () => void;
   setGroupError: (error: string | null) => void;
+  setTradeError: (error: string | null) => void;
   setWorldToast: (message: string | null, isError?: boolean) => void;
 };
 export const useUIStore = create<UIState & UIActions>((set) => ({
@@ -31,7 +35,9 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
   questPanelOpen: true,
   profileOpen: true,
   groupPanelOpen: false,
+  tradePanelOpen: false,
   groupError: null,
+  tradeError: null,
   worldToast: null,
 
   // Actions
@@ -56,7 +62,11 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
   toggleGroupPanel: () => {
     set((state) => ({ groupPanelOpen: !state.groupPanelOpen }));
   },
+  toggleTradePanel: () => {
+    set((state) => ({ tradePanelOpen: !state.tradePanelOpen }));
+  },
   setGroupError: (groupError) => set({ groupError }),
+  setTradeError: (tradeError) => set({ tradeError }),
   setWorldToast: (message, isError) =>
     set(message !== null ? { worldToast: { message, key: Date.now(), isError } } : { worldToast: null }),
 }));

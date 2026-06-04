@@ -33,6 +33,10 @@ export interface PlayerPersonalState {
   pendingGroupInvites?: GroupInvite[];
   outgoingGroupInvites?: OutgoingGroupInvite[];
   craftRecipes: NpcCraftRecipes[];
+  nearbyPlayers?: NearbyPlayer[];
+  pendingTradeInvites?: TradeInvite[];
+  outgoingTradeInvites?: OutgoingTradeInvite[];
+  tradeSession?: TradeSession | null;
 }
 
 export interface StateVersions {
@@ -123,6 +127,10 @@ export interface PlayerStateDelta {
   pendingGroupInvites?: GroupInvite[];
   outgoingGroupInvites?: OutgoingGroupInvite[];
   craftRecipes?: NpcCraftRecipes[];
+  nearbyPlayers?: NearbyPlayer[];
+  pendingTradeInvites?: TradeInvite[];
+  outgoingTradeInvites?: OutgoingTradeInvite[];
+  tradeSession?: TradeSession | null;
 }
 
 export interface PersonalChannelAction {
@@ -190,6 +198,55 @@ export interface GroupInvite {
 export interface OutgoingGroupInvite {
   toTwitchId: string;
   toUsername: string;
+}
+
+// ── Player-to-player trading ──────────────────────────────────────────────
+
+// A player close enough to trade with (drives the invite list).
+export interface NearbyPlayer {
+  twitchId: string;
+  username: string;
+}
+
+// A trade invite this player has received.
+export interface TradeInvite {
+  fromTwitchId: string;
+  fromUsername: string;
+}
+
+// A trade invite this player has sent.
+export interface OutgoingTradeInvite {
+  toTwitchId: string;
+  toUsername: string;
+}
+
+// A serialized item being offered in a trade. `id` is the item instance id and
+// `quantity` is the offered amount (may be a partial stack).
+export interface TradeItem {
+  id: string;
+  itemId: string;
+  quantity: number;
+  tags: string[];
+  durability?: number;
+  scalings?: Record<string, number>;
+}
+
+export interface TradeOffer {
+  items: TradeItem[];
+  gold: number;
+}
+
+// The active trade, from THIS player's point of view. null when not trading.
+export interface TradeSession {
+  sessionId: string;
+  phase: "negotiating" | "confirming";
+  partner: { twitchId: string; username: string };
+  yourOffer: TradeOffer;
+  partnerOffer: TradeOffer;
+  yourReady: boolean;
+  partnerReady: boolean;
+  yourConfirmed: boolean;
+  partnerConfirmed: boolean;
 }
 
 export interface PendingAction {

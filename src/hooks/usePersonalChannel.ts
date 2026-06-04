@@ -139,6 +139,38 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
         return;
       }
 
+      // ── Player-to-player trading (fire-once outcomes) ──────────────────
+      // The inventory/gold and `tradeSession` are updated via delta; these just
+      // surface a human-readable toast.
+      if (data.event === "tradeCompleted") {
+        const partner = data.data?.partnerUsername;
+        useUIStore.getState().setWorldToast(
+          partner ? `Trade with ${partner} completed!` : "Trade completed!"
+        );
+        return;
+      }
+
+      if (data.event === "tradeCancelled") {
+        const reason = data.data?.reason as string | undefined;
+        useUIStore.getState().setWorldToast(reason || "Trade cancelled.", true);
+        return;
+      }
+
+      if (data.event === "tradeDeclined") {
+        const by = data.data?.byUsername;
+        useUIStore.getState().setWorldToast(
+          by ? `${by} declined your trade invite.` : "Trade invite declined.",
+          true
+        );
+        return;
+      }
+
+      if (data.event === "tradeError") {
+        const reason = data.data?.reason as string | undefined;
+        useUIStore.getState().setWorldToast(reason || "Trade failed.", true);
+        return;
+      }
+
     };
 
     // Listen for action acknowledgments
@@ -149,8 +181,12 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
       const toastableFailureTypes = new Set(["buy", "craft", "sell", "tradeItem",
         "stashPut", "stashGet", "stashSwap", "acceptQuest", "confirmAcceptQuest"]);
 
+      const ackType = (data as any).type ?? data.data?.type;
+      const isTradeAck = typeof ackType === "string" && ackType.startsWith("trade");
+
       if (data.success) {
         useUIStore.getState().setGroupError(null);
+        if (isTradeAck) useUIStore.getState().setTradeError(null);
         confirmAction(data.actionId, data.delta);
       } else {
         rollbackAction(data.actionId, data.error);
@@ -163,7 +199,11 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
         } else if (npcIsLoading) {
           useNpcStore.getState().setError(data.error ?? "Something went wrong.");
         }
-        useUIStore.getState().setGroupError(data.error ?? "Something went wrong.");
+        if (isTradeAck) {
+          useUIStore.getState().setTradeError(data.error ?? "Something went wrong.");
+        } else {
+          useUIStore.getState().setGroupError(data.error ?? "Something went wrong.");
+        }
       }
 
       // Route npcDeposit responses: refresh the upgrade popup in-place and show a toast

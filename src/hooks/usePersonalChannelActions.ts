@@ -317,6 +317,64 @@ export function usePersonalChannelActions(socket: Socket | null) {
     [sendAction]
   );
 
+  // ── Player-to-player trading ──────────────────────────────────────────
+  // The backend drives `tradeSession`, invites and nearby lists via deltas, so
+  // these actions optimistically remove the relevant invite where it makes the
+  // UI feel responsive and otherwise pass state through unchanged.
+
+  const tradeRequest = useCallback(
+    (targetTwitchId: string) => {
+      sendAction("tradeRequest", { targetTwitchId }, (s) => s);
+    },
+    [sendAction]
+  );
+
+  const tradeRespond = useCallback(
+    (fromTwitchId: string, accept: boolean) => {
+      sendAction("tradeRespond", { fromTwitchId, accept }, (s) => ({
+        ...s,
+        pendingTradeInvites: (s.pendingTradeInvites ?? []).filter(
+          (inv) => inv.fromTwitchId !== fromTwitchId
+        ),
+      }));
+    },
+    [sendAction]
+  );
+
+  const tradeWithdraw = useCallback(
+    (targetTwitchId: string) => {
+      sendAction("tradeWithdraw", { targetTwitchId }, (s) => ({
+        ...s,
+        outgoingTradeInvites: (s.outgoingTradeInvites ?? []).filter(
+          (inv) => inv.toTwitchId !== targetTwitchId
+        ),
+      }));
+    },
+    [sendAction]
+  );
+
+  const tradeUpdateOffer = useCallback(
+    (items: { instanceId: string; quantity: number }[], gold: number = 0) => {
+      sendAction("tradeUpdateOffer", { items, gold }, (s) => s);
+    },
+    [sendAction]
+  );
+
+  const tradeSetReady = useCallback(
+    (ready: boolean) => {
+      sendAction("tradeSetReady", { ready }, (s) => s);
+    },
+    [sendAction]
+  );
+
+  const tradeConfirm = useCallback(() => {
+    sendAction("tradeConfirm", {}, (s) => s);
+  }, [sendAction]);
+
+  const tradeCancel = useCallback(() => {
+    sendAction("tradeCancel", {}, (s) => s);
+  }, [sendAction]);
+
   /**
    * Request full state sync
    */
@@ -350,5 +408,12 @@ export function usePersonalChannelActions(socket: Socket | null) {
     groupLeave,
     groupKick,
     groupWithdraw,
+    tradeRequest,
+    tradeRespond,
+    tradeWithdraw,
+    tradeUpdateOffer,
+    tradeSetReady,
+    tradeConfirm,
+    tradeCancel,
   };
 }
