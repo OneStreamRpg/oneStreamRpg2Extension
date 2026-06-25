@@ -7,7 +7,7 @@ import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
 import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
-import { InteractData, NpcDepositData, NpcUpgradeData } from "../types/npcInteraction";
+import { GambleData, InteractData, NpcDepositData, NpcUpgradeData } from "../types/npcInteraction";
 import { useUIStore } from "../store/useUIStore";
 import { getStreamSyncDelay } from "../utils/streamSyncDelay";
 import {
@@ -243,6 +243,18 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
             useNpcStore.getState().setToast(d.message);
           }
           useNpcStore.getState().setLoading(false);
+        }
+      }
+
+      // Route gamble outcomes: the inventory delta is applied via confirmAction
+      // above; here we hand the resolved flip to the NpcGamble menu (which drives
+      // the win/lose animation off it) and toast the reason on a rejected wager.
+      if (data.data?.type === "gamble") {
+        const g = data.data as GambleData;
+        useNpcStore.getState().setGambleResult(g);
+        useNpcStore.getState().setLoading(false);
+        if (!g.success) {
+          useNpcStore.getState().setToast(g.message, true);
         }
       }
 

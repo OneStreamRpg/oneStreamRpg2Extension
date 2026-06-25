@@ -5,6 +5,7 @@ import {
   ArenaData,
   CraftListData,
   DialogueData,
+  GambleMenuData,
   InteractData,
   NpcUpgradeData,
   QuestPreviewData,
@@ -24,6 +25,7 @@ import { WindowContainer } from "../ui/WindowContainer";
 import { NpcArena } from "./NpcArena";
 import { NpcCraft } from "./NpcCraft";
 import { NpcDialogue } from "./NpcDialogue";
+import { NpcGamble } from "./NpcGamble";
 import { NpcInteractMenu } from "./NpcInteractMenu";
 import { NpcQuestPreview } from "./NpcQuestPreview";
 import { NpcSell } from "./NpcSell";
@@ -165,6 +167,8 @@ export const NpcPopup: React.FC = () => {
         return <NpcSell data={popupData as SellMenuData} />;
       case "npcUpgrade":
         return <NpcUpgrade data={popupData as NpcUpgradeData} />;
+      case "gambleMenu":
+        return <NpcGamble data={popupData as GambleMenuData} />;
       case "sellMany": {
         const d = popupData as SellManyData;
         return (

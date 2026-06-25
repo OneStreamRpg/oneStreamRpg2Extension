@@ -184,6 +184,15 @@ export function useNpcActions(socket: Socket | null) {
     [sendNpcAction]
   );
 
+  // Wager `quantity` of a material (`itemId`) on a 50/50 flip with the Gambler.
+  // Outcome is server-side RNG, so this stays identity-optimistic — we wait for
+  // the ack to animate win/lose and apply the inventory delta.
+  const gamble = useCallback(
+    (npcId: string, itemId: string, quantity: number) =>
+      sendNpcAction("gamble", { npcId, itemId, quantity }),
+    [sendNpcAction]
+  );
+
   const setTargetNpc = useCallback(
     (npcId: string) => {
       if (!socket || !isReady || !displayedState) {
@@ -235,6 +244,7 @@ export function useNpcActions(socket: Socket | null) {
     stashSwap,
     npcUpgrade,
     npcDeposit,
+    gamble,
     setTargetNpc,
   };
 }

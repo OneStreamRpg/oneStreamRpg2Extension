@@ -13,7 +13,8 @@ export type NpcPopupType =
   | "stash"
   | "questPreview"
   | "sellMenu"
-  | "npcUpgrade";
+  | "npcUpgrade"
+  | "gambleMenu";
 
 // Data response shapes from server ack `data` field
 // Matches actual server responses exactly
@@ -258,6 +259,28 @@ export interface NpcDepositData {
   dependenciesMet?: boolean;
 }
 
+// The "gamble" interact button opens this purely client-side menu — there's no
+// server "gamble list" to fetch (unlike craft/trade/stash). The NpcGamble
+// component reads the player's materials straight from personal state.
+export interface GambleMenuData {
+  type: "gambleMenu";
+  npcId: string;
+}
+
+// Result of a `gamble` action, delivered on the ack `data` field.
+// `success` is whether the wager was accepted/resolved (a server-side coin flip),
+// NOT whether the player won — use `won` for that. A rejected wager (e.g. over
+// cap) comes back with success: false and a reason in `message`.
+export interface GambleData {
+  type: "gamble";
+  success: boolean;
+  won: boolean;
+  message: string;
+  itemId: string;
+  quantity: number;
+  newCount: number;
+}
+
 // Union type for all interaction data
 export type InteractionData =
   | InteractData
@@ -282,4 +305,6 @@ export type InteractionData =
   | CancelQuestData
   | NpcUpgradeData
   | NpcDepositData
+  | GambleMenuData
+  | GambleData
   | { type: string; [key: string]: any };

@@ -77,3 +77,54 @@
 .cast-indicator-reveal-linear {
   animation: castIndicatorRevealLinear var(--cast-duration, 1000ms) linear forwards;
 }
+
+/* ── Gambler coin flip ──────────────────────────────────────────────────── */
+.coin-scene {
+  perspective: 600px;
+  width: 5rem;
+  height: 5rem;
+}
+
+.coin {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.coin-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  line-height: 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Back face is pre-rotated so it shows when the coin is flipped 180°. */
+.coin-face--back {
+  transform: rotateX(180deg);
+}
+
+/* Several full spins, then land on the front (heads) face. */
+@keyframes coinFlipWin {
+  0%   { transform: rotateX(0deg); }
+  100% { transform: rotateX(1800deg); }
+}
+
+/* Same, but land on the back (tails) face — ends at 180° mod 360°. */
+@keyframes coinFlipLose {
+  0%   { transform: rotateX(0deg); }
+  100% { transform: rotateX(1980deg); }
+}
+
+.coin--win {
+  animation: coinFlipWin 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+.coin--lose {
+  animation: coinFlipLose 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}

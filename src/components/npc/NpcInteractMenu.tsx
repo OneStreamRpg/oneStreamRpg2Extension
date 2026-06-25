@@ -24,6 +24,13 @@ export const NpcInteractMenu: React.FC<{ data: InteractData }> = ({
       return;
     }
 
+    if (type === "gamble") {
+      // Purely client-side menu — no server round-trip to open it.
+      useNpcStore.getState().setGambleResult(null);
+      useNpcStore.getState().updatePopupData({ type: "gambleMenu", npcId: data.npcId });
+      return;
+    }
+
     const actionMap: Record<string, (npcId?: string) => void> = {
       shop: npcActions.shop,
       craft: npcActions.craftList,
