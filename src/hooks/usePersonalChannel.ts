@@ -334,7 +334,7 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
         usePathOverlayStore.getState().enqueueDelta(path, applyAt);
       }
       if (delta.abilities !== undefined) {
-        applyDelta({ abilities: delta.abilities });
+        applyDelta({ versions: {}, abilities: delta.abilities });
       }
 
       const { remainingPath: _rp, abilities: _ab, ...playerKeys } = delta;

@@ -165,9 +165,7 @@ import { CastIndicatorEntry } from "../store/useCastIndicatorStore";
 
 const CastIndicatorItem: React.FC<{
   entry: CastIndicatorEntry;
-  gameState: any;
-  myUsername: string | null;
-}> = ({ entry, gameState, myUsername }) => {
+}> = ({ entry }) => {
   const hide = useCastIndicatorStore((state) => state.hide);
 
   useEffect(() => {
@@ -246,16 +244,13 @@ const CastIndicatorItem: React.FC<{
   return null;
 };
 
-const CastIndicatorOverlay: React.FC<{ gameState: any; myUsername: string | null }> = ({
-  gameState,
-  myUsername,
-}) => {
+const CastIndicatorOverlay: React.FC = () => {
   const indicators = useCastIndicatorStore((state) => state.indicators);
 
   return (
     <>
       {indicators.map((entry) => (
-        <CastIndicatorItem key={entry.id} entry={entry} gameState={gameState} myUsername={myUsername} />
+        <CastIndicatorItem key={entry.id} entry={entry} />
       ))}
     </>
   );
@@ -673,7 +668,7 @@ export const WorldInteractionLayer: React.FC = () => {
           }}
         />
       )}
-      <CastIndicatorOverlay gameState={gameState} myUsername={myUsername} />
+      <CastIndicatorOverlay />
       <PlayerAnchor />
       <WorldToast />
     </section>
