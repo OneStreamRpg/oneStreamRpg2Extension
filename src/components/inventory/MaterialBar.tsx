@@ -1,5 +1,6 @@
 import { MaterialMap } from "../../types/personalChannel";
-import { MATERIAL_CATEGORIES, MATERIAL_CATEGORY_EMOJI } from "./types";
+import { MATERIAL_CATEGORIES } from "./types";
+import { MaterialIcon } from "./MaterialIcon";
 
 export const MaterialBar: React.FC<{
   caps: MaterialMap;
@@ -19,7 +20,7 @@ export const MaterialBar: React.FC<{
             }`}
             title={`${cat}: ${count}/${cap}`}
           >
-            <span className="text-base leading-none">{MATERIAL_CATEGORY_EMOJI[cat]}</span>
+            <MaterialIcon category={cat} size={18} />
             <span>
               {count}/{cap}
             </span>

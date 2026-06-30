@@ -58,12 +58,13 @@ export const LeftNav: React.FC = () => {
   const activePage = useUIStore((state) => state.activePage);
   const questPanelOpen = useUIStore((state) => state.questPanelOpen);
   const profileOpen = useUIStore((state) => state.profileOpen);
-  const groupPanelOpen = useUIStore((state) => state.groupPanelOpen);
+  // Group tab temporarily hidden from the nav — re-enable to add it back.
+  // const groupPanelOpen = useUIStore((state) => state.groupPanelOpen);
   const tradePanelOpen = useUIStore((state) => state.tradePanelOpen);
   const setActivePage = useUIStore((state) => state.setActivePage);
   const toggleQuestPanel = useUIStore((state) => state.toggleQuestPanel);
   const toggleProfile = useUIStore((state) => state.toggleProfile);
-  const toggleGroupPanel = useUIStore((state) => state.toggleGroupPanel);
+  // const toggleGroupPanel = useUIStore((state) => state.toggleGroupPanel);
   const toggleTradePanel = useUIStore((state) => state.toggleTradePanel);
 
   return (
@@ -92,14 +93,16 @@ export const LeftNav: React.FC = () => {
         isActive={questPanelOpen}
         onClick={toggleQuestPanel}
       />
+      {/* Group tab temporarily hidden — re-enable to add it back later.
       <NavButton
         icon="group"
         label="Group"
         isActive={groupPanelOpen}
         onClick={toggleGroupPanel}
       />
+      */}
       <NavButton
-        icon="gold"
+        icon="trade"
         label="Trade"
         isActive={tradePanelOpen}
         onClick={toggleTradePanel}

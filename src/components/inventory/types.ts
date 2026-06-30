@@ -19,6 +19,15 @@ export const MATERIAL_CATEGORY_EMOJI: Record<MaterialCategory, string> = {
   fish: "🐟",
 };
 
+export const MATERIAL_CATEGORY_ICON: Record<MaterialCategory, string> = {
+  wood: "wood",
+  stone: "stone",
+  fish: "fish",
+};
+
+export const materialIconSrc = (cat: MaterialCategory): string =>
+  `${import.meta.env.BASE_URL}media/img/icons/${MATERIAL_CATEGORY_ICON[cat]}.png`;
+
 export type ItemRequiredTagForEquipment =
   | "helmet"
   | "chest"

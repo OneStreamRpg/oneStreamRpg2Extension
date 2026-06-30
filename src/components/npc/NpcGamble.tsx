@@ -6,9 +6,9 @@ import { useSocketStore } from "../../store/socketStore";
 import { useNpcStore } from "../../store/useNpcStore";
 import {
   MATERIAL_CATEGORIES,
-  MATERIAL_CATEGORY_EMOJI,
   MaterialCategory,
 } from "../inventory/types";
+import { MaterialIcon } from "../inventory/MaterialIcon";
 import { GambleMenuData } from "../../types/npcInteraction";
 
 const materialName = (cat: MaterialCategory): string =>
@@ -114,8 +114,10 @@ export const NpcGamble: React.FC<{ data: GambleMenuData }> = ({ data }) => {
               {won ? "You won!" : "You lost!"}
             </p>
             <p className="text-sm text-center text-gray-300">{gambleResult.message}</p>
-            <p className="text-xs text-gray-400">
-              {MATERIAL_CATEGORY_EMOJI[gambleResult.itemId as MaterialCategory] ?? ""}{" "}
+            <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
+              {MATERIAL_CATEGORIES.includes(gambleResult.itemId as MaterialCategory) && (
+                <MaterialIcon category={gambleResult.itemId as MaterialCategory} size={14} />
+              )}
               {materialName(gambleResult.itemId as MaterialCategory)}: {gambleResult.newCount}
             </p>
             <button
@@ -157,7 +159,7 @@ export const NpcGamble: React.FC<{ data: GambleMenuData }> = ({ data }) => {
                 border: `1px solid ${isSelected ? "#9a7228" : "rgba(255,255,255,0.1)"}`,
               }}
             >
-              <span className="text-xl leading-none">{MATERIAL_CATEGORY_EMOJI[cat]}</span>
+              <MaterialIcon category={cat} size={28} />
               <span style={{ color: isOver ? "#e07050" : "#f0d8a8" }}>
                 {c}/{cp}
               </span>
