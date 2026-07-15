@@ -5,7 +5,8 @@
       "ReadFileSystem(*)",
       "WriteFileSystem(*)",
       "CreateFileSystemEntity(*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "PowerShell($conns = Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue; if \\($conns\\) { $conns | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { Get-Process -Id $_ | Select-Object Id, ProcessName, Path } } else { \"No process is listening on port 5173\" })"
     ]
   }
 }
