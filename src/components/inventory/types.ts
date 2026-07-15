@@ -13,12 +13,6 @@ export type MaterialCategory = "wood" | "stone" | "fish";
 
 export const MATERIAL_CATEGORIES: MaterialCategory[] = ["wood", "stone", "fish"];
 
-export const MATERIAL_CATEGORY_EMOJI: Record<MaterialCategory, string> = {
-  wood: "🪵",
-  stone: "🪨",
-  fish: "🐟",
-};
-
 export const MATERIAL_CATEGORY_ICON: Record<MaterialCategory, string> = {
   wood: "wood",
   stone: "stone",

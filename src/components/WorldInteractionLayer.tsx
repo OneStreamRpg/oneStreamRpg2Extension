@@ -141,6 +141,15 @@ const PlayerAnchor: React.FC = () => {
     };
   }, [processQueue]);
 
+  useEffect(() => {
+    if (!hitbox) {
+      console.warn(
+        "[IndicatorDebug] PlayerAnchor: player hitbox missing — sync bar NOT drawn.",
+        usePlayerStore.getState().player
+      );
+    }
+  }, [hitbox]);
+
   if (!hitbox) return null;
 
   const xOffsetRatio = hitbox.xOffsetRatio ?? 0;
@@ -174,7 +183,20 @@ const CastIndicatorItem: React.FC<{
   }, [entry.id, entry.durationMs, hide]);
 
   const abilityMeta = metadataService.getAbilitySync(entry.abilityId);
-  if (!abilityMeta) return null;
+  if (!abilityMeta) {
+    console.warn(
+      "[IndicatorDebug] No ability metadata for abilityId — cast indicator NOT drawn.",
+      { abilityId: entry.abilityId, entry }
+    );
+    return null;
+  }
+  console.log("[IndicatorDebug] Drawing cast indicator:", {
+    abilityId: entry.abilityId,
+    type: abilityMeta.type,
+    aimX: entry.aimX,
+    aimY: entry.aimY,
+    durationMs: entry.durationMs,
+  });
 
   const { aimX, aimY, durationMs } = entry;
   const leftPct = (aimX / 1920) * 100;
@@ -241,6 +263,10 @@ const CastIndicatorItem: React.FC<{
     );
   }
 
+  console.warn(
+    "[IndicatorDebug] Unknown ability type — cast indicator NOT drawn.",
+    { abilityId: entry.abilityId, type: abilityMeta.type }
+  );
   return null;
 };
 

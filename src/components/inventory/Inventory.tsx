@@ -24,7 +24,8 @@ import { InventorySlot } from "./InventorySlot";
 import { InventoryTooltip } from "./InventoryTooltip";
 import { ItemDisplay } from "./ItemDisplay";
 import { MaterialBar } from "./MaterialBar";
-import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item, MATERIAL_CATEGORIES, MATERIAL_CATEGORY_EMOJI } from "./types";
+import { MaterialIcon } from "./MaterialIcon";
+import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item, MATERIAL_CATEGORIES, MaterialCategory } from "./types";
 import { CalcBreakdown } from "../ui/CalcBreakdown";
 import { ResolvedToken } from "../../utils/resolveScaling";
 
@@ -50,7 +51,7 @@ export const Inventory: React.FC = () => {
   // This is used for highlighting compatible slots and for the DragOverlay.
   const [activeItem, setActiveItem] = useState<Item | null>(null);
 
-  const [capToast, setCapToast] = useState<string | null>(null);
+  const [capToast, setCapToast] = useState<MaterialCategory | null>(null);
   const capToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevCountsRef = useRef<Record<string, number> | null>(null);
 
@@ -67,8 +68,7 @@ export const Inventory: React.FC = () => {
         const wasBelow = (prev[cat] ?? 0) < cap;
         const nowAt = (currentCounts[cat] ?? 0) >= cap;
         if (wasBelow && nowAt) {
-          const msg = `${MATERIAL_CATEGORY_EMOJI[cat]} ${cat} cap reached!`;
-          setCapToast(msg);
+          setCapToast(cat);
           if (capToastTimer.current) clearTimeout(capToastTimer.current);
           capToastTimer.current = setTimeout(() => setCapToast(null), 3000);
         }
@@ -220,8 +220,9 @@ export const Inventory: React.FC = () => {
   return (
     <>
       {capToast && (
-        <div className="mb-2 px-2 py-1 text-xs font-bold text-center bg-red-600 text-white rounded shadow">
-          {capToast}
+        <div className="mb-2 px-2 py-1 text-xs font-bold bg-red-600 text-white rounded shadow flex items-center justify-center gap-1">
+          <MaterialIcon category={capToast} size={14} />
+          {capToast} cap reached!
         </div>
       )}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>

@@ -53,6 +53,24 @@ export const PathOverlay: React.FC = () => {
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
+    if (remainingPath.length < 2) {
+      console.log(
+        "[IndicatorDebug] PathOverlay: remainingPath has",
+        remainingPath.length,
+        "waypoints — walk indicator NOT drawn.",
+        remainingPath
+      );
+    } else {
+      console.log(
+        "[IndicatorDebug] PathOverlay: drawing walk indicator with",
+        remainingPath.length,
+        "waypoints, targetType=",
+        targetType
+      );
+    }
+  }, [remainingPath, targetType]);
+
+  useEffect(() => {
     const tick = () => {
       const now = Date.now();
       processQueue(now);

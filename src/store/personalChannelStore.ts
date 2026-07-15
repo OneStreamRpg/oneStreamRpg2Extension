@@ -6,6 +6,7 @@ import {
   PlayerPersonalState,
   PlayerStateDelta,
   StateVersions,
+  StatsState,
 } from "../types/personalChannel";
 
 const TAG = "PersonalChannelStore";
@@ -32,6 +33,7 @@ interface PersonalChannelStore {
   setReady: (ready: boolean) => void;
   setInitialState: (state: PlayerPersonalState) => void;
   applyDelta: (delta: PlayerStateDelta) => void;
+  mergeStats: (partial: Partial<StatsState>) => void;
   applyOptimisticUpdate: (
     action: PersonalChannelAction,
     newState: PlayerPersonalState
@@ -90,6 +92,23 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
         displayedState: result.newState,
         confirmedState: structuredClone(result.newState),
         versions: result.newVersions,
+      });
+    },
+
+    // Merge partial stats (hp/maxHp from the unversioned playerDelta stream).
+    // Bypasses the versioned stats domain — the server never bumps statsVersion
+    // for damage/regen, those only arrive as playerDelta patches.
+    mergeStats: (partial) => {
+      const { displayedState, confirmedState } = get();
+      if (!displayedState) return;
+      set({
+        displayedState: {
+          ...displayedState,
+          stats: { ...displayedState.stats, ...partial },
+        },
+        confirmedState: confirmedState
+          ? { ...confirmedState, stats: { ...confirmedState.stats, ...partial } }
+          : null,
       });
     },
 

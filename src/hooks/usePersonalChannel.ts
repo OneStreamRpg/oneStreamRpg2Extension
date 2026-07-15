@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 import { logger } from "../services/Logger";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
+import { useSocketStore } from "../store/socketStore";
 import { useNpcStore } from "../store/useNpcStore";
 import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
 import { usePlayerStore } from "../store/usePlayerStore";
@@ -89,10 +90,16 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
 
       if (data.event === "castStart") {
         const delay = getStreamSyncDelay();
+        console.log("[IndicatorDebug] castStart payload:", data.data, "delay=", delay);
         useSyncBarStore.getState().show(data.data.name, delay);
         const { aimX, aimY, abilityId } = data.data;
         if (aimX !== undefined && aimY !== undefined) {
           useCastIndicatorStore.getState().show(aimX, aimY, abilityId, delay);
+        } else {
+          console.warn(
+            "[IndicatorDebug] castStart missing aimX/aimY — cast indicator NOT shown.",
+            { aimX, aimY, abilityId, keys: Object.keys(data.data ?? {}) }
+          );
         }
         return;
       }
@@ -104,8 +111,24 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
 
       if (data.event === "moveStart") {
         const path = data.data?.remainingPath as Waypoint[] | undefined;
+        console.log("[IndicatorDebug] moveStart payload:", data.data, {
+          hasRemainingPath: Array.isArray(path),
+          pathLength: path?.length ?? 0,
+          keys: Object.keys(data.data ?? {}),
+        });
         if (path) {
           usePathOverlayStore.getState().setPath(path, data.data?.targetType);
+          if (path.length < 2) {
+            console.warn(
+              "[IndicatorDebug] moveStart path has < 2 waypoints — walk indicator NOT drawn.",
+              path
+            );
+          }
+        } else {
+          console.warn(
+            "[IndicatorDebug] moveStart has no remainingPath — walk indicator NOT drawn. Payload keys:",
+            Object.keys(data.data ?? {})
+          );
         }
         const targetType = data.data?.targetType as string | undefined;
         const label =
@@ -325,10 +348,30 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
 
     // Listen for player movement deltas (~20Hz) — buffered by stream delay
     // May also carry ability cooldown updates (e.g. auto-attack passive shaving CD)
+    let lastDeltaLogAt = 0;
     const handlePlayerDelta = (data: { delta: any; timestamp: number }) => {
       const delta = data.delta ?? {};
       const path = delta.remainingPath as Waypoint[] | undefined;
-      const applyAt = Date.now() + getStreamSyncDelay();
+      const delay = getStreamSyncDelay();
+      const applyAt = Date.now() + delay;
+
+      // Throttled to 1/s — the raw stream is ~20Hz
+      if (Date.now() - lastDeltaLogAt > 1000) {
+        lastDeltaLogAt = Date.now();
+        console.log("[IndicatorDebug] playerDelta:", {
+          deltaKeys: Object.keys(delta),
+          hasRemainingPath: Array.isArray(path),
+          pathLength: path?.length ?? 0,
+          streamSyncDelay: delay,
+          rawDelta: delta,
+        });
+        if (Number.isNaN(delay)) {
+          console.warn(
+            "[IndicatorDebug] streamSyncDelay is NaN — queued deltas will never apply.",
+            useSocketStore.getState()
+          );
+        }
+      }
 
       if (path) {
         usePathOverlayStore.getState().enqueueDelta(path, applyAt);
@@ -377,6 +420,44 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
     rollbackAction,
     setError,
   ]);
+
+  // Bridge hp/maxHp from the ~20Hz playerDelta stream into the personal-channel
+  // stats the HP bars render from. The server never bumps the versioned stats
+  // domain for damage/regen — HP only arrives as unversioned playerDelta patches,
+  // which land in usePlayerStore via its stream-delayed queue.
+  useEffect(() => {
+    if (!enabled) return;
+
+    const unsubscribe = usePlayerStore.subscribe((state, prev) => {
+      const player = state.player;
+      if (!player || player === prev.player) return;
+
+      const { displayedState, mergeStats } = usePersonalChannelStore.getState();
+      if (!displayedState) return;
+
+      const patch: { hp?: number; maxHp?: number } = {};
+      if (player.hp !== undefined && player.hp !== displayedState.stats.hp) {
+        patch.hp = player.hp;
+      }
+      if (player.maxHp !== undefined && player.maxHp !== displayedState.stats.maxHp) {
+        patch.maxHp = player.maxHp;
+      }
+      if (Object.keys(patch).length > 0) {
+        mergeStats(patch);
+      }
+    });
+
+    // The overlay drives the delta queue at rAF via PlayerAnchor; the panel never
+    // mounts it, so run a fallback ticker here or queued deltas never apply there.
+    const queueInterval = setInterval(() => {
+      usePlayerStore.getState().processQueue(Date.now());
+    }, 100);
+
+    return () => {
+      unsubscribe();
+      clearInterval(queueInterval);
+    };
+  }, [enabled]);
 
   // Handle reconnection
   useEffect(() => {

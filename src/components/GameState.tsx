@@ -176,7 +176,16 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         setGameState(data.gameState);
       }
       if (data.player) {
+        console.log("[IndicatorDebug] gameState response includes player:", {
+          hasHitbox: !!data.player.hitbox,
+          player: data.player,
+        });
         usePlayerStore.getState().setPlayer(data.player);
+      } else {
+        console.warn(
+          "[IndicatorDebug] gameState response has NO player — sync bar will never draw. Response keys:",
+          Object.keys(data ?? {})
+        );
       }
     });
 
