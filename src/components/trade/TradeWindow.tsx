@@ -103,7 +103,7 @@ export const TradeWindow: React.FC = () => {
       className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto"
       style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
     >
-      <WindowContainer className="w-[560px] max-h-[80vh] overflow-y-auto" style={{ paddingRight: "8px" }}>
+      <WindowContainer className="w-[560px] max-w-[95vw] max-h-[80vh] overflow-y-auto" style={{ paddingRight: "8px" }}>
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-bold" style={{ color: "#c8a020" }}>

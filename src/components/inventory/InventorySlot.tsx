@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { MaterialMap } from "../../types/personalChannel";
 import { DraggableItem } from "./DraggableItem";
 import { getItemEquippedSlotTag, getMaterialCategory, isEmptyItem } from "./inventoryService";
+import { SLOT_FRAME_STYLE } from "./slotTheme";
 import { Item } from "./types";
 
 export const InventorySlot: React.FC<{
@@ -57,15 +58,16 @@ export const InventorySlot: React.FC<{
   return (
     <div
       ref={setNodeRef}
-      className={`border border-dashed size-17 flex items-center justify-center ${
+      className={`size-17 flex items-center justify-center ${
         canPlaceHere
-          ? "outline-2 outline-blue-500"
+          ? "outline-2 outline-[#f0d060]"
           : isDraggingActive && isCompatible
-          ? "outline-2 outline-green-500"
+          ? "outline-2 outline-[#78dc78]"
           : atCap
-          ? "outline-2 outline-red-500 bg-red-500/20"
+          ? "outline-2 outline-[#c05050]"
           : ""
       }`}
+      style={SLOT_FRAME_STYLE}
     >
       {hasItem && <DraggableItem item={item} containerId={slotId} />}
     </div>

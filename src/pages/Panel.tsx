@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { JoinGameScreen } from "../components/JoinGameScreen";
 import { NpcPopup } from "../components/npc/NpcPopup";
 import { AbilitiesPage } from "../components/abilities/AbilitiesPage";
 import { Inventory } from "../components/inventory/Inventory";
 import { QuestPanel } from "../components/quests/QuestPanel";
-import { PanelActionsPage } from "../components/panel/PanelActionsPage";
 import { RecipesPage } from "../components/recipes/RecipesPage";
 import { PanelBurgerMenu, type PanelPage } from "../components/panel/PanelBurgerMenu";
 import { PanelMapView } from "../components/panel/PanelMapView";
 import { PanelNav } from "../components/panel/PanelNav";
 import { PanelStatsPage } from "../components/panel/PanelStatsPage";
+import { TradePanel } from "../components/trade/TradePanel";
+import { TradeWindow } from "../components/trade/TradeWindow";
 import { useAuthStore } from "../hooks/useAuthStore";
+import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
 
 export const Panel: React.FC = () => {
@@ -18,6 +20,18 @@ export const Panel: React.FC = () => {
   const { profile } = useAuthStore();
   const [currentPage, setCurrentPage] = useState<PanelPage>("map");
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const displayedState = usePersonalChannelStore((state) => state.displayedState);
+  const pendingTradeInvites = displayedState?.pendingTradeInvites?.length ?? 0;
+  const tradeSession = displayedState?.tradeSession ?? null;
+
+  // Surface the trade page automatically when a trade request comes in,
+  // mirroring the overlay's auto-open behavior.
+  useEffect(() => {
+    if (pendingTradeInvites > 0) {
+      setCurrentPage("trade");
+    }
+  }, [pendingTradeInvites]);
 
   if (!isConnected) {
     return <JoinGameScreen status="connecting" />;
@@ -58,7 +72,11 @@ export const Panel: React.FC = () => {
           </div>
         )}
         {currentPage === "stats" && <PanelStatsPage />}
-        {currentPage === "actions" && <PanelActionsPage />}
+        {currentPage === "trade" && (
+          <div className="p-2 flex justify-center">
+            <TradePanel />
+          </div>
+        )}
         {currentPage === "recipes" && (
           <div className="p-2">
             <RecipesPage />
@@ -74,6 +92,7 @@ export const Panel: React.FC = () => {
       />
 
       <NpcPopup />
+      {tradeSession && <TradeWindow />}
     </div>
   );
 };

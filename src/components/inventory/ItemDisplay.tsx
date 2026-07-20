@@ -13,7 +13,7 @@ export const ItemDisplay: React.FC<{ item: Item }> = ({ item }) => {
 
   return (
     <div
-      className={`text-xs bg-amber-800 text-white size-16 relative cursor-grab`}
+      className={`text-xs size-16 relative cursor-grab`}
       data-item-id={item.id}
       data-tooltip-id="inventory-tooltip"
     >
@@ -24,7 +24,10 @@ export const ItemDisplay: React.FC<{ item: Item }> = ({ item }) => {
         alt={itemData?.name ?? item.itemId}
       />
       {itemEquipmentSlotTag && (
-        <p className="absolute top-0 left-0.5 text-xs italic opacity-50">
+        <p
+          className="absolute top-0 left-0.5 text-[9px] italic capitalize"
+          style={{ color: "#e8d08a", opacity: 0.6, textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}
+        >
           {itemEquipmentSlotTag}
         </p>
       )}

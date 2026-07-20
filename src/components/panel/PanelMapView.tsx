@@ -7,6 +7,7 @@ import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
 import { usePlayerStore } from "../../store/usePlayerStore";
 import { useSyncBarStore } from "../../store/useSyncBarStore";
+import { AbilitiesNav } from "../AbilitiesNav";
 import { PathOverlay } from "../PathOverlay";
 import { PanelEntityCircle } from "./PanelEntityCircle";
 
@@ -95,6 +96,15 @@ const PanelPlayerAnchor: React.FC = () => {
       }}
     >
       <PanelPlayerSyncBar />
+      <img
+        src={`${import.meta.env.BASE_URL}media/img/icons/playerIndicator.png`}
+        alt="You"
+        className="w-full h-full"
+        style={{
+          imageRendering: "pixelated",
+          filter: "drop-shadow(0 0 3px rgba(0,0,0,0.8))",
+        }}
+      />
     </div>
   );
 };
@@ -152,7 +162,7 @@ export const PanelMapView: React.FC = () => {
       >
         <PathOverlay />
 
-        {gameObjects.map((obj) => {
+        {gameObjects.filter((obj) => obj.hitbox).map((obj) => {
           const hasQuest = obj.type === "npc" && questNpcIds.has(obj.npcId);
 
           return (
@@ -168,6 +178,11 @@ export const PanelMapView: React.FC = () => {
         })}
 
         <PanelPlayerAnchor />
+      </div>
+
+      {/* Equipped abilities under the mini map */}
+      <div className="flex justify-center py-2 px-2 overflow-x-auto">
+        <AbilitiesNav />
       </div>
     </div>
   );

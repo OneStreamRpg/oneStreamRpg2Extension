@@ -211,7 +211,7 @@ export const Inventory: React.FC = () => {
   );
 
   if (displayedState === null) {
-    return <div>Loading inventory...</div>;
+    return <div style={{ color: "#9a7850" }}>Loading inventory...</div>;
   }
 
   const inventoryItems = displayedState.inventory.items;

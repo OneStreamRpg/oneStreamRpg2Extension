@@ -1,14 +1,14 @@
 import { WindowContainer } from "../ui/WindowContainer";
 
-export type PanelPage = "map" | "inventory" | "abilities" | "quests" | "stats" | "actions" | "recipes";
+export type PanelPage = "map" | "inventory" | "abilities" | "stats" | "quests" | "trade" | "recipes";
 
 const MENU_ITEMS: { page: PanelPage; label: string; icon: string }[] = [
-  { page: "map", label: "Map", icon: "quests" },
+  { page: "map", label: "Map", icon: "playerIndicator" },
   { page: "inventory", label: "Inventory", icon: "inventory" },
   { page: "abilities", label: "Abilities", icon: "abilities" },
-  { page: "quests", label: "Quests", icon: "quests" },
   { page: "stats", label: "Stats", icon: "stats" },
-  { page: "actions", label: "Actions", icon: "abilities" },
+  { page: "quests", label: "Quests", icon: "quests" },
+  { page: "trade", label: "Trade", icon: "trade" },
   { page: "recipes", label: "Recipes", icon: "recipes" },
 ];
 
