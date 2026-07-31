@@ -1,9 +1,8 @@
 import { create } from "zustand";
-import { Page, PagePosition } from "../types/ui";
+import { Page } from "../types/ui";
 
 type UIState = {
   activePage: Page | null;
-  pagePosition: PagePosition;
   debugInventoryInfo: boolean;
   questPanelOpen: boolean;
   profileOpen: boolean;
@@ -17,7 +16,6 @@ type UIState = {
 type UIActions = {
   setActivePage: (page: Page) => void;
   closeActivePage: () => void;
-  setPagePosition: (position: PagePosition) => void;
   toggleDebugInventoryInfo: () => void;
   toggleQuestPanel: () => void;
   toggleProfile: () => void;
@@ -30,7 +28,6 @@ type UIActions = {
 export const useUIStore = create<UIState & UIActions>((set) => ({
   // State
   activePage: null,
-  pagePosition: PagePosition.RIGHT,
   debugInventoryInfo: true,
   questPanelOpen: true,
   profileOpen: true,
@@ -46,9 +43,6 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
   },
   closeActivePage: () => {
     set({ activePage: null });
-  },
-  setPagePosition: (position: PagePosition) => {
-    set({ pagePosition: position });
   },
   toggleDebugInventoryInfo: () => {
     set((state) => ({ debugInventoryInfo: !state.debugInventoryInfo }));

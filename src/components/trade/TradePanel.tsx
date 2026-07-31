@@ -14,7 +14,6 @@ export const TradePanel: React.FC = () => {
   const outgoingTradeInvites = displayedState?.outgoingTradeInvites ?? [];
   const tradeSession = displayedState?.tradeSession ?? null;
 
-  const toggleTradePanel = useUIStore((state) => state.toggleTradePanel);
   const tradeError = useUIStore((state) => state.tradeError);
   const setTradeError = useUIStore((state) => state.setTradeError);
 
@@ -26,19 +25,6 @@ export const TradePanel: React.FC = () => {
 
   return (
     <WindowContainer className="pointer-events-auto w-56 max-h-72 overflow-y-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2 pr-2">
-        <span className="text-sm font-bold" style={{ color: "#c8a020" }}>Trade</span>
-        <button
-          onClick={toggleTradePanel}
-          className="cursor-pointer flex items-center justify-center"
-          style={{ color: "#9a7850", lineHeight: 1 }}
-          title="Close"
-        >
-          ✕
-        </button>
-      </div>
-
       {/* Error message */}
       {tradeError && (
         <div className="flex items-start justify-between gap-1 mb-2 pr-2">

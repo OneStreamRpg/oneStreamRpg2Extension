@@ -11,6 +11,7 @@ import { usePathOverlayStore } from "../store/usePathOverlayStore";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
 import { ActionAcknowledgment } from "../types/personalChannel";
+import { getStreamSyncDelay } from "../utils/streamSyncDelay";
 
 const TAG = "GameState";
 
@@ -48,8 +49,16 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     inGame,
   });
 
-  const streamDelayRef = useRef(0);
   const activeTimeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Deltas are applied on a stream-delay timer (~3s). When the game state is
+  // wiped (death, leave, disconnect) any still-pending delta would land on the
+  // cleared state and partially repopulate it — which makes the respawn path
+  // think it already has a valid state. Drop them together with the state.
+  const clearPendingDeltas = () => {
+    activeTimeouts.current.forEach(clearTimeout);
+    activeTimeouts.current = [];
+  };
 
   const updateEnemiesState = (
     enemies: Array<{ id: string;[key: string]: any }>,
@@ -94,7 +103,6 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     if (window.Twitch && window.Twitch.ext) {
       window.Twitch.ext.onContext((context: Partial<Twitch.ext.Context>) => {
         if (context.hlsLatencyBroadcaster) {
-          streamDelayRef.current = context.hlsLatencyBroadcaster;
           useSocketStore.getState().setStreamDelay(context.hlsLatencyBroadcaster);
         }
       });
@@ -126,6 +134,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       logger.warn(TAG, "Disconnected from socket.io server");
       setIsConnected(false);
       setinGame(false);
+      clearPendingDeltas();
       setGameState({ enemies: [], npcs: [], jobSpaces: [] });
       useAimStore.getState().stopAim();
       useCastIndicatorStore.getState().clearAll();
@@ -192,10 +201,15 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     socketInstance.on("inGame", (data) => {
       //logger.info(TAG, `inGame state changed:`, data);
       if (data.inGame) {
+        // `checkInGame` polls every 2s, so this fires repeatedly while alive.
+        // Only (re)fetch when we are actually entering the world — after a
+        // respawn the player snapshot is gone and `getGameState` is the only
+        // thing that restores it along with enemies/jobSpaces.
+        const wasInGame = useSocketStore.getState().inGame;
+        const hasPlayer = !!usePlayerStore.getState().player;
         setIsDying(false);
         setinGame(data.inGame);
-        const hasState = !!useSocketStore.getState().gameState?.npcs?.length;
-        if (!hasState) {
+        if (!wasInGame || !hasPlayer) {
           logger.info(TAG, `Player is now in-game, requesting initial game state...`, { channelId });
           socketInstance.emit("getGameState");
         }
@@ -203,12 +217,14 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         logger.info(TAG, `Player is dying/respawning, waiting for respawn`);
         setIsDying(true);
         setinGame(false);
+        clearPendingDeltas();
         setGameState({ enemies: [], npcs: [], jobSpaces: [] });
         usePlayerStore.getState().clear();
       } else {
         logger.info(TAG, `Player left the game, clearing game state`);
         setIsDying(false);
         setinGame(false);
+        clearPendingDeltas();
         setGameState({ enemies: [], npcs: [], jobSpaces: [] });
         usePlayerStore.getState().clear();
       }
@@ -220,11 +236,16 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         const pingToStreamer = data.delta.ping || 0;
         useSocketStore.getState().setPingToStreamer(pingToStreamer);
         const timeoutId = setTimeout(() => {
+          activeTimeouts.current = activeTimeouts.current.filter((id) => id !== timeoutId);
           const previousState = useSocketStore.getState().gameState;
           if (!previousState) {
             logger.warn(TAG, "No previous game state, skipping delta application");
             return
           };
+          if (!useSocketStore.getState().inGame) {
+            logger.debug(TAG, "Not in-game (dying/left), skipping delta application");
+            return;
+          }
           let enemies = [...(previousState.enemies || [])];
           let npcs = [...(previousState.npcs || [])];
 
@@ -255,7 +276,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
             npcs,
             jobSpaces,
           });
-        }, 500 + streamDelayRef.current * 1000 - pingToStreamer / 2 + (useSocketStore.getState().ping ?? 0) / 2);
+        }, getStreamSyncDelay());
 
         activeTimeouts.current.push(timeoutId);
       }

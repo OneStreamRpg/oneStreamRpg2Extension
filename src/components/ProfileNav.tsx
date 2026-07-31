@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useAuthStore } from "../hooks/useAuthStore";
 import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
-import { useUIStore } from "../store/useUIStore";
 import { WindowContainer } from "./ui/WindowContainer";
 
 interface PlayerProfile {
@@ -16,12 +15,16 @@ interface PlayerProfile {
 
 const STAT_ICONS = ["armor", "haste", "healing", "magic", "strength"] as const;
 
+// Icon (16) + gap (8) + label + gap (8) + value column (36).
+const STATS_ROW_WIDTH = 140;
+// Row width plus the container's padding (8 + 8) and borders (3 + 3).
+const STATS_PANEL_WIDTH = STATS_ROW_WIDTH + 22;
+
 // MC: I require for the first fetch maxHp and requiredXp or maxXpLevel
 
 export const ProfileNav: React.FC = () => {
   const { displayedState } = usePersonalChannelStore();
   const { profile } = useAuthStore();
-  const toggleProfile = useUIStore((state) => state.toggleProfile);
   const [statsOpen, setStatsOpen] = useState(false);
 
   if (!displayedState || !profile) {
@@ -45,15 +48,16 @@ export const ProfileNav: React.FC = () => {
   const hpPercentage = (playerProfile.hp / playerProfile.maxHp) * 100;
 
   return (
-    <div className="flex items-center">
+    // The stats flyout hangs outside the flow so it can't widen the window —
+    // the draggable title bar sizes itself to this element.
+    <div className="relative">
       <WindowContainer className="pointer-events-auto">
         <div className="flex items-center gap-2 pr-2 text-xs">
           <div className="flex items-center gap-2">
             <img
-              className="w-12 h-12 border flex items-center justify-center cursor-pointer"
+              className="w-12 h-12 border flex items-center justify-center"
               src={profile.profile_image_url}
               alt={`${playerProfile.name}'s profile`}
-              onClick={toggleProfile}
             />
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between gap-4">
@@ -114,42 +118,59 @@ export const ProfileNav: React.FC = () => {
         </div>
       </WindowContainer>
 
-      <button
-        onClick={() => setStatsOpen((o) => !o)}
-        className="pointer-events-auto cursor-pointer"
-        style={{
-          color: "#c8a020",
-          background: "rgba(0,0,0,0.7)",
-          border: "3px solid #9a7228",
-          borderLeft: "none",
-          padding: "4px 6px",
-          fontSize: "14px",
-          lineHeight: 1,
-        }}
-      >
-        {statsOpen ? "‹" : "›"}
-      </button>
-
-      <div
+      <div className="absolute left-full top-0 h-full flex items-center">
+        <button
+          onClick={() => setStatsOpen((o) => !o)}
+          className="pointer-events-auto cursor-pointer"
           style={{
-            maxWidth: statsOpen ? "200px" : "0px",
+            color: "#c8a020",
+            background: "rgba(0,0,0,0.7)",
+            border: "3px solid #9a7228",
+            borderLeft: "none",
+            padding: "4px 6px",
+            fontSize: "14px",
+            lineHeight: 1,
+          }}
+          title={statsOpen ? "Hide stats" : "Show stats"}
+        >
+          {statsOpen ? "‹" : "›"}
+        </button>
+
+        <div
+          style={{
+            maxWidth: statsOpen ? `${STATS_PANEL_WIDTH}px` : "0px",
             opacity: statsOpen ? 1 : 0,
             overflow: "hidden",
             transition: "max-width 0.25s ease, opacity 0.2s ease",
           }}
         >
-          <WindowContainer className="pointer-events-auto">
-            <div className="flex flex-col gap-1 px-2 text-xs" style={{ whiteSpace: "nowrap" }}>
+          <WindowContainer
+            className="pointer-events-auto"
+            style={{ paddingRight: "8px" }}
+          >
+            {/* Fixed width rather than content-sized: it keeps every value in
+                the same column, stops the longest row from spilling past the
+                frame, and means the reveal doesn't reflow as it opens. */}
+            <div
+              className="flex flex-col gap-1 text-xs"
+              style={{ width: STATS_ROW_WIDTH }}
+            >
               {STAT_ICONS.map((stat) => (
                 <div key={stat} className="flex items-center gap-2">
                   <img
+                    className="shrink-0"
                     src={`${import.meta.env.BASE_URL}media/img/icons/stats/${stat}.png`}
                     width={16}
                     height={16}
-                    alt={stat}
+                    // Decorative: the label beside it already names the stat,
+                    // and empty alt keeps the row aligned if it fails to load.
+                    alt=""
                   />
-                  <span className="capitalize">{stat}</span>
-                  <span className="ml-auto pl-4" style={{ color: "#c8a020" }}>
+                  <span className="capitalize truncate">{stat}</span>
+                  <span
+                    className="ml-auto shrink-0 text-right tabular-nums"
+                    style={{ color: "#c8a020", minWidth: 36 }}
+                  >
                     {displayedState.stats[stat] ?? 0}
                   </span>
                 </div>
@@ -157,6 +178,7 @@ export const ProfileNav: React.FC = () => {
             </div>
           </WindowContainer>
         </div>
+      </div>
     </div>
   );
 };

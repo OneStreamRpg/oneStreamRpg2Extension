@@ -3,10 +3,6 @@ export enum Page {
     SkillTree,
     Abilities,
     Recipes,
-}
-
-export enum PagePosition {
-    LEFT,
-    RIGHT,
+    Settings,
 }
 

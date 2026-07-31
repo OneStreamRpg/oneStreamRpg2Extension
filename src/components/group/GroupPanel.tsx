@@ -23,7 +23,6 @@ export const GroupPanel: React.FC = () => {
   const pendingGroupInvites = displayedState?.pendingGroupInvites ?? [];
   const outgoingGroupInvites = displayedState?.outgoingGroupInvites ?? [];
 
-  const toggleGroupPanel = useUIStore((state) => state.toggleGroupPanel);
   const groupError = useUIStore((state) => state.groupError);
   const setGroupError = useUIStore((state) => state.setGroupError);
 
@@ -71,19 +70,6 @@ export const GroupPanel: React.FC = () => {
 
   return (
     <WindowContainer className="pointer-events-auto w-56 max-h-72 overflow-y-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2 pr-2">
-        <span className="text-sm font-bold" style={{ color: "#c8a020" }}>Group</span>
-        <button
-          onClick={toggleGroupPanel}
-          className="cursor-pointer flex items-center justify-center"
-          style={{ color: "#9a7850", lineHeight: 1 }}
-          title="Close"
-        >
-          ✕
-        </button>
-      </div>
-
       {/* Error message */}
       {groupError && (
         <div className="flex items-start justify-between gap-1 mb-2 pr-2">

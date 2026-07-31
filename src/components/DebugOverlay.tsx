@@ -1,14 +1,13 @@
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useUIStore } from "../store/useUIStore";
-import { PagePosition } from "../types/ui";
+import { useWindowLayoutStore } from "../store/useWindowLayoutStore";
 
 export const DebugOverlay = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState({ x: 50, y: 50 });
   const [isDragging, setIsDragging] = useState(false);
 
-  const pagePosition = useUIStore((state) => state.pagePosition);
-  const setPagePosition = useUIStore((state) => state.setPagePosition);
+  const resetWindowLayout = useWindowLayoutStore((state) => state.resetLayout);
   const toggleDebugInventoryInfo = useUIStore(
     (state) => state.toggleDebugInventoryInfo
   );
@@ -106,17 +105,11 @@ export const DebugOverlay = () => {
           <div className="p-2 space-y-1">
             <button
               className="flex justify-between w-full p-2 cursor-pointer"
-              onClick={() =>
-                setPagePosition(
-                  pagePosition === PagePosition.LEFT
-                    ? PagePosition.RIGHT
-                    : PagePosition.LEFT
-                )
-              }
+              onClick={() => resetWindowLayout()}
             >
-              <span>Menu Position</span>
+              <span>Window Layout</span>
               <div className="px-3 py-1 text-sm bg-blue-600 text-white min-w-[60px]">
-                {PagePosition.RIGHT === pagePosition ? "Right" : "Left"}
+                Reset
               </div>
             </button>
             <button

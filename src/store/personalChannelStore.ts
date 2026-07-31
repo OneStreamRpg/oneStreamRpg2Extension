@@ -47,6 +47,20 @@ interface PersonalChannelStore {
   resetState: () => void;
 }
 
+// Merge only defined values so an undefined field in the partial can't
+// clobber an existing stat (and Partial's `number | undefined` index
+// signature stays out of the resulting StatsState).
+function mergeStatsPartial(
+  base: StatsState,
+  partial: Partial<StatsState>
+): StatsState {
+  const next: StatsState = { ...base };
+  for (const [key, value] of Object.entries(partial)) {
+    if (value !== undefined) next[key] = value;
+  }
+  return next;
+}
+
 export const usePersonalChannelStore = create<PersonalChannelStore>(
   (set, get) => ({
     // Initial state
@@ -104,10 +118,13 @@ export const usePersonalChannelStore = create<PersonalChannelStore>(
       set({
         displayedState: {
           ...displayedState,
-          stats: { ...displayedState.stats, ...partial },
+          stats: mergeStatsPartial(displayedState.stats, partial),
         },
         confirmedState: confirmedState
-          ? { ...confirmedState, stats: { ...confirmedState.stats, ...partial } }
+          ? {
+              ...confirmedState,
+              stats: mergeStatsPartial(confirmedState.stats, partial),
+            }
           : null,
       });
     },

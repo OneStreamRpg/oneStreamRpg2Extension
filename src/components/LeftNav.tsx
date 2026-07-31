@@ -113,6 +113,12 @@ export const LeftNav: React.FC = () => {
         isActive={activePage === Page.Recipes}
         onClick={() => setActivePage(Page.Recipes)}
       />
+      <NavButton
+        icon="settings"
+        label="Settings"
+        isActive={activePage === Page.Settings}
+        onClick={() => setActivePage(Page.Settings)}
+      />
     </nav>
   );
 };

@@ -1,6 +1,7 @@
 import { DebugOverlay } from "../components/DebugOverlay";
 import { JoinGameScreen } from "../components/JoinGameScreen";
 import { UserInterface } from "../components/UserInterface";
+import { UiScale } from "../components/ui/UiScale";
 import { WorldInteractionLayer } from "../components/WorldInteractionLayer";
 import { useAuthStore } from "../hooks/useAuthStore";
 import { useSocketStore } from "../store/socketStore";
@@ -31,7 +32,9 @@ export const Overlay = () => {
         <WorldInteractionLayer />
       </div>
       <div className="col-start-1 row-start-1 pointer-events-none z-10">
-        <UserInterface />
+        <UiScale>
+          <UserInterface />
+        </UiScale>
       </div>
       {DEBUG_MODE && (
         <div className="col-start-1 row-start-1 pointer-events-none z-20">
