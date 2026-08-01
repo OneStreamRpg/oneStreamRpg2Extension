@@ -25,6 +25,8 @@ export const SettingsPage: React.FC = () => {
   const uiScale = useSettingsStore((state) => state.uiScale);
   const setUiScale = useSettingsStore((state) => state.setUiScale);
   const resetUiScale = useSettingsStore((state) => state.resetUiScale);
+  const showPlayerHere = useSettingsStore((state) => state.showPlayerHere);
+  const toggleShowPlayerHere = useSettingsStore((state) => state.toggleShowPlayerHere);
   const resetWindowLayout = useWindowLayoutStore((state) => state.resetLayout);
   const windowPositions = useWindowLayoutStore((state) => state.positions);
   const autoPlaced = useWindowLayoutStore((state) => state.autoPlaced);
@@ -160,6 +162,26 @@ export const SettingsPage: React.FC = () => {
         >
           Reset
         </button>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <span style={{ color: "#c8a020" }}>"You are here" marker</span>
+          <button
+            onClick={toggleShowPlayerHere}
+            aria-pressed={showPlayerHere}
+            className="cursor-pointer"
+            style={BUTTON_STYLE}
+          >
+            {showPlayerHere ? "On" : "Off"}
+          </button>
+        </div>
+
+        <p style={{ color: "#a89070" }}>
+          Highlights your character every time you enter the world, so you can
+          find yourself when spawn is busy. Close it with its ✕ when you've
+          spotted yourself. You can always click your portrait to show it again.
+        </p>
       </section>
 
       <section className="flex flex-col gap-2">

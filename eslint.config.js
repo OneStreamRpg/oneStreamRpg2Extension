@@ -24,7 +24,19 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
 
-      "@typescript-eslint/no-explicit-any": "warn"
+      "@typescript-eslint/no-explicit-any": "warn",
+
+      // `const { drop: _drop, ...rest } = obj` is how we omit keys; the omitted
+      // bindings are unused on purpose.
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          ignoreRestSiblings: true,
+          varsIgnorePattern: "^_",
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
     },
   },
 )

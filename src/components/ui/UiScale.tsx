@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBoxSize } from "../../hooks/useBoxSize";
 import { useSettingsStore } from "../../store/useSettingsStore";
+import { useUiScaleStore } from "../../store/useUiScaleStore";
 
 /**
  * Player width at which the interface renders 1:1 — every px in the UI is a
@@ -39,6 +40,11 @@ export const UiScale: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const scale = measured
     ? clamp(size.w / UI_DESIGN_WIDTH, MIN_AUTO_SCALE, MAX_AUTO_SCALE) * userScale
     : 1;
+
+  // Anything that has to render outside this transform (the drag ghost) needs
+  // the factor to size itself to match.
+  const setScale = useUiScaleStore((state) => state.setScale);
+  useEffect(() => setScale(scale), [scale, setScale]);
 
   return (
     <div ref={setNode} className="size-full overflow-hidden pointer-events-none">

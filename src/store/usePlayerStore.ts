@@ -24,6 +24,8 @@ interface PlayerStore {
   setPlayer: (player: PlayerSnapshot) => void;
   enqueueDelta: (delta: PlayerDelta, applyAt: number) => void;
   processQueue: (now: number) => void;
+  /** Applies everything still held back, regardless of its stream-delay timer. */
+  flushQueue: () => void;
   clear: () => void;
 }
 
@@ -56,6 +58,20 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       player: merged,
       deltaQueue: deltaQueue.slice(i),
     });
+  },
+
+  // Nothing drains the queue while the tab is hidden (it runs off rAF), so on
+  // return the backlog is all history. Collapse it in one go and carry on from
+  // the newest state rather than walking through every step of it.
+  flushQueue: () => {
+    const { deltaQueue, player } = get();
+    if (deltaQueue.length === 0) return;
+
+    let merged: PlayerDelta = player ?? {};
+    for (const entry of deltaQueue) {
+      merged = { ...merged, ...entry.delta };
+    }
+    set({ player: merged, deltaQueue: [] });
   },
 
   clear: () => set({ player: null, deltaQueue: [] }),

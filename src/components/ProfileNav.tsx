@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuthStore } from "../hooks/useAuthStore";
 import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
+import { useLocatePlayerStore } from "../store/useLocatePlayerStore";
 import { WindowContainer } from "./ui/WindowContainer";
 
 interface PlayerProfile {
@@ -25,6 +26,7 @@ const STATS_PANEL_WIDTH = STATS_ROW_WIDTH + 22;
 export const ProfileNav: React.FC = () => {
   const { displayedState } = usePersonalChannelStore();
   const { profile } = useAuthStore();
+  const locatePlayer = useLocatePlayerStore((state) => state.ping);
   const [statsOpen, setStatsOpen] = useState(false);
 
   if (!displayedState || !profile) {
@@ -55,9 +57,11 @@ export const ProfileNav: React.FC = () => {
         <div className="flex items-center gap-2 pr-2 text-xs">
           <div className="flex items-center gap-2">
             <img
-              className="w-12 h-12 border flex items-center justify-center"
+              className="w-12 h-12 border flex items-center justify-center cursor-pointer"
               src={profile.profile_image_url}
               alt={`${playerProfile.name}'s profile`}
+              onClick={locatePlayer}
+              title="Show me on stream"
             />
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between gap-4">

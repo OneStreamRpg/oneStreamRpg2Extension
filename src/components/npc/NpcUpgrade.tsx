@@ -92,6 +92,13 @@ export const NpcUpgrade: React.FC<{ data: NpcUpgradeData }> = ({ data }) => {
           const qty = quantities[req.itemId] ?? Math.min(1, maxDeposit);
           const pct = Math.min(100, (deposited / req.quantity) * 100);
 
+          // The track spans everything still needed rather than just what the
+          // player is carrying, so the handle reads as a share of the actual
+          // requirement — owning 5 of 500 should look like 5 of 500, not "full".
+          const sliderMax = Math.max(1, remaining);
+          const affordablePct = (Math.min(maxDeposit, sliderMax) / sliderMax) * 100;
+          const selectedPct = (Math.min(qty, sliderMax) / sliderMax) * 100;
+
           return (
             <div key={req.itemId} className="flex flex-col gap-1">
               <div className="flex justify-between text-sm">
@@ -125,14 +132,26 @@ export const NpcUpgrade: React.FC<{ data: NpcUpgradeData }> = ({ data }) => {
                   <input
                     type="range"
                     min={1}
-                    max={Math.max(1, maxDeposit)}
+                    max={sliderMax}
                     value={qty}
                     disabled={maxDeposit <= 0}
                     onChange={(e) => {
+                      // Still clamped to what they own — the track shows the
+                      // whole requirement, but the handle stops where their
+                      // stock runs out.
                       const val = Math.max(1, Math.min(maxDeposit, parseInt(e.target.value) || 1));
                       setQuantities((prev) => ({ ...prev, [req.itemId]: val }));
                     }}
-                    className="w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+                    className="upgrade-slider w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+                    style={{
+                      background: `linear-gradient(90deg,
+                        #f0d060 0%, #f0d060 ${selectedPct}%,
+                        #6a5320 ${selectedPct}%, #6a5320 ${affordablePct}%,
+                        #2a1a0a ${affordablePct}%, #2a1a0a 100%)`,
+                    }}
+                    title={`${qty} of ${remaining} still needed${
+                      maxDeposit < remaining ? ` — you can cover ${Math.round(affordablePct)}%` : ""
+                    }`}
                   />
                   <div className="flex gap-2 items-center">
                     <input

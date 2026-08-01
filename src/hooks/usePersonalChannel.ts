@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
+import {
+  MATERIAL_CATEGORIES,
+  MaterialCategory,
+} from "../components/inventory/types";
 import { logger } from "../services/Logger";
+import { useMaterialAlertStore } from "../store/useMaterialAlertStore";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
 import { useNpcStore } from "../store/useNpcStore";
@@ -144,6 +149,18 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
 
       if (data.event === "jobSpaceError") {
         const reason = data.data?.reason as string | undefined;
+        const category = data.data?.category as MaterialCategory | undefined;
+
+        // Two payloads share this event. A pickup silently discarded because
+        // the material is full carries `category`; job space ineligibility
+        // carries `jobSpaceId` and no category. Only the former gets the
+        // dedicated popup — the store rate-limits it, which is what absorbs
+        // the one-event-per-dropped-unit burst from a node yielding several.
+        if (category && MATERIAL_CATEGORIES.includes(category)) {
+          useMaterialAlertStore.getState().raise(category);
+          return;
+        }
+
         if (reason) {
           useUIStore.getState().setWorldToast(reason, true);
         }

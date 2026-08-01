@@ -8,6 +8,7 @@ import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
 import { useAimStore } from "../store/useAimStore";
 import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
+import { useLocatePlayerStore } from "../store/useLocatePlayerStore";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
 import { useUIStore } from "../store/useUIStore";
@@ -26,36 +27,43 @@ const JOB_SPACE_LABELS: Record<JobSpaceType, string> = {
   Fisher: "Fish",
 };
 
-const WorldToast: React.FC = () => {
-  const toast = useUIStore((state) => state.worldToast);
+const WORLD_TOAST_DURATION_MS = 3000;
+
+const WorldToastMessage: React.FC<{ message: string; isError?: boolean }> = ({
+  message,
+  isError,
+}) => {
   const setWorldToast = useUIStore((state) => state.setWorldToast);
-  const [visible, setVisible] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Clearing the store is what removes it, so there's no local visible flag to
+  // keep in step — the parent stops rendering us.
   useEffect(() => {
-    if (!toast) return;
-    setVisible(true);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      setVisible(false);
-      setWorldToast(null);
-    }, 3000);
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [toast?.key, toast, setWorldToast]);
-
-  if (!toast || !visible) return null;
+    const timer = setTimeout(() => setWorldToast(null), WORLD_TOAST_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [setWorldToast]);
 
   return (
     <div
       className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 text-sm text-white rounded pointer-events-none z-50 whitespace-nowrap"
-      style={toast.isError
+      style={isError
         ? { backgroundColor: "#5a1a1a", border: "1px solid #c04040" }
         : { backgroundColor: "#2a5a2a", border: "1px solid #4a9a4a" }}
     >
-      {toast.message}
+      {message}
     </div>
+  );
+};
+
+const WorldToast: React.FC = () => {
+  const toast = useUIStore((state) => state.worldToast);
+  if (!toast) return null;
+  // Keyed on the toast so a new message restarts the timer by remounting.
+  return (
+    <WorldToastMessage
+      key={toast.key}
+      message={toast.message}
+      isError={toast.isError}
+    />
   );
 };
 
@@ -125,9 +133,126 @@ const PlayerSyncBar: React.FC = () => {
   );
 };
 
+/**
+ * "You are here" marker over the player.
+ *
+ * Shown whenever the player enters the world — joining, respawning, coming back
+ * from a reconnect — which is exactly when someone is most likely to have no
+ * idea which character on the stream is theirs. It waits to be closed rather
+ * than fading, so we know it was actually seen. Can be switched off in settings
+ * and replayed on demand from the profile portrait.
+ */
+const PlayerHereMarker: React.FC = () => {
+  const username = usePlayerStore((state) => state.player?.username);
+  const dismiss = useLocatePlayerStore((state) => state.dismiss);
+
+  return (
+    <div
+      className="absolute pointer-events-none"
+      style={{
+        inset: 0,
+        animation: "playerHereEnter 400ms ease-out both",
+      }}
+    >
+      {/* Rings pulse out from the feet — the bottom edge of the hitbox. */}
+      {[0, 800].map((delay) => (
+        <span
+          key={delay}
+          className="player-here-ping"
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "100%",
+            width: "260%",
+            aspectRatio: "3 / 1",
+            borderRadius: "50%",
+            border: "0.14vw solid #f0d060",
+            animation: `playerHerePing 1800ms ease-out ${delay}ms infinite`,
+          }}
+        />
+      ))}
+
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          bottom: "115%",
+          transform: "translateX(-50%)",
+          textAlign: "center",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <div
+          className="player-here-glow flex items-start"
+          style={{
+            gap: "0.5vw",
+            color: "#f0d8a8",
+            backgroundColor: "rgba(0,0,0,0.85)",
+            border: "0.12vw solid #9a7228",
+            padding: "0.3vw 0.4vw 0.3vw 0.6vw",
+            fontSize: "0.75vw",
+            fontWeight: 700,
+            lineHeight: 1.3,
+            marginBottom: "0.2vw",
+            animation: "playerHereGlow 1800ms ease-in-out infinite",
+          }}
+        >
+          <div style={{ textAlign: "left" }}>
+            <span style={{ color: "#c8a020" }}>You are here</span>
+            {username && (
+              <>
+                <br />
+                <span style={{ fontSize: "0.65vw", fontWeight: 400 }}>
+                  {username}
+                </span>
+              </>
+            )}
+          </div>
+          <button
+            // The section behind this moves the player on click, so the event
+            // must not reach it.
+            onClick={(event) => {
+              event.stopPropagation();
+              dismiss();
+            }}
+            className="pointer-events-auto cursor-pointer shrink-0"
+            style={{
+              color: "#9a7850",
+              background: "transparent",
+              border: "none",
+              fontSize: "0.75vw",
+              lineHeight: 1.3,
+              padding: 0,
+            }}
+            title="Hide this"
+          >
+            ✕
+          </button>
+        </div>
+        <div
+          className="player-here-bob"
+          style={{
+            color: "#f0d060",
+            fontSize: "1vw",
+            lineHeight: 1,
+            textShadow: "0 0 0.3vw rgba(0,0,0,0.95)",
+            animation: "playerHereBob 900ms ease-in-out infinite",
+          }}
+        >
+          ▼
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const PlayerAnchor: React.FC = () => {
   const hitbox = usePlayerStore((state) => state.player?.hitbox);
   const processQueue = usePlayerStore((state) => state.processQueue);
+  // Re-keying the marker replays it from the top rather than joining the
+  // animations mid-cycle.
+  const locatePingId = useLocatePlayerStore((state) => state.pingId);
+  const locateVisible = useLocatePlayerStore((state) => state.visible);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -166,6 +291,7 @@ const PlayerAnchor: React.FC = () => {
       }}
     >
       <PlayerSyncBar />
+      {locateVisible && <PlayerHereMarker key={locatePingId} />}
     </div>
   );
 };

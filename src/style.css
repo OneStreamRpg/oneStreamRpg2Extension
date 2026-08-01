@@ -52,6 +52,87 @@
   to { width: 100%; }
 }
 
+/* ── "You are here" player highlight ────────────────────────────────────── */
+
+/* Sonar ping off the player's feet. Two of these run staggered. */
+@keyframes playerHerePing {
+  0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+  15%  { opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(1.7); opacity: 0; }
+}
+
+@keyframes playerHereBob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-30%); }
+}
+
+/* ── Upgrade deposit slider ─────────────────────────────────────────────────
+   The track spans the whole outstanding requirement. Its three bands come from
+   an inline gradient: selected, affordable-but-unselected, and beyond what the
+   player is carrying. Both track pseudo-elements are transparent so that
+   gradient (set on the input itself) is what shows through. */
+.upgrade-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  outline: none;
+}
+
+.upgrade-slider::-webkit-slider-runnable-track {
+  background: transparent;
+}
+
+.upgrade-slider::-moz-range-track {
+  background: transparent;
+}
+
+.upgrade-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 16px;
+  margin-top: -5px;
+  border-radius: 2px;
+  background: #f0d060;
+  border: 1px solid #3d1a06;
+  cursor: inherit;
+}
+
+.upgrade-slider::-moz-range-thumb {
+  width: 12px;
+  height: 16px;
+  border-radius: 2px;
+  background: #f0d060;
+  border: 1px solid #3d1a06;
+  cursor: inherit;
+}
+
+@keyframes materialCapEnter {
+  from { opacity: 0; transform: translateY(-60%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* The highlight only eases in — it stays until the viewer closes it. */
+@keyframes playerHereEnter {
+  from { opacity: 0; transform: translateY(-8%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes playerHereGlow {
+  0%, 100% { box-shadow: 0 0 0.5vw rgba(240, 208, 96, 0.45); }
+  50%      { box-shadow: 0 0 1.2vw rgba(240, 208, 96, 0.9); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-here-ping,
+  .player-here-bob,
+  .player-here-glow {
+    animation: none !important;
+  }
+}
+
 @property --cast-sweep {
   syntax: '<angle>';
   inherits: false;

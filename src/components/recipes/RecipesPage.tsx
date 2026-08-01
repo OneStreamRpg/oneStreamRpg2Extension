@@ -1,4 +1,4 @@
-import { Tooltip } from "react-tooltip";
+import { PortalTooltip } from "../ui/PortalTooltip";
 import { useNpcActions } from "../../hooks/useNpcActions";
 import { metadataService } from "../../services/MetadataService";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
@@ -99,7 +99,7 @@ export const RecipesPage: React.FC = () => {
         })}
       </div>
 
-      <Tooltip
+      <PortalTooltip
         id="recipes-tooltip"
         place="right"
         clickable
@@ -112,7 +112,7 @@ export const RecipesPage: React.FC = () => {
         }}
       />
 
-      <Tooltip
+      <PortalTooltip
         id="inventory-calc-tooltip"
         place="right"
         delayShow={0}

@@ -4,6 +4,7 @@ const STORAGE_KEY = "osrpg.videoSyncOffset";
 // v2: the automatic factor was rebaselined, so any slider value saved against
 // the old baseline would stack on top of the change and read far too big.
 const UI_SCALE_STORAGE_KEY = "osrpg.uiScale.v2";
+const PLAYER_HERE_STORAGE_KEY = "osrpg.showPlayerHere";
 
 // The user-facing slider is centered on 0, but 0 really means
 // OBS_PROCESSING_BUFFER_MS (see utils/streamSyncDelay.ts). The offset is what
@@ -47,9 +48,20 @@ const loadUiScale = (): number => {
   }
 };
 
+// Opt-out rather than opt-in: viewers consistently report the marker is what
+// lets them pick themselves out of a busy spawn area.
+const loadShowPlayerHere = (): boolean => {
+  try {
+    return localStorage.getItem(PLAYER_HERE_STORAGE_KEY) !== "false";
+  } catch {
+    return true;
+  }
+};
+
 type SettingsState = {
   videoSyncOffset: number;
   uiScale: number;
+  showPlayerHere: boolean;
 };
 
 type SettingsActions = {
@@ -57,11 +69,13 @@ type SettingsActions = {
   resetVideoSyncOffset: () => void;
   setUiScale: (scale: number) => void;
   resetUiScale: () => void;
+  toggleShowPlayerHere: () => void;
 };
 
 export const useSettingsStore = create<SettingsState & SettingsActions>((set) => ({
   videoSyncOffset: loadOffset(),
   uiScale: loadUiScale(),
+  showPlayerHere: loadShowPlayerHere(),
 
   setVideoSyncOffset: (offset) => {
     const normalized = normalizeOffset(offset);
@@ -102,4 +116,15 @@ export const useSettingsStore = create<SettingsState & SettingsActions>((set) =>
     }
     set({ uiScale: 1 });
   },
+
+  toggleShowPlayerHere: () =>
+    set((state) => {
+      const next = !state.showPlayerHere;
+      try {
+        localStorage.setItem(PLAYER_HERE_STORAGE_KEY, String(next));
+      } catch {
+        // ignore write failures, the value still applies for this session
+      }
+      return { showPlayerHere: next };
+    }),
 }));

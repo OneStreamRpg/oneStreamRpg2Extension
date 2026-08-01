@@ -8,12 +8,14 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Tooltip } from "react-tooltip";
+import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { PortalTooltip } from "../ui/PortalTooltip";
 import { usePersonalChannelActions } from "../../hooks/usePersonalChannelActions";
 import { logger } from "../../services/Logger";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
+import { useUiScaleStore } from "../../store/useUiScaleStore";
 import { EquipmentSlot } from "./EquipmentSlot";
 import {
   canEquipInSlot,
@@ -24,8 +26,7 @@ import { InventorySlot } from "./InventorySlot";
 import { InventoryTooltip } from "./InventoryTooltip";
 import { ItemDisplay } from "./ItemDisplay";
 import { MaterialBar } from "./MaterialBar";
-import { MaterialIcon } from "./MaterialIcon";
-import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item, MATERIAL_CATEGORIES, MaterialCategory } from "./types";
+import { EQUIPMENT_SLOT_CONFIG, EquipmentSlotKey, Item } from "./types";
 import { CalcBreakdown } from "../ui/CalcBreakdown";
 import { ResolvedToken } from "../../utils/resolveScaling";
 
@@ -50,38 +51,11 @@ export const Inventory: React.FC = () => {
   // State to hold the item being currently dragged.
   // This is used for highlighting compatible slots and for the DragOverlay.
   const [activeItem, setActiveItem] = useState<Item | null>(null);
+  const uiScale = useUiScaleStore((state) => state.scale);
 
-  const [capToast, setCapToast] = useState<MaterialCategory | null>(null);
-  const capToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const prevCountsRef = useRef<Record<string, number> | null>(null);
-
-  const currentCounts = displayedState?.inventory.materialCounts;
-  const currentCaps = displayedState?.inventory.materialCaps;
-
-  useEffect(() => {
-    if (!currentCounts || !currentCaps) return;
-    const prev = prevCountsRef.current;
-    if (prev) {
-      for (const cat of MATERIAL_CATEGORIES) {
-        const cap = currentCaps[cat] ?? 0;
-        if (cap <= 0) continue;
-        const wasBelow = (prev[cat] ?? 0) < cap;
-        const nowAt = (currentCounts[cat] ?? 0) >= cap;
-        if (wasBelow && nowAt) {
-          setCapToast(cat);
-          if (capToastTimer.current) clearTimeout(capToastTimer.current);
-          capToastTimer.current = setTimeout(() => setCapToast(null), 3000);
-        }
-      }
-    }
-    prevCountsRef.current = { ...currentCounts };
-  }, [currentCounts, currentCaps]);
-
-  useEffect(() => {
-    return () => {
-      if (capToastTimer.current) clearTimeout(capToastTimer.current);
-    };
-  }, []);
+  // Cap crossings are watched globally (useMaterialCapWatcher) and announced on
+  // screen, so there is no in-panel toast here — it would just double up
+  // whenever the inventory happened to be open.
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
@@ -219,12 +193,6 @@ export const Inventory: React.FC = () => {
   const { materialCaps, materialCounts } = displayedState.inventory;
   return (
     <>
-      {capToast && (
-        <div className="mb-2 px-2 py-1 text-xs font-bold bg-red-600 text-white rounded shadow flex items-center justify-center gap-1">
-          <MaterialIcon category={capToast} size={14} />
-          {capToast} cap reached!
-        </div>
-      )}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <section className="grid grid-cols-[auto_1fr_auto] gap-2 mb-4">
           <section className="flex flex-col items-center gap-y-2">
@@ -287,13 +255,30 @@ export const Inventory: React.FC = () => {
           ))}
         </section>
 
-        {/* Drag Overlay renders the item "ghost" that follows the mouse */}
-        <DragOverlay>
-          {activeItem ? <ItemDisplay item={activeItem} /> : null}
-        </DragOverlay>
+        {/* The ghost that follows the mouse. dnd-kit positions it `fixed` from
+            viewport coordinates, and `fixed` resolves against the nearest
+            transformed ancestor — which UiScale is — so rendered in place it
+            lands at scale × the right spot and drifts further the further you
+            drag. At the document root there is no transform in the way.
+            Its content is scaled by hand so it still matches the slots. */}
+        {createPortal(
+          <DragOverlay>
+            {activeItem ? (
+              <div
+                style={{
+                  transform: `scale(${uiScale})`,
+                  transformOrigin: "top left",
+                }}
+              >
+                <ItemDisplay item={activeItem} />
+              </div>
+            ) : null}
+          </DragOverlay>,
+          document.body
+        )}
       </DndContext>
 
-      <Tooltip
+      <PortalTooltip
         id="inventory-calc-tooltip"
         place="right"
         delayShow={600}
@@ -308,7 +293,7 @@ export const Inventory: React.FC = () => {
           }
         }}
       />
-      <Tooltip
+      <PortalTooltip
         id="inventory-tooltip"
         place="top"
         clickable

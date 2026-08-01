@@ -30,6 +30,13 @@ export const GroupPanel: React.FC = () => {
   const isLeader = me?.isLeader ?? false;
   const canInvite = !group || (isLeader && group.members.length < 5);
 
+  // Declared before the effect below, which calls it.
+  const showToast = (msg: string) => {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 3500);
+  };
+
   // Detect entries that disappeared from outgoingGroupInvites without us withdrawing them
   useEffect(() => {
     const prev = prevOutgoing.current;
@@ -47,12 +54,6 @@ export const GroupPanel: React.FC = () => {
 
     prevOutgoing.current = curr;
   }, [outgoingGroupInvites]);
-
-  const showToast = (msg: string) => {
-    setToast(msg);
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 3500);
-  };
 
   const handleInvite = () => {
     const name = inviteInput.trim();

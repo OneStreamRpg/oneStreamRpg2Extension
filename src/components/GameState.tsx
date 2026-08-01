@@ -6,6 +6,7 @@ import { metadataService } from "../services/MetadataService";
 import { useSocketStore } from "../store/socketStore";
 import { useAimStore } from "../store/useAimStore";
 import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
+import { useLocatePlayerStore } from "../store/useLocatePlayerStore";
 import { useNpcStore } from "../store/useNpcStore";
 import { usePathOverlayStore } from "../store/usePathOverlayStore";
 import { usePlayerStore } from "../store/usePlayerStore";
@@ -49,49 +50,19 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     inGame,
   });
 
-  const activeTimeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Deltas are queued rather than each getting its own setTimeout. A timer per
+  // delta meant a hidden tab (where timers are throttled but the socket keeps
+  // delivering) built up hundreds of them, which then fired back to back on
+  // return and re-rendered every step an enemy had taken. Draining the queue as
+  // a batch collapses that into a single state update.
+  const pendingDeltas = useRef<Array<{ delta: any; applyAt: number }>>([]);
 
-  // Deltas are applied on a stream-delay timer (~3s). When the game state is
-  // wiped (death, leave, disconnect) any still-pending delta would land on the
-  // cleared state and partially repopulate it — which makes the respawn path
-  // think it already has a valid state. Drop them together with the state.
+  // When the game state is wiped (death, leave, disconnect) any still-pending
+  // delta would land on the cleared state and partially repopulate it — which
+  // makes the respawn path think it already has a valid state. Drop them
+  // together with the state.
   const clearPendingDeltas = () => {
-    activeTimeouts.current.forEach(clearTimeout);
-    activeTimeouts.current = [];
-  };
-
-  const updateEnemiesState = (
-    enemies: Array<{ id: string;[key: string]: any }>,
-    previousEnemies: Array<{ id: string;[key: string]: any }>
-  ) => {
-    const enemyMap = new Map(previousEnemies.map((e) => [e.id, e]));
-    enemies.forEach((enemyUpdate) => {
-      const existingEnemy = enemyMap.get(enemyUpdate.id);
-      if (existingEnemy) {
-        Object.assign(existingEnemy, enemyUpdate);
-      }
-    });
-    logger.debug(TAG, "Updated enemies", Array.from(enemyMap.values()));
-    return Array.from(enemyMap.values());
-  };
-
-  const updateNpcsState = (
-    npcs: Array<{ id: string;[key: string]: any }>,
-    previousNpcs: Array<{ id: string;[key: string]: any }>
-  ) => {
-    logger.debug(TAG, "NPC delta received", npcs);
-    logger.debug(TAG, "Previous NPCs", previousNpcs);
-    const npcMap = new Map(previousNpcs.map((npc) => [npc.id, npc]));
-    npcs.forEach((npcUpdate) => {
-      const existingNpc = npcMap.get(npcUpdate.id);
-      if (existingNpc) {
-        Object.assign(existingNpc, npcUpdate);
-      } else {
-        npcMap.set(npcUpdate.id, npcUpdate);
-      }
-    });
-    logger.debug(TAG, "Updated NPCs", Array.from(npcMap.values()));
-    return Array.from(npcMap.values());
+    pendingDeltas.current = [];
   };
 
   useEffect(() => {
@@ -190,6 +161,9 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
           player: data.player,
         });
         usePlayerStore.getState().setPlayer(data.player);
+        // The only moment we know the player is standing in the world with a
+        // known position — join, respawn and reconnect all land here.
+        useLocatePlayerStore.getState().announce();
       } else {
         console.warn(
           "[IndicatorDebug] gameState response has NO player — sync bar will never draw. Response keys:",
@@ -232,55 +206,106 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
 
     socketInstance.on("gameStateDelta", (data) => {
       logger.debug(TAG, "Game state delta received", data);
-      if (data.delta) {
-        const pingToStreamer = data.delta.ping || 0;
-        useSocketStore.getState().setPingToStreamer(pingToStreamer);
-        const timeoutId = setTimeout(() => {
-          activeTimeouts.current = activeTimeouts.current.filter((id) => id !== timeoutId);
-          const previousState = useSocketStore.getState().gameState;
-          if (!previousState) {
-            logger.warn(TAG, "No previous game state, skipping delta application");
-            return
-          };
-          if (!useSocketStore.getState().inGame) {
-            logger.debug(TAG, "Not in-game (dying/left), skipping delta application");
-            return;
-          }
-          let enemies = [...(previousState.enemies || [])];
-          let npcs = [...(previousState.npcs || [])];
-
-          if (data.delta.commands) {
-            data.delta.commands.forEach((command: any) => {
-              switch (command.event) {
-                case "spawnEnemy":
-                  if (command.enemy) enemies.push(command.enemy);
-                  break;
-                case "spawnNpc":
-                  if (command.npc) npcs.push(command.npc);
-                  break;
-                case "destroyEnemy":
-                  enemies = enemies.filter((e) => e.id !== command.id);
-                  break;
-              }
-            });
-          }
-
-          enemies = updateEnemiesState(data.delta.enemies || [], enemies);
-          npcs = updateNpcsState(data.delta.npcs || [], npcs);
-
-          const jobSpaces = data.delta.jobSpaces ?? previousState.jobSpaces ?? [];
-
-          setGameState({
-            ...previousState,
-            enemies,
-            npcs,
-            jobSpaces,
-          });
-        }, getStreamSyncDelay());
-
-        activeTimeouts.current.push(timeoutId);
-      }
+      if (!data.delta) return;
+      useSocketStore.getState().setPingToStreamer(data.delta.ping || 0);
+      pendingDeltas.current.push({
+        delta: data.delta,
+        applyAt: Date.now() + getStreamSyncDelay(),
+      });
     });
+
+    /**
+     * Applies every delta whose stream-delay timer has elapsed as one update.
+     *
+     * `flushAll` ignores the timers entirely — used when the tab comes back,
+     * where the player has jumped to live and everything still held back is
+     * history we'd only be replaying.
+     */
+    const drainDeltas = (flushAll: boolean) => {
+      const queue = pendingDeltas.current;
+      if (queue.length === 0) return;
+
+      if (!useSocketStore.getState().inGame) {
+        logger.debug(TAG, "Not in-game (dying/left), dropping queued deltas");
+        pendingDeltas.current = [];
+        return;
+      }
+
+      const now = Date.now();
+      let dueCount = 0;
+      while (dueCount < queue.length && (flushAll || queue[dueCount].applyAt <= now)) {
+        dueCount++;
+      }
+      if (dueCount === 0) return;
+
+      const due = queue.slice(0, dueCount);
+      pendingDeltas.current = queue.slice(dueCount);
+
+      const previousState = useSocketStore.getState().gameState;
+      if (!previousState) {
+        logger.warn(TAG, "No previous game state, skipping delta application");
+        return;
+      }
+
+      // Build the lookups once and fold every due delta through them, so the
+      // cost is per delta rather than per delta per entity.
+      const enemyMap = new Map<string, any>(
+        (previousState.enemies || []).map((enemy: any) => [enemy.id, enemy])
+      );
+      const npcMap = new Map<string, any>(
+        (previousState.npcs || []).map((npc: any) => [npc.id, npc])
+      );
+      let jobSpaces = previousState.jobSpaces ?? [];
+
+      for (const { delta } of due) {
+        if (delta.commands) {
+          delta.commands.forEach((command: any) => {
+            switch (command.event) {
+              case "spawnEnemy":
+                if (command.enemy) enemyMap.set(command.enemy.id, command.enemy);
+                break;
+              case "spawnNpc":
+                if (command.npc) npcMap.set(command.npc.id, command.npc);
+                break;
+              case "destroyEnemy":
+                enemyMap.delete(command.id);
+                break;
+            }
+          });
+        }
+
+        (delta.enemies || []).forEach((update: any) => {
+          const existing = enemyMap.get(update.id);
+          if (existing) Object.assign(existing, update);
+        });
+
+        (delta.npcs || []).forEach((update: any) => {
+          const existing = npcMap.get(update.id);
+          if (existing) Object.assign(existing, update);
+          else npcMap.set(update.id, update);
+        });
+
+        if (delta.jobSpaces) jobSpaces = delta.jobSpaces;
+      }
+
+      logger.debug(TAG, `Applied ${due.length} delta(s)`, { flushAll });
+      setGameState({
+        ...previousState,
+        enemies: Array.from(enemyMap.values()),
+        npcs: Array.from(npcMap.values()),
+        jobSpaces,
+      });
+    };
+
+    const deltaDrainInterval = setInterval(() => drainDeltas(false), 100);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "visible") return;
+      logger.info(TAG, "Tab visible again, flushing held-back state");
+      drainDeltas(true);
+      usePlayerStore.getState().flushQueue();
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // ✅ PING SYSTEM: clean RTT measurement
     const pingInterval = setInterval(() => {
@@ -299,8 +324,9 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     }, 2000);
 
     return () => {
-      activeTimeouts.current.forEach(clearTimeout);
-      activeTimeouts.current = [];
+      pendingDeltas.current = [];
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearInterval(deltaDrainInterval);
       clearInterval(pingInterval);
       clearInterval(inGameCheckInterval);
       socketInstance.disconnect();

@@ -1,5 +1,5 @@
 import React from "react";
-import { Tooltip } from "react-tooltip";
+import { PortalTooltip } from "./ui/PortalTooltip";
 import { isEmptyAbility } from "../abilityService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { Ability } from "./Ability";
@@ -51,7 +51,7 @@ export const AbilitiesNav: React.FC = () => {
         )
       )}
 
-      <Tooltip
+      <PortalTooltip
         id="ability-tooltip"
         delayShow={300}
         clickable
@@ -61,7 +61,7 @@ export const AbilitiesNav: React.FC = () => {
           return <AbilityTooltip abilityId={abilityId} stats={stats} />;
         }}
       />
-      <Tooltip
+      <PortalTooltip
         id="ability-calc-tooltip"
         delayShow={0}
         render={({ activeAnchor }) => {

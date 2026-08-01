@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Tooltip } from "react-tooltip";
+import { useEffect, useState } from "react";
+import { PortalTooltip } from "../ui/PortalTooltip";
 import { useNpcStore } from "../../store/useNpcStore";
 import {
   ArenaData,
@@ -69,16 +69,15 @@ const MESSAGE_TYPES = new Set([
   "sell",
 ]);
 
-const BuyToast: React.FC<{ message: string; toastKey: number; isError?: boolean }> = ({ message, toastKey, isError }) => {
+// Rendered with `key={toast.key}`, so a new message remounts this and the timer
+// starts over — no need to push it back to visible from an effect.
+const BuyToast: React.FC<{ message: string; isError?: boolean }> = ({ message, isError }) => {
   const [visible, setVisible] = useState(true);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    setVisible(true);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setVisible(false), 2500);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [toastKey]);
+    const timer = setTimeout(() => setVisible(false), 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!visible) return null;
 
@@ -202,7 +201,7 @@ export const NpcPopup: React.FC = () => {
 
       {/* Modal */}
       <div onClick={(e) => e.stopPropagation()} className="relative z-10">
-        {toast && <BuyToast message={toast.message} toastKey={toast.key} isError={toast.isError} />}
+        {toast && <BuyToast key={toast.key} message={toast.message} isError={toast.isError} />}
         <WindowContainer className="p-6" style={{ paddingRight: "8px" }}>
           <div className="flex justify-end mb-2">
             <button
@@ -215,7 +214,7 @@ export const NpcPopup: React.FC = () => {
           {renderContent()}
         </WindowContainer>
 
-        <Tooltip
+        <PortalTooltip
           id="npc-item-tooltip"
           place="right"
           clickable
@@ -227,7 +226,7 @@ export const NpcPopup: React.FC = () => {
             return <InventoryTooltip item={makeItem(itemId, qty)} />;
           }}
         />
-        <Tooltip
+        <PortalTooltip
           id="inventory-calc-tooltip"
           place="right"
           delayShow={0}

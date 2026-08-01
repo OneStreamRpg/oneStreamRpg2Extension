@@ -1,6 +1,8 @@
+import { useMaterialCapWatcher } from "../hooks/useMaterialCapWatcher";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useUIStore } from "../store/useUIStore";
 import { WindowId } from "../types/windows";
+import { MaterialCapAlert } from "./MaterialCapAlert";
 import { AbilitiesNav } from "./AbilitiesNav";
 import { ActivePage } from "./ActivePage";
 import { LeftNav } from "./LeftNav";
@@ -22,6 +24,7 @@ export const UserInterface: React.FC = () => {
   const toggleGroupPanel = useUIStore((state) => state.toggleGroupPanel);
   const toggleTradePanel = useUIStore((state) => state.toggleTradePanel);
   const displayedState = usePersonalChannelStore((state) => state.displayedState);
+  useMaterialCapWatcher();
   // Surface the trade panel automatically when a request comes in or one is pending,
   // even if the user hasn't opened it.
   const hasTradeActivity =
@@ -66,6 +69,12 @@ export const UserInterface: React.FC = () => {
         {/* The action bar stays put — it is muscle memory during a fight. */}
         <div className="absolute inset-x-0 bottom-7 flex justify-center gap-2 pointer-events-none">
           <AbilitiesNav />
+        </div>
+
+        {/* Above the windows: it is a notice you are meant to catch, and it
+            must not end up hidden under whatever you last dragged there. */}
+        <div className="absolute top-12 inset-x-2 z-50 pointer-events-none">
+          <MaterialCapAlert />
         </div>
       </div>
       <LeftNav />

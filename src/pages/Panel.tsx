@@ -22,16 +22,21 @@ export const Panel: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const displayedState = usePersonalChannelStore((state) => state.displayedState);
-  const pendingTradeInvites = displayedState?.pendingTradeInvites?.length ?? 0;
   const tradeSession = displayedState?.tradeSession ?? null;
 
   // Surface the trade page automatically when a trade request comes in,
-  // mirroring the overlay's auto-open behavior.
-  useEffect(() => {
-    if (pendingTradeInvites > 0) {
-      setCurrentPage("trade");
-    }
-  }, [pendingTradeInvites]);
+  // mirroring the overlay's auto-open behavior. Driven off the store
+  // subscription rather than a render-time value so it reacts to an invite
+  // actually arriving, instead of re-firing whenever the count changes.
+  useEffect(
+    () =>
+      usePersonalChannelStore.subscribe((state, previous) => {
+        const now = state.displayedState?.pendingTradeInvites?.length ?? 0;
+        const before = previous.displayedState?.pendingTradeInvites?.length ?? 0;
+        if (now > before) setCurrentPage("trade");
+      }),
+    []
+  );
 
   if (!isConnected) {
     return <JoinGameScreen status="connecting" />;
