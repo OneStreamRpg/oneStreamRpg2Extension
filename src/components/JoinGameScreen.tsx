@@ -1,5 +1,5 @@
 interface JoinGameScreenProps {
-  status: "idle" | "joining" | "connecting";
+  status: "idle" | "joining" | "connecting" | "offline" | "error";
   error?: string | null;
   onJoin?: () => void;
 }
@@ -12,6 +12,20 @@ export const JoinGameScreen: React.FC<JoinGameScreenProps> = ({ status, error, o
 
         {status === "connecting" && (
           <span className="text-gray-400 text-xs">Connecting…</span>
+        )}
+
+        {status === "offline" && (
+          <span className="text-gray-400 text-xs text-center">
+            This streamer isn’t running the game right now.
+            <br />
+            It’ll start on its own once they do.
+          </span>
+        )}
+
+        {status === "error" && (
+          <span className="text-red-400 text-xs text-center">
+            {error ?? "Can’t reach the game server."}
+          </span>
         )}
 
         {(status === "idle" || status === "joining") && (

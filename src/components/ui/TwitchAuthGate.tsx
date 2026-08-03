@@ -25,8 +25,11 @@ export const TwitchAuthGate: React.FC<Props> = ({ children }) => {
         logger.info(TAG, "onAuthorized", { channelId: auth.channelId });
         const isLinked = !!window.Twitch.ext.viewer?.isLinked;
 
+        // auth.userId is the *viewer*, auth.channelId is the broadcaster.
+        // Looking up the channel here made every viewer see the streamer's
+        // avatar and login in their own profile widget.
         const user = await fetchTwitchUser({
-          userId: auth.channelId,
+          userId: auth.userId,
           helixToken: auth.helixToken,
           clientId: auth.clientId,
         });

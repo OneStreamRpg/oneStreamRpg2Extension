@@ -16,7 +16,8 @@ import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useSocketStore } from "../store/socketStore";
 
 export const Panel: React.FC = () => {
-  const { isConnected, inGame, isDying, joinStatus, joinError, joinGameFn } = useSocketStore();
+  const { isConnected, inGame, isDying, joinStatus, joinError, joinGameFn, lobbyOnline, connectionError } =
+    useSocketStore();
   const { profile } = useAuthStore();
   const [currentPage, setCurrentPage] = useState<PanelPage>("map");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -39,6 +40,8 @@ export const Panel: React.FC = () => {
   );
 
   if (!isConnected) {
+    if (lobbyOnline === false) return <JoinGameScreen status="offline" />;
+    if (connectionError) return <JoinGameScreen status="error" error={connectionError} />;
     return <JoinGameScreen status="connecting" />;
   }
 

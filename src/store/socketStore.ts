@@ -17,6 +17,10 @@ interface SocketStore {
   joinStatus: "idle" | "joining";
   joinError: string | null;
   joinGameFn: ((loginName: string) => void) | null;
+  /** null while discovery is still running. false = streamer isn't hosting. */
+  lobbyOnline: boolean | null;
+  /** Set when the socket cannot be established at all (bad URL, auth, outage). */
+  connectionError: string | null;
   setSocket: (socket: Socket | null) => void;
   setIsConnected: (state: boolean) => void;
   setGameState: (state: GameState) => void;
@@ -28,6 +32,8 @@ interface SocketStore {
   setJoinStatus: (status: "idle" | "joining") => void;
   setJoinError: (error: string | null) => void;
   setJoinGameFn: (fn: (loginName: string) => void) => void;
+  setLobbyOnline: (online: boolean | null) => void;
+  setConnectionError: (error: string | null) => void;
 }
 
 export const useSocketStore = create<SocketStore>((set) => ({
@@ -42,6 +48,8 @@ export const useSocketStore = create<SocketStore>((set) => ({
   joinStatus: "idle",
   joinError: null,
   joinGameFn: null,
+  lobbyOnline: null,
+  connectionError: null,
   setSocket: (socket) => set({ socket }),
   setIsConnected: (isConnected) => set({ isConnected }),
   setGameState: (gameState) => set({ gameState }),
@@ -53,4 +61,6 @@ export const useSocketStore = create<SocketStore>((set) => ({
   setJoinStatus: (joinStatus) => set({ joinStatus }),
   setJoinError: (joinError) => set({ joinError }),
   setJoinGameFn: (fn) => set({ joinGameFn: fn }),
+  setLobbyOnline: (lobbyOnline) => set({ lobbyOnline }),
+  setConnectionError: (connectionError) => set({ connectionError }),
 }));
