@@ -1,10 +1,32 @@
-POST https://germany.pauledevelopment.com:5322/api/lobby
+@base = https://onestreamrpg.pauledevelopment.com
+@channelId = 973731649
+
+### Discovery — is this broadcaster running the game, and where?
+GET {{base}}/api/lobby/status/{{channelId}}
+
+### Metadata (lobby-independent, served by the gateway itself)
+GET {{base}}/api/metadata
+
+### Socket.IO handshake for a lobby (what the extension connects to)
+GET {{base}}/l/{{channelId}}/socket.io/?EIO=4&transport=polling
+
+### Streamer login — step 1: get a pairing code and a URL to open in a browser
+GET {{base}}/api/auth/device/new
+
+### Streamer login — step 4: poll until the browser half completes
+GET {{base}}/api/auth/device/poll?code=PASTE_DEVICE_CODE
+
+### Start a lobby as the authenticated streamer
+POST {{base}}/api/lobby/start
+Authorization: Bearer PASTE_HOST_TOKEN
+Content-Type: application/json
+
+{}
+
+### LEGACY — unauthenticated spawn, for the un-migrated GameMaker client
+POST {{base}}/api/lobby
 Content-Type: application/json
 
 {
-    "hostId": "68056832",
-    "lobbyId": "7A8DtJGlrxWx"
+    "hostId": "{{channelId}}"
 }
-
-### Meta
-GET https://germany.pauledevelopment.com:5322/api/metadata

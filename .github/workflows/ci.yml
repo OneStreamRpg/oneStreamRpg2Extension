@@ -76,14 +76,16 @@ jobs:
       - name: Run ESLint
         run: pnpm run lint
 
-  # This job builds the overlay and depends on the 'install' job.
-  build-overlay:
+  # Overlay and panel are two entry points of a single Vite build (see
+  # vite.config.ts), so there is one build job producing one dist/ — the old
+  # build:overlay / build:panel scripts no longer exist.
+  build:
     needs: install
     runs-on: ubuntu-latest
     env:
-      VITE_EXT_TYPE: overlay
-      VITE_SOCKET_URL: ${{ vars.VITE_SOCKET_URL }}
-      VITE_DEVELOPER: true
+      # Single public origin; lobbies are routed by path underneath it.
+      VITE_API_BASE: ${{ vars.VITE_API_BASE }}
+      VITE_DEVELOPER: false
       VITE_DISABLE_BACKEND: false
     steps:
       - name: Checkout code
@@ -104,41 +106,10 @@ jobs:
       # This step ensures that pnpm's internal state and binary links are correct after restoring the artifact.
       - name: Verify installation
         run: pnpm install --frozen-lockfile
-      - name: Build Overlay
-        run: pnpm run build:overlay
-      - name: Upload Overlay Artifact
+      - name: Build
+        run: pnpm run build
+      - name: Upload dist artifact
         uses: actions/upload-artifact@v4
         with:
-          name: overlay-dist
-          path: dist/overlay
-
-  # This job builds the panel and also depends on the 'install' job.
-  build-panel:
-    needs: install
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Download dependencies artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: node-modules
-          path: node_modules/
-      # This step ensures that pnpm's internal state and binary links are correct after restoring the artifact.
-      - name: Verify installation
-        run: pnpm install --frozen-lockfile
-      - name: Build Panel
-        run: pnpm run build:panel
-      - name: Upload Panel Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: panel-dist
-          path: dist/panel
+          name: extension-dist
+          path: dist

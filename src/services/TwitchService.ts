@@ -16,26 +16,55 @@ export type TwitchUser = {
 }
 
 type FetchUserParams = {
-    userId: string;
+    /** Numeric Twitch user ID. Undefined/opaque until the viewer shares their ID. */
+    userId: string | undefined;
     helixToken: string;
     clientId: string;
 }
 
+/**
+ * Helix only accepts numeric Twitch user IDs. Until the viewer shares their
+ * identity we get an opaque ID instead ("U..." unlinked, "A..." anonymous),
+ * which Helix rejects with 400 Bad Identifiers.
+ */
+export function isSharedUserId(userId: string | undefined): userId is string {
+    return !!userId && /^\d+$/.test(userId);
+}
+
 export async function fetchTwitchUser({ userId, helixToken, clientId }: FetchUserParams): Promise<TwitchUser | null> {
-    const response = await fetch(`https://api.twitch.tv/helix/users?id=${userId}`, {
-        headers: {
-            Authorization: `Extension ${helixToken}`,
-            "Client-Id": clientId,
-        },
-    });
+    if (!isSharedUserId(userId)) {
+        logger.info(TAG, `Skipping user fetch: identity not shared (userId=${userId})`);
+        return null;
+    }
+
+    let response: Response;
+    try {
+        response = await fetch(`https://api.twitch.tv/helix/users?id=${userId}`, {
+            headers: {
+                Authorization: `Extension ${helixToken}`,
+                "Client-Id": clientId,
+            },
+        });
+    } catch (err) {
+        // Network-level failure (CSP block, offline, DNS) never reaches the
+        // status check below, and used to surface as a bare unhandled rejection.
+        logger.error(TAG, `User fetch threw for userId=${userId}`, err);
+        return null;
+    }
 
     if (!response.ok) {
-        logger.error(TAG, `Failed to fetch user data: status=${response.status}, userId=${userId}`);
+        // Helix explains itself in the body — status alone can't tell an
+        // expired token from a malformed ID from a client-id mismatch.
+        const body = await response.text().catch(() => "<unreadable>");
+        logger.error(
+            TAG,
+            `Failed to fetch user data: status=${response.status}, userId=${userId}, body=${body}`
+        );
         return null;
     }
 
     const data = await response.json();
-    const user = data.data[0] ?? null;
+    const user = data.data?.[0] ?? null;
     if (user) {
         logger.info(TAG, `Fetched Twitch user: ${user.display_name}`);
     } else {

@@ -3,7 +3,6 @@ import { Page } from "../types/ui";
 
 type UIState = {
   activePage: Page | null;
-  debugInventoryInfo: boolean;
   questPanelOpen: boolean;
   profileOpen: boolean;
   groupPanelOpen: boolean;
@@ -16,7 +15,6 @@ type UIState = {
 type UIActions = {
   setActivePage: (page: Page) => void;
   closeActivePage: () => void;
-  toggleDebugInventoryInfo: () => void;
   toggleQuestPanel: () => void;
   toggleProfile: () => void;
   toggleGroupPanel: () => void;
@@ -28,7 +26,6 @@ type UIActions = {
 export const useUIStore = create<UIState & UIActions>((set) => ({
   // State
   activePage: null,
-  debugInventoryInfo: true,
   questPanelOpen: true,
   profileOpen: true,
   groupPanelOpen: false,
@@ -43,9 +40,6 @@ export const useUIStore = create<UIState & UIActions>((set) => ({
   },
   closeActivePage: () => {
     set({ activePage: null });
-  },
-  toggleDebugInventoryInfo: () => {
-    set((state) => ({ debugInventoryInfo: !state.debugInventoryInfo }));
   },
   toggleQuestPanel: () => {
     set((state) => ({ questPanelOpen: !state.questPanelOpen }));

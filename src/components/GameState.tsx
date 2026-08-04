@@ -13,6 +13,7 @@ import { usePlayerStore } from "../store/usePlayerStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
 import { ActionAcknowledgment } from "../types/personalChannel";
 import { getStreamSyncDelay } from "../utils/streamSyncDelay";
+import { API_BASE, fetchLobbyStatus, socketIoPathFor } from "../config/backend";
 
 const TAG = "GameState";
 
@@ -22,7 +23,9 @@ interface Props {
   children: React.ReactNode;
 }
 
-const { VITE_SOCKET_URL } = import.meta.env;
+// How often to re-check whether a streamer who wasn't hosting has launched the
+// game since. Cheap GET, so a slow poll is plenty.
+const LOBBY_POLL_MS = 10_000;
 
 // TODO MC: move world interaction layer out here.
 
@@ -40,7 +43,18 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     setJoinStatus,
     setJoinError,
     setJoinGameFn,
+    setLobbyOnline,
+    setConnectionError,
   } = useSocketStore();
+
+  // The Twitch extension JWT is refreshed periodically by onAuthorized. Keeping
+  // it in a ref (and handing socket.io a callback) means a refresh updates the
+  // credential used for the next reconnect instead of tearing the socket down
+  // and rebuilding the whole game state.
+  const tokenRef = useRef(token);
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
 
   // Initialize personal channel
   usePersonalChannel({
@@ -78,15 +92,35 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         }
       });
     }
-    logger.info(TAG, `Connecting to socket.io server at ${VITE_SOCKET_URL}`);
-    const socketInstance: Socket = io(VITE_SOCKET_URL, {
-      path: "/socket.io",
+    // Lobbies are routed by path off a single domain, so the broadcaster we
+    // were loaded on decides which worker we reach. Discovery only exists so we
+    // can tell "streamer isn't hosting" apart from "server is broken" —
+    // connecting blind would leave the viewer on "Connecting…" forever.
+    const socketPath = socketIoPathFor(channelId);
+    logger.info(TAG, `Connecting to ${API_BASE} at ${socketPath}`);
+
+    let cancelled = false;
+    const checkLobby = () =>
+      fetchLobbyStatus(channelId)
+        .then(({ online }) => {
+          if (!cancelled) setLobbyOnline(online);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          logger.error(TAG, "Lobby discovery failed", err);
+          setConnectionError("Could not reach the OneStream RPG servers.");
+        });
+
+    checkLobby();
+    const lobbyPollInterval = setInterval(checkLobby, LOBBY_POLL_MS);
+
+    const socketInstance: Socket = io(API_BASE, {
+      path: socketPath,
       // MC: Active in case you want to have a good log in dev console
       // transports: ["websocket"],
-      auth: {
-        token,
-        channelId,
-      },
+      // Callback rather than a literal: re-evaluated on every reconnect, so a
+      // refreshed Twitch token is picked up automatically.
+      auth: (cb) => cb({ token: tokenRef.current, channelId }),
     });
 
     setSocket(socketInstance);
@@ -95,6 +129,8 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       logger.info(TAG, "Connected to socket.io server");
       setIsConnected(true);
       setJoinError(null);
+      setConnectionError(null);
+      setLobbyOnline(true);
     });
 
     socketInstance.on("authenticated", () => {
@@ -146,7 +182,10 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     setJoinGameFn(joinGame);
 
     socketInstance.on("connect_error", (err) => {
+      // Logger is disabled in production builds, so without this the viewer
+      // sees an eternal "Connecting…" with nothing to explain it.
       logger.error(TAG, "Connection error", err);
+      setConnectionError(err.message || "Could not connect to the game server.");
     });
 
     socketInstance.on("gameState", (data) => {
@@ -324,16 +363,20 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     }, 2000);
 
     return () => {
+      cancelled = true;
       pendingDeltas.current = [];
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       clearInterval(deltaDrainInterval);
       clearInterval(pingInterval);
       clearInterval(inGameCheckInterval);
+      clearInterval(lobbyPollInterval);
       socketInstance.disconnect();
       setIsConnected(false);
       setSocket(null);
     };
-  }, [token, channelId, setSocket, setIsConnected, setGameState, setinGame, setIsDying, setJoinStatus, setJoinError, setJoinGameFn]);
+    // `token` is deliberately absent: it lives in tokenRef, so a Twitch token
+    // refresh no longer rebuilds the socket and wipes the game state.
+  }, [channelId, setSocket, setIsConnected, setGameState, setinGame, setIsDying, setJoinStatus, setJoinError, setJoinGameFn, setLobbyOnline, setConnectionError]);
 
   return <>{children}</>;
 };

@@ -7,6 +7,7 @@
 
 import { logger } from "./Logger";
 import { ScalingMap } from "../utils/resolveScaling";
+import { API_BASE } from "../config/backend";
 
 const TAG = "MetadataService";
 
@@ -90,7 +91,9 @@ class MetadataService {
     private itemSets: Record<string, ItemSet> | null = null;
     private quests: Record<string, QuestDefinition> | null = null;
     private classTrees: Record<string, ClassTreeDefinition> | null = null;
-    private readonly apiUrl = import.meta.env.VITE_SOCKET_URL + "/api/metadata";
+    // Metadata is the same for every lobby, so it is served by the gateway
+    // itself rather than through a /l/<channelId>/ route.
+    private readonly apiUrl = API_BASE + "/api/metadata";
 
     private constructor() { }
 
