@@ -29,9 +29,17 @@ export const ProfileNav: React.FC = () => {
   const locatePlayer = useLocatePlayerStore((state) => state.ping);
   const [statsOpen, setStatsOpen] = useState(false);
 
-  if (!displayedState || !profile) {
+  // Only the avatar comes from Twitch, and it needs a shared ID we may never
+  // get. Everything else comes from the game state, so don't hold the whole
+  // widget hostage to it — fall back to a placeholder portrait instead.
+  if (!displayedState) {
     return <div>Loading...</div>;
   }
+
+  const fallbackAvatar = `${import.meta.env.BASE_URL}media/img/icons/questionmark.png`;
+  // `||`, not `??`: Twitch sends an empty string for accounts with no avatar,
+  // which would otherwise render as a broken image.
+  const avatarUrl = profile?.profile_image_url || fallbackAvatar;
 
   const playerProfile: PlayerProfile = {
     name: displayedState.profile.username,
@@ -58,8 +66,11 @@ export const ProfileNav: React.FC = () => {
           <div className="flex items-center gap-2">
             <img
               className="w-12 h-12 border flex items-center justify-center cursor-pointer"
-              src={profile.profile_image_url}
+              src={avatarUrl}
               alt={`${playerProfile.name}'s profile`}
+              onError={(e) => {
+                e.currentTarget.src = fallbackAvatar;
+              }}
               onClick={locatePlayer}
               title="Show me on stream"
             />

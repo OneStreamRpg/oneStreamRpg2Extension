@@ -7,10 +7,13 @@ const LOG_LEVELS: Record<LogLevel, number> = {
     error: 3,
 };
 
-const config = {
-    enabled: false,
+// Driven by the env flag rather than hard-coded: leaving this pinned to `false`
+// meant developer builds silently swallowed every diagnostic, so failures only
+// ever showed up as bare browser network errors with no context.
+const config: { enabled: boolean; minLevel: LogLevel } = {
+    enabled: import.meta.env.VITE_DEVELOPER === "true",
     minLevel: "info",
-} as const;
+};
 
 function shouldLog(level: LogLevel,): boolean {
     if (!config.enabled) return false;

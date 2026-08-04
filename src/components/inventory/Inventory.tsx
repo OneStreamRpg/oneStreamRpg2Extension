@@ -298,7 +298,15 @@ export const Inventory: React.FC = () => {
         place="top"
         clickable
         delayShow={600}
-        openEvents={{ mouseenter: true, focus: true, click: true }}
+        // Open and close events must be paired. Overriding only `openEvents`
+        // left the default close event as `mouseout`, which *bubbles* — so
+        // crossing from the slot onto the icon, quantity or durability bar
+        // inside it fired a close and cancelled the pending 600ms show timer,
+        // while `mouseenter` (which doesn't bubble) never fired again to
+        // restart it. The tooltip then only appeared if the pointer came to
+        // rest without crossing a child boundary, which is why it felt random.
+        openEvents={{ mouseenter: true, focus: true }}
+        closeEvents={{ mouseleave: true, blur: true }}
         hidden={Boolean(activeItem)}
         render={({ activeAnchor }) => {
           const itemId = activeAnchor?.getAttribute("data-item-id");

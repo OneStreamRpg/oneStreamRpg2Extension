@@ -7,6 +7,8 @@ type AuthState = {
     isAuthenticated: boolean | null;
     profile: TwitchUser | null;
     setAuth: (authData: { token: string; channelId: string; isLinked: boolean }) => void;
+    /** Identity linking can change without a fresh token — see viewer.onChanged. */
+    setLinked: (isLinked: boolean) => void;
     setProfile: (profile: TwitchUser) => void;
     setLoggedOut: () => void;
 }
@@ -23,6 +25,10 @@ export const useAuthStore = create<AuthState>((set) => ({
             channelId: authData.channelId,
             isAuthenticated: authData.isLinked,
         });
+    },
+
+    setLinked: (isLinked) => {
+        set({ isAuthenticated: isLinked });
     },
 
     setProfile: (profile) => {
