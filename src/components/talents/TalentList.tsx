@@ -17,8 +17,12 @@ export const TalentList: React.FC<{
   <div className="flex flex-col gap-2">
     {talents.map((talent) => {
       const maxed = talent.rank >= talent.maxRank;
-      const affordable = canSpend && !maxed && points > 0;
+      // Capped-by-Tower is not the same as finished: the rank bar still runs to
+      // maxRank, with a marker showing where the current Tower level stops.
+      const atCap = !maxed && talent.rank >= talent.rankCap;
+      const affordable = canSpend && !maxed && !atCap && points > 0;
       const pct = (talent.rank / talent.maxRank) * 100;
+      const capPct = (talent.rankCap / talent.maxRank) * 100;
 
       return (
         <div
@@ -40,6 +44,7 @@ export const TalentList: React.FC<{
           </div>
 
           <div
+            className="relative"
             style={{
               background: "rgba(0,0,0,0.4)",
               borderRadius: "2px",
@@ -56,6 +61,19 @@ export const TalentList: React.FC<{
                 transition: "width 0.3s ease",
               }}
             />
+            {/* Where the Tower's current level stops training. */}
+            {!maxed && talent.rankCap < talent.maxRank && (
+              <div
+                className="absolute top-0"
+                style={{
+                  left: `${capPct}%`,
+                  width: "2px",
+                  height: "100%",
+                  background: "#e07050",
+                }}
+                title={`Tower trains to rank ${talent.rankCap}`}
+              />
+            )}
           </div>
 
           <div className="flex justify-between items-center gap-2">
@@ -64,6 +82,11 @@ export const TalentList: React.FC<{
                 {talent.effect}
               </span>
               <span className="text-xs text-gray-400">{talent.description}</span>
+              {atCap && (
+                <span className="text-xs" style={{ color: "#e07050" }}>
+                  Upgrade the Tower to pass rank {talent.rankCap}
+                </span>
+              )}
             </span>
             <button
               onClick={() => onSpend(talent.talentId)}
@@ -71,16 +94,18 @@ export const TalentList: React.FC<{
               title={
                 maxed
                   ? "Already at max rank"
-                  : !canSpend
-                    ? "Spend at the Tower"
-                    : points <= 0
-                      ? "No talent points"
-                      : `Spend 1 point on ${talent.name}`
+                  : atCap
+                    ? `The Tower only trains to rank ${talent.rankCap} — upgrade it`
+                    : !canSpend
+                      ? "Spend at the Tower"
+                      : points <= 0
+                        ? "No talent points"
+                        : `Spend 1 point on ${talent.name}`
               }
               className="px-3 py-1 text-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ backgroundColor: "#3d1a06", border: "1px solid #9a7228" }}
             >
-              {maxed ? "Max" : "+1"}
+              {maxed ? "Max" : atCap ? "Cap" : "+1"}
             </button>
           </div>
         </div>

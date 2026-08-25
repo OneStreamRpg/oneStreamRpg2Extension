@@ -273,6 +273,8 @@ export interface TownUpgradeTrack {
   level: number;
   /** The highest level the track can reach (10), NOT a "is maxed" flag. */
   maxLevel: number;
+  /** How far the Guild's current level funds. Always <= maxLevel. */
+  levelCap: number;
   /** What the CURRENT level grants; the server sends no preview of the next. */
   effect: string;
   /** Cost of the next level, already split per material. Empty once maxed. */
@@ -320,6 +322,8 @@ export interface TalentStatus {
   description: string;
   rank: number;
   maxRank: number;
+  /** How far the Tower's current level trains. Always <= maxRank. */
+  rankCap: number;
   /** Human-readable bonus at the CURRENT rank. */
   effect: string;
 }

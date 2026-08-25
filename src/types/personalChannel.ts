@@ -51,6 +51,8 @@ export interface TalentsState {
   level: number;
   maxLevel: number;
   trainerAvailable: boolean;
+  /** Highest rank the Tower's CURRENT level trains; upgrading it raises this. */
+  rankCap: number;
   talents: TalentState[];
 }
 
@@ -60,6 +62,8 @@ export interface TalentState {
   description: string;
   rank: number;
   maxRank: number;
+  /** How far the Tower's current level trains. Always <= maxRank. */
+  rankCap: number;
   /** Human-readable bonus at the CURRENT rank, e.g. "+15% resources harvested". */
   effect: string;
 }

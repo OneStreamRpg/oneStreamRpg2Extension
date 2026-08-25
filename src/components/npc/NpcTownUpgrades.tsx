@@ -69,6 +69,9 @@ const TownUpgradeRow: React.FC<{
 }> = ({ track, isOpen, onToggle, getPlayerQty, quantities, setQuantities, onDeposit }) => {
   // maxLevel is the ceiling (10), not a flag — the track is done at that level.
   const maxed = track.level >= track.maxLevel;
+  // Capped by the Guild's level is not the same as finished: the track can be
+  // resumed by upgrading the Guild.
+  const atCap = !maxed && track.level >= track.levelCap;
   const overallPct =
     track.progressMax > 0 ? Math.min(100, (track.progress / track.progressMax) * 100) : 0;
 
@@ -103,31 +106,48 @@ const TownUpgradeRow: React.FC<{
       {isOpen && !maxed && (
         <div className="flex flex-col gap-3 px-2 pb-2">
           <p className="text-xs text-gray-400">{track.description}</p>
-          <p className="text-xs" style={{ color: "#a0d0ff" }}>
-            <span className="font-semibold">Funding level {track.level + 1}</span> —{" "}
-            {track.progress}/{track.progressMax} materials
-          </p>
 
-          <div
-            style={{
-              background: "rgba(0,0,0,0.4)",
-              borderRadius: "2px",
-              height: "4px",
-              border: "1px solid rgba(255,255,255,0.1)",
-            }}
-          >
-            <div
+          {atCap && (
+            <p
+              className="text-xs px-2 py-1 rounded text-center"
               style={{
-                height: "100%",
-                width: `${overallPct}%`,
-                background: "linear-gradient(90deg, #c8a020, #f0d060)",
-                borderRadius: "2px",
-                transition: "width 0.3s ease",
+                background: "rgba(0,0,0,0.3)",
+                border: "1px solid #9a3a3a",
+                color: "#f0a0a0",
               }}
-            />
-          </div>
+            >
+              The Guild funds this to level {track.levelCap}. Upgrade the Guild to go further.
+            </p>
+          )}
+          {!atCap && (
+            <>
+              <p className="text-xs" style={{ color: "#a0d0ff" }}>
+                <span className="font-semibold">Funding level {track.level + 1}</span> —{" "}
+                {track.progress}/{track.progressMax} materials
+              </p>
 
-          {track.cost.map((req) => {
+              <div
+                style={{
+                  background: "rgba(0,0,0,0.4)",
+                  borderRadius: "2px",
+                  height: "4px",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${overallPct}%`,
+                    background: "linear-gradient(90deg, #c8a020, #f0d060)",
+                    borderRadius: "2px",
+                    transition: "width 0.3s ease",
+                  }}
+                />
+              </div>
+            </>
+          )}
+
+          {!atCap && track.cost.map((req) => {
             const key = `${track.trackId}:${req.itemId}`;
             const remaining = req.quantity - req.deposited;
             const playerHas = getPlayerQty(req.itemId);
