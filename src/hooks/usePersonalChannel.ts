@@ -13,7 +13,7 @@ import { usePathOverlayStore, Waypoint } from "../store/usePathOverlayStore";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
 import { useCastIndicatorStore } from "../store/useCastIndicatorStore";
-import { GambleData, InteractData, NpcDepositData, NpcUpgradeData } from "../types/npcInteraction";
+import { GambleData, InteractData, NpcDepositData, NpcUpgradeData, TalentActionData, TalentInfoData, TownUpgradeDepositData, TownUpgradeInfoData } from "../types/npcInteraction";
 import { useUIStore } from "../store/useUIStore";
 import { getStreamSyncDelay } from "../utils/streamSyncDelay";
 import {
@@ -33,6 +33,8 @@ const NPC_POPUP_TYPES = new Set<string>([
   "acceptQuest", "questPreview", "confirmAcceptQuest", "declineQuest",
   "sellMenu", "sell", "sellMany",
   "npcUpgrade",
+  "townUpgradeInfo",
+  "talentInfo",
 ]);
 
 interface UsePersonalChannelOptions {
@@ -284,6 +286,45 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
           }
           useNpcStore.getState().setLoading(false);
         }
+      }
+
+      // Route townUpgradeDeposit responses. The payload carries every track, so
+      // the open panel redraws from it in place — no re-fetch — and the result
+      // goes out as a toast.
+      if (data.data?.type === "townUpgradeDeposit") {
+        const d = data.data as TownUpgradeDepositData;
+        if (!d.success) {
+          useNpcStore.getState().setToast(d.message, true);
+        } else {
+          const currentData = useNpcStore.getState().popupData as TownUpgradeInfoData | null;
+          if (currentData?.type === "townUpgradeInfo") {
+            useNpcStore.getState().updatePopupData({ ...currentData, tracks: d.tracks });
+          }
+          useNpcStore.getState().setToast(d.message);
+        }
+        useNpcStore.getState().setLoading(false);
+      }
+
+      // Route spendTalent / resetTalents. Both carry the refreshed ranks, so the
+      // Tower popup redraws in place; the standalone Talents window needs
+      // nothing here since it reads ranks from personal state, which the server
+      // marks dirty on the same change.
+      if (data.data?.type === "spendTalent" || data.data?.type === "resetTalents") {
+        const d = data.data as TalentActionData;
+        if (!d.success) {
+          useNpcStore.getState().setToast(d.message, true);
+        } else {
+          const currentData = useNpcStore.getState().popupData as TalentInfoData | null;
+          if (currentData?.type === "talentInfo") {
+            useNpcStore.getState().updatePopupData({
+              ...currentData,
+              talentPoints: d.talentPoints,
+              talents: d.talents,
+            });
+          }
+          useNpcStore.getState().setToast(d.message);
+        }
+        useNpcStore.getState().setLoading(false);
       }
 
       // Route gamble outcomes: the inventory delta is applied via confirmAction

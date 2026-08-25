@@ -8,6 +8,7 @@ export enum WindowId {
   Inventory = "inventory",
   SkillTree = "skillTree",
   Abilities = "abilities",
+  Talents = "talents",
   Recipes = "recipes",
   Settings = "settings",
 }
@@ -20,6 +21,7 @@ export const ALL_WINDOW_IDS: WindowId[] = [
   WindowId.Inventory,
   WindowId.SkillTree,
   WindowId.Abilities,
+  WindowId.Talents,
   WindowId.Recipes,
   WindowId.Settings,
 ];
@@ -45,6 +47,7 @@ export const WINDOW_DEFAULT_ANCHORS: Record<WindowId, WindowAnchor> = {
   [WindowId.Inventory]: { ax: 1, ay: 0 },
   [WindowId.SkillTree]: { ax: 1, ay: 0 },
   [WindowId.Abilities]: { ax: 1, ay: 0 },
+  [WindowId.Talents]: { ax: 1, ay: 0 },
   [WindowId.Recipes]: { ax: 1, ay: 0 },
   [WindowId.Settings]: { ax: 1, ay: 0 },
 };
@@ -57,6 +60,7 @@ export const WINDOW_TITLES: Record<WindowId, string> = {
   [WindowId.Inventory]: "Inventory",
   [WindowId.SkillTree]: "Skill Tree",
   [WindowId.Abilities]: "Abilities",
+  [WindowId.Talents]: "Talents",
   [WindowId.Recipes]: "Recipes",
   [WindowId.Settings]: "Settings",
 };

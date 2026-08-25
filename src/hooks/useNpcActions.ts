@@ -184,6 +184,38 @@ export function useNpcActions(socket: Socket | null) {
     [sendNpcAction]
   );
 
+  // The Guild's lobby-wide upgrade tracks. Everyone deposits into the same pot,
+  // so these stay identity-optimistic like the building deposit — the server's
+  // response carries the authoritative track list back.
+  const townUpgradeInfo = useCallback(
+    (npcId?: string) => sendNpcAction("townUpgradeInfo", { npcId }),
+    [sendNpcAction]
+  );
+
+  const townUpgradeDeposit = useCallback(
+    (npcId: string, trackId: string, itemId: string, quantity: number) =>
+      sendNpcAction("townUpgradeDeposit", { npcId, trackId, itemId, quantity }),
+    [sendNpcAction]
+  );
+
+  // Tower talents. Spending is gated on standing at the Tower server-side, so
+  // these fail with an error message when called from anywhere else — the
+  // Talents window disables its buttons rather than relying on that.
+  const talentInfo = useCallback(
+    (npcId?: string) => sendNpcAction("talentInfo", { npcId }),
+    [sendNpcAction]
+  );
+
+  const spendTalent = useCallback(
+    (npcId: string, talentId: string) => sendNpcAction("spendTalent", { npcId, talentId }),
+    [sendNpcAction]
+  );
+
+  const resetTalents = useCallback(
+    (npcId: string) => sendNpcAction("resetTalents", { npcId }),
+    [sendNpcAction]
+  );
+
   // Wager `quantity` of a material (`itemId`) on a 50/50 flip with the Gambler.
   // Outcome is server-side RNG, so this stays identity-optimistic — we wait for
   // the ack to animate win/lose and apply the inventory delta.
@@ -244,6 +276,11 @@ export function useNpcActions(socket: Socket | null) {
     stashSwap,
     npcUpgrade,
     npcDeposit,
+    townUpgradeInfo,
+    townUpgradeDeposit,
+    talentInfo,
+    spendTalent,
+    resetTalents,
     gamble,
     setTargetNpc,
   };

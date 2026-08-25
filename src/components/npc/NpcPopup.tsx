@@ -15,6 +15,8 @@ import {
   SpawnArenaData,
   StashData,
   SummonData,
+  TalentInfoData,
+  TownUpgradeInfoData,
   TradeData,
 } from "../../types/npcInteraction";
 import { ResolvedToken } from "../../utils/resolveScaling";
@@ -33,6 +35,8 @@ import { NpcShop } from "./NpcShop";
 import { NpcStash } from "./NpcStash";
 import { NpcSummon } from "./NpcSummon";
 import { NpcTrade } from "./NpcTrade";
+import { NpcTalents } from "./NpcTalents";
+import { NpcTownUpgrades } from "./NpcTownUpgrades";
 import { NpcUpgrade } from "./NpcUpgrade";
 
 function makeItem(itemId: string, quantity = 1): Item {
@@ -166,6 +170,10 @@ export const NpcPopup: React.FC = () => {
         return <NpcSell data={popupData as SellMenuData} />;
       case "npcUpgrade":
         return <NpcUpgrade data={popupData as NpcUpgradeData} />;
+      case "townUpgradeInfo":
+        return <NpcTownUpgrades data={popupData as TownUpgradeInfoData} />;
+      case "talentInfo":
+        return <NpcTalents data={popupData as TalentInfoData} />;
       case "gambleMenu":
         return <NpcGamble data={popupData as GambleMenuData} />;
       case "sellMany": {

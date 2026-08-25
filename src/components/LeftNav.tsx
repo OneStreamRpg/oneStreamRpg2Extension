@@ -81,7 +81,15 @@ export const LeftNav: React.FC = () => {
         isActive={activePage === Page.Abilities}
         onClick={() => setActivePage(Page.Abilities)}
       />
-<NavButton
+      {/* Placeholder art: there is no talents.png icon yet — drop one into
+          public/media/img/icons/ and change `icon` to "talents". */}
+      <NavButton
+        icon="questionmark"
+        label="Talents"
+        isActive={activePage === Page.Talents}
+        onClick={() => setActivePage(Page.Talents)}
+      />
+      <NavButton
         icon="stats"
         label="Stats"
         isActive={profileOpen}

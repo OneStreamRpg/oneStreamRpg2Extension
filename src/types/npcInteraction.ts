@@ -14,6 +14,8 @@ export type NpcPopupType =
   | "questPreview"
   | "sellMenu"
   | "npcUpgrade"
+  | "townUpgradeInfo"
+  | "talentInfo"
   | "gambleMenu";
 
 // Data response shapes from server ack `data` field
@@ -259,6 +261,80 @@ export interface NpcDepositData {
   dependenciesMet?: boolean;
 }
 
+// --- Town upgrades (the Guild's shared tracks) ------------------------------
+// Distinct from npcUpgrade, which levels a single building. These four tracks
+// live on the lobby: anyone deposits toward any track and every level bought
+// applies to the whole town. Mirrors TownUpgradeTrackStatus on the server.
+
+export interface TownUpgradeTrack {
+  trackId: string;
+  name: string;
+  description: string;
+  level: number;
+  /** The highest level the track can reach (10), NOT a "is maxed" flag. */
+  maxLevel: number;
+  /** What the CURRENT level grants; the server sends no preview of the next. */
+  effect: string;
+  /** Cost of the next level, already split per material. Empty once maxed. */
+  cost: { itemId: string; itemName: string; quantity: number; deposited: number }[];
+  progress: number;
+  progressMax: number;
+}
+
+export interface TownUpgradeInfoData {
+  type: "townUpgradeInfo";
+  npcId: string;
+  name: string;
+  tracks: TownUpgradeTrack[];
+}
+
+// Carries the full track list back, so the panel redraws from one payload
+// instead of re-fetching.
+export interface TownUpgradeDepositData {
+  type: "townUpgradeDeposit";
+  success: boolean;
+  message: string;
+  upgraded: boolean;
+  npcId: string;
+  trackId?: string;
+  level?: number;
+  tracks: TownUpgradeTrack[];
+}
+
+// --- Tower talents (personal) ----------------------------------------------
+// The Tower's popup fetches these; the standalone Talents window reads the same
+// data straight off personal state instead. Both spend through the same action.
+
+export interface TalentInfoData {
+  type: "talentInfo";
+  npcId: string;
+  talentPoints: number;
+  level: number;
+  maxLevel: number;
+  talents: TalentStatus[];
+}
+
+export interface TalentStatus {
+  talentId: string;
+  name: string;
+  description: string;
+  rank: number;
+  maxRank: number;
+  /** Human-readable bonus at the CURRENT rank. */
+  effect: string;
+}
+
+// spendTalent and resetTalents share a shape: both return the refreshed ranks
+// and the player's remaining points.
+export interface TalentActionData {
+  type: "spendTalent" | "resetTalents";
+  success: boolean;
+  message: string;
+  npcId: string;
+  talentPoints: number;
+  talents: TalentStatus[];
+}
+
 // The "gamble" interact button opens this purely client-side menu — there's no
 // server "gamble list" to fetch (unlike craft/trade/stash). The NpcGamble
 // component reads the player's materials straight from personal state.
@@ -305,6 +381,10 @@ export type InteractionData =
   | CancelQuestData
   | NpcUpgradeData
   | NpcDepositData
+  | TownUpgradeInfoData
+  | TownUpgradeDepositData
+  | TalentInfoData
+  | TalentActionData
   | GambleMenuData
   | GambleData
   | { type: string; [key: string]: any };

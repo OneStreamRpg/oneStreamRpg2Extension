@@ -40,6 +40,8 @@ export const NpcInteractMenu: React.FC<{ data: InteractData }> = ({
       trade: npcActions.trade,
       stash: npcActions.stash,
       upgrade: (npcId) => npcId && npcActions.npcUpgrade(npcId),
+      townUpgrade: (npcId) => npcId && npcActions.townUpgradeInfo(npcId),
+      talents: (npcId) => npcId && npcActions.talentInfo(npcId),
     };
 
     const action = actionMap[type];

@@ -7,12 +7,14 @@ import { PageLayout } from "./PageLayout";
 import { RecipesPage } from "./recipes/RecipesPage";
 import { SettingsPage } from "./settings/SettingsPage";
 import { SkillTree } from "./SkillTree";
+import { TalentsPage } from "./talents/TalentsPage";
 import { DraggableWindow } from "./ui/DraggableWindow";
 
 const PAGE_WINDOW_IDS: Record<Page, WindowId> = {
   [Page.Inventory]: WindowId.Inventory,
   [Page.SkillTree]: WindowId.SkillTree,
   [Page.Abilities]: WindowId.Abilities,
+  [Page.Talents]: WindowId.Talents,
   [Page.Recipes]: WindowId.Recipes,
   [Page.Settings]: WindowId.Settings,
 };
@@ -34,6 +36,7 @@ export const ActivePage: React.FC = () => {
           {activePage === Page.Inventory && <Inventory />}
           {activePage === Page.SkillTree && <SkillTree />}
           {activePage === Page.Abilities && <AbilitiesPage />}
+          {activePage === Page.Talents && <TalentsPage />}
           {activePage === Page.Recipes && <RecipesPage />}
           {activePage === Page.Settings && <SettingsPage />}
         </PageLayout>

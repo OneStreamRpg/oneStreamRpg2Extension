@@ -37,6 +37,31 @@ export interface PlayerPersonalState {
   pendingTradeInvites?: TradeInvite[];
   outgoingTradeInvites?: OutgoingTradeInvite[];
   tradeSession?: TradeSession | null;
+  talents?: TalentsState;
+}
+
+/**
+ * Tower talents. Streamed with personal state (not fetched from the NPC), so the
+ * standalone Talents window can show live ranks anywhere in the world.
+ * `trainerAvailable` means the Tower has been REBUILT — spending additionally
+ * requires standing at it, which the server enforces.
+ */
+export interface TalentsState {
+  points: number;
+  level: number;
+  maxLevel: number;
+  trainerAvailable: boolean;
+  talents: TalentState[];
+}
+
+export interface TalentState {
+  talentId: string;
+  name: string;
+  description: string;
+  rank: number;
+  maxRank: number;
+  /** Human-readable bonus at the CURRENT rank, e.g. "+15% resources harvested". */
+  effect: string;
 }
 
 export interface StateVersions {
@@ -131,6 +156,7 @@ export interface PlayerStateDelta {
   pendingTradeInvites?: TradeInvite[];
   outgoingTradeInvites?: OutgoingTradeInvite[];
   tradeSession?: TradeSession | null;
+  talents?: TalentsState;
 }
 
 export interface PersonalChannelAction {
