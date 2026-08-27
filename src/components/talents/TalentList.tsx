@@ -1,3 +1,4 @@
+import { UpgradeIcon } from "../ui/UpgradeIcon";
 import { TalentStatus } from "../../types/npcInteraction";
 
 /**
@@ -34,7 +35,10 @@ export const TalentList: React.FC<{
           }}
         >
           <div className="flex justify-between items-center gap-2">
-            <span className="text-sm font-semibold">{talent.name}</span>
+            <span className="flex items-center gap-2 min-w-0">
+              <UpgradeIcon icon={talent.icon} label={talent.name} size={22} />
+              <span className="text-sm font-semibold truncate">{talent.name}</span>
+            </span>
             <span
               className="text-xs font-bold whitespace-nowrap"
               style={{ color: maxed ? "#4a9a4a" : "#f0d8a8" }}

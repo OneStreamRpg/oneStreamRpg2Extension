@@ -22,6 +22,7 @@ const BEVEL_STYLE = {
 };
 
 type NavButtonProps = {
+  /** Path under media/img/icons/, without the .png — may include a subfolder. */
   icon: string;
   label: string;
   isActive: boolean;
@@ -81,10 +82,10 @@ export const LeftNav: React.FC = () => {
         isActive={activePage === Page.Abilities}
         onClick={() => setActivePage(Page.Abilities)}
       />
-      {/* Placeholder art: there is no talents.png icon yet — drop one into
-          public/media/img/icons/ and change `icon` to "talents". */}
+      {/* Shares the talents art with the talent rows, so `icon` carries the
+          upgrades/ subfolder rather than duplicating the file. */}
       <NavButton
-        icon="questionmark"
+        icon="upgrades/talents"
         label="Talents"
         isActive={activePage === Page.Talents}
         onClick={() => setActivePage(Page.Talents)}

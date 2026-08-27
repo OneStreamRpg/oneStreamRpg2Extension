@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNpcActions } from "../../hooks/useNpcActions";
 import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
+import { UpgradeIcon } from "../ui/UpgradeIcon";
 import { TownUpgradeInfoData, TownUpgradeTrack } from "../../types/npcInteraction";
 
 /**
@@ -88,10 +89,18 @@ const TownUpgradeRow: React.FC<{
         disabled={maxed}
         className="flex justify-between items-center px-2 py-2 text-left cursor-pointer disabled:cursor-default"
       >
-        <span className="flex flex-col">
-          <span className="text-sm font-semibold">{track.name}</span>
-          <span className="text-xs" style={{ color: "#a0d0ff" }}>
-            {track.effect}
+        <span className="flex items-center gap-2 min-w-0">
+          <UpgradeIcon
+            icon={track.icon}
+            label={track.name}
+            fallback="efficiency"
+            size={26}
+          />
+          <span className="flex flex-col min-w-0">
+            <span className="text-sm font-semibold truncate">{track.name}</span>
+            <span className="text-xs" style={{ color: "#a0d0ff" }}>
+              {track.effect}
+            </span>
           </span>
         </span>
         <span

@@ -7,15 +7,11 @@ export default defineConfig({
   base: './',
   build: {
     sourcemap: true,
-    minify: false,
     rollupOptions: {
       input: {
         index: 'index.html',
         panel: 'panel.html',
       },
     },
-  },
-  define: {
-    'process.env.NODE_ENV': '"development"',
   },
 })

@@ -66,6 +66,8 @@ export interface TalentState {
   rankCap: number;
   /** Human-readable bonus at the CURRENT rank, e.g. "+15% resources harvested". */
   effect: string;
+  /** Art name, set per talent on the server and independent of talentId. */
+  icon: string;
 }
 
 export interface StateVersions {

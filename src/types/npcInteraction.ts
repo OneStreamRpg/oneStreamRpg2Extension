@@ -277,6 +277,8 @@ export interface TownUpgradeTrack {
   levelCap: number;
   /** What the CURRENT level grants; the server sends no preview of the next. */
   effect: string;
+  /** Art name, set per track on the server and independent of trackId. */
+  icon: string;
   /** Cost of the next level, already split per material. Empty once maxed. */
   cost: { itemId: string; itemName: string; quantity: number; deposited: number }[];
   progress: number;
@@ -326,6 +328,8 @@ export interface TalentStatus {
   rankCap: number;
   /** Human-readable bonus at the CURRENT rank. */
   effect: string;
+  /** Art name, set per talent on the server and independent of talentId. */
+  icon: string;
 }
 
 // spendTalent and resetTalents share a shape: both return the refreshed ranks
