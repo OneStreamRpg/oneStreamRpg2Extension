@@ -27,9 +27,29 @@ export interface NpcInteractionOption {
   questId?: string;
 }
 
+// One of the four NPC-panel responses — interact, npcUpgrade, npcDeposit and
+// townUpgradeInfo all share { npcId, name, description? }. `npcName` is for an
+// NPC referenced BY something else (a quest's giver), not the panel's subject.
 export interface InteractData {
   type: "interact";
   npcId: string;
+  /** Display name — title the panel with this rather than re-looking it up. */
+  name: string;
+  /** Same blurb as NPC.description on the game state; see the note there. */
+  description?: string;
+  /**
+   * What the NEXT level gives — the same string, under the same key, that the
+   * npcUpgrade response returns. Undefined when maxed or not upgradable, so
+   * its absence alone means "render nothing".
+   */
+  upgradeDescription?: string;
+  /**
+   * Upgrade state, both absent on an NPC that isn't a building:
+   *   maxLevel true  — upgradable and finished, so there is no next level
+   *   maxLevel false — upgradeDescription says what the next level gives
+   */
+  level?: number;
+  maxLevel?: boolean;
   availableInteractions: NpcInteractionOption[];
 }
 
@@ -238,6 +258,8 @@ export interface NpcUpgradeData {
   type: "npcUpgrade";
   npcId: string;
   name: string;
+  /** Same level-independent blurb as NPC.description; see the note there. */
+  description?: string;
   level: number;
   maxLevel: boolean;
   depositedAmounts: Record<string, number>;
@@ -247,12 +269,16 @@ export interface NpcUpgradeData {
   dependenciesMet?: boolean;
 }
 
+// Carries name/description on every path — failures included — so the panel
+// rebuilds from this response alone rather than hand-carrying them forward.
 export interface NpcDepositData {
   type: "npcDeposit";
   success: boolean;
   message: string;
   upgraded: boolean;
   npcId: string;
+  name: string;
+  description?: string;
   newLevel: number;
   depositedAmounts: Record<string, number>;
   upgradeRequirements?: { itemId: string; quantity: number }[];

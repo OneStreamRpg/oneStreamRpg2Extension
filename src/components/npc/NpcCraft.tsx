@@ -1,6 +1,7 @@
 import { useNpcActions } from "../../hooks/useNpcActions";
 import { CraftListData } from "../../types/npcInteraction";
 import { metadataService } from "../../services/MetadataService";
+import { usePersonalChannelStore } from "../../store/personalChannelStore";
 import { useSocketStore } from "../../store/socketStore";
 import { CdnIcon } from "../ui/CdnIcon";
 
@@ -11,16 +12,32 @@ export const NpcCraft: React.FC<{ data: CraftListData }> = ({ data }) => {
   const npcMeta = metadataService.getNpcSync(data.npcId);
   const npcName = npcMeta?.name ?? data.npcId;
 
+  // Render from personal state, NOT from the craftList payload this popup was
+  // opened with. Recipes are per-player and change under us: a tool chain fills
+  // one slot with whichever rung is craftable next, so crafting swaps the
+  // slot's contents in place. The payload is a snapshot taken at open time and
+  // would keep showing the rung that was just consumed. Trades and loot move
+  // this list too, with no craft action involved.
+  const craftRecipes = usePersonalChannelStore(
+    (state) => state.displayedState?.craftRecipes
+  );
+  const recipes =
+    craftRecipes?.find((entry) => entry.npcId === data.npcId)?.recipes ??
+    data.recipes ??
+    [];
+
   return (
     <div className="flex flex-col gap-2 min-w-64">
       <h2 className="text-lg font-bold text-center">{npcName} - Crafting</h2>
       <div className="grid grid-cols-1 gap-1 max-h-80 overflow-y-auto">
-        {(data.recipes ?? []).map((recipe, index) => {
+        {recipes.map((recipe, index) => {
           const outputMeta = metadataService.getItemSync(recipe.output.itemId);
           const outputName = outputMeta?.name ?? recipe.output.itemId;
 
           return (
-            <div key={index} className="p-2 bg-gray-700/50">
+            // Keyed by recipe, not by position: a swapped rung must remount
+            // rather than inherit the previous one's row.
+            <div key={recipe.recipeId} className="p-2 bg-gray-700/50">
               <div className="flex items-center gap-2">
                 <CdnIcon
                   type="items"

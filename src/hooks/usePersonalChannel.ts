@@ -260,7 +260,9 @@ export function usePersonalChannel(options: UsePersonalChannelOptions) {
             useNpcStore.getState().updatePopupData({
               type: "npcUpgrade",
               npcId: d.npcId,
-              name: currentData.name,
+              name: d.name,
+              // Level-independent, so it survives the level change as-is.
+              description: d.description,
               level: d.newLevel,
               maxLevel: !d.upgradeRequirements,
               depositedAmounts: d.depositedAmounts,

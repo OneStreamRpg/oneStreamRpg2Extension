@@ -3,6 +3,7 @@ import { useAuthStore } from "../hooks/useAuthStore";
 import { metadataService } from "../services/MetadataService";
 import { usePersonalChannelStore } from "../store/personalChannelStore";
 import { useLocatePlayerStore } from "../store/useLocatePlayerStore";
+import { useSocketStore } from "../store/socketStore";
 import { WindowContainer } from "./ui/WindowContainer";
 
 interface PlayerProfile {
@@ -27,6 +28,8 @@ export const ProfileNav: React.FC = () => {
   const { displayedState } = usePersonalChannelStore();
   const { profile } = useAuthStore();
   const locatePlayer = useLocatePlayerStore((state) => state.ping);
+  // Pushed on change rather than per tick, so this is cheap to read here.
+  const capacity = useSocketStore((state) => state.capacity);
   const [statsOpen, setStatsOpen] = useState(false);
 
   // Only the avatar comes from Twitch, and it needs a shared ID we may never
@@ -126,6 +129,29 @@ export const ProfileNav: React.FC = () => {
                     alt="gems"
                   />
                   <span style={{ color: "#c8a020" }}>{displayedState.currency.gems ?? 0}</span>
+                </div>
+              )}
+
+              {/* Town occupancy. Turns amber as the last slots go, so the room
+                  can put materials into the Inn before anyone is turned away
+                  rather than after. */}
+              {capacity && (
+                <div
+                  className="flex items-center gap-1"
+                  style={{
+                    color: capacity.full
+                      ? "#e07050"
+                      : capacity.players >= capacity.maxPlayers - 2
+                        ? "#f0d060"
+                        : "#9a7850",
+                  }}
+                >
+                  <span>
+                    {capacity.players}/{capacity.maxPlayers} in town
+                  </span>
+                  {capacity.queueLength > 0 && (
+                    <span>· {capacity.queueLength} waiting</span>
+                  )}
                 </div>
               )}
             </div>

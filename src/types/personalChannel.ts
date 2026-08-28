@@ -257,10 +257,14 @@ export interface OutgoingTradeInvite {
 export interface TradeItem {
   id: string;
   itemId: string;
+  /** Live display name — see the note on Item.name. */
+  name?: string;
   quantity: number;
   tags: string[];
   durability?: number;
   scalings?: Record<string, number>;
+  toolLevel?: number;
+  maxToolLevel?: number;
 }
 
 export interface TradeOffer {

@@ -1,12 +1,24 @@
 export type Item = {
   id: string
   itemId: string
+  /**
+   * Display name as the server currently knows it. Always prefer this over an
+   * itemId lookup: a tool renames itself in place as it levels while keeping
+   * its itemId, so the static table would show the level 1 name forever.
+   */
+  name?: string
   quantity: number
   tags: string[]
   scalings?: Record<string, number>
   value?: number
   durability?: number
   maxDurability?: number
+  /**
+   * Tool progression. BOTH are absent on anything that isn't a tool — treat
+   * missing as "not a tool", never as level 0.
+   */
+  toolLevel?: number
+  maxToolLevel?: number
 }
 
 export type MaterialCategory = "wood" | "stone" | "fish";

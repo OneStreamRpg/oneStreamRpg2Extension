@@ -10,6 +10,8 @@ export const NpcUpgrade: React.FC<{ data: NpcUpgradeData }> = ({ data }) => {
   const inventoryItems = usePersonalChannelStore(
     (state) => state.displayedState?.inventory?.items ?? []
   );
+  // What the building IS, as opposed to what its next level adds.
+  const description = data.description?.trim();
 
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
@@ -22,6 +24,11 @@ export const NpcUpgrade: React.FC<{ data: NpcUpgradeData }> = ({ data }) => {
     return (
       <div className="flex flex-col gap-2 min-w-64 p-2">
         <h2 className="text-lg font-bold text-center">{data.name}</h2>
+        {description && (
+          <p className="max-w-64 text-center text-xs leading-snug text-gray-400">
+            {description}
+          </p>
+        )}
         <p className="text-sm text-center" style={{ color: "#a0d0ff" }}>
           Level {data.level} — Max Level
         </p>
@@ -37,6 +44,11 @@ export const NpcUpgrade: React.FC<{ data: NpcUpgradeData }> = ({ data }) => {
   return (
     <div className="flex flex-col gap-3 min-w-64 p-2">
       <h2 className="text-lg font-bold text-center">{data.name}</h2>
+      {description && (
+        <p className="max-w-64 self-center text-center text-xs leading-snug text-gray-400">
+          {description}
+        </p>
+      )}
       <p className="text-sm text-center text-gray-400">Level {data.level}</p>
 
       {nextDescription && (

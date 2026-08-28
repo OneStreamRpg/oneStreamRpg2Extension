@@ -16,15 +16,16 @@ type OfferEntry = { instanceId: string; quantity: number };
 // Renders a single offered item (icon + name + quantity).
 const OfferItem: React.FC<{ item: TradeItem }> = ({ item }) => {
   const meta = metadataService.getItemSync(item.itemId);
+  const displayName = item.name ?? meta?.name ?? item.itemId;
   return (
     <span className="flex items-center gap-1 text-xs" style={{ color: "#f0d8a8" }}>
       <CdnIcon
         type="items"
         id={item.itemId}
         className="size-5"
-        alt={meta?.name ?? item.itemId}
+        alt={displayName}
       />
-      <span className="truncate">{meta?.name ?? item.itemId}</span>
+      <span className="truncate">{displayName}</span>
       {item.quantity > 1 && <span style={{ color: "#9a7850" }}>x{item.quantity}</span>}
     </span>
   );
@@ -236,7 +237,7 @@ export const TradeWindow: React.FC = () => {
                           onClick={() => !offered && addItem(item)}
                           disabled={offered}
                           className={`relative ${offered ? "opacity-40 cursor-default" : "cursor-pointer hover:outline-2 hover:outline-amber-400"}`}
-                          title={offered ? "Already in your offer" : `Offer ${metadataService.getItemSync(item.itemId)?.name ?? item.itemId}`}
+                          title={offered ? "Already in your offer" : `Offer ${item.name ?? metadataService.getItemSync(item.itemId)?.name ?? item.itemId}`}
                         >
                           <ItemDisplay item={item} />
                         </button>

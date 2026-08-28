@@ -26,6 +26,16 @@ export interface NPC extends BaseEntity {
   name: string;
   type: "npc";
   upgradeLevel?: number;
+  /**
+   * Level-independent blurb saying what the building is for ("Mine stone here.
+   * Each level adds another stone deposit."). Static per NPC, so it rides along
+   * with the game state and needs no round-trip on hover. Not the same as the
+   * upgrade description, which previews what the NEXT level gives.
+   *
+   * Every definition should carry one; treat a gap as a definition that hasn't
+   * been given a blurb yet rather than a normal state.
+   */
+  description?: string;
 }
 
 export type JobSpaceType = "Lumber" | "Miner" | "Fisher";

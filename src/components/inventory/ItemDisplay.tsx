@@ -7,6 +7,9 @@ export const ItemDisplay: React.FC<{ item: Item }> = ({ item }) => {
   const itemData = metadataService.getItemSync(item.itemId);
 
   const itemEquipmentSlotTag = getItemEquippedSlotTag(item);
+  // Both fields together, or it isn't a tool. A tool at level 0 doesn't exist,
+  // so a missing value must never render as one.
+  const isTool = item.toolLevel !== undefined && item.maxToolLevel !== undefined;
   const hasDurability = item.durability !== undefined && item.maxDurability !== undefined && item.maxDurability > 0;
   const durabilityPct = hasDurability ? item.durability! / item.maxDurability! : 1;
   const durabilityColor = durabilityPct > 0.5 ? "bg-green-400" : durabilityPct > 0.25 ? "bg-yellow-400" : "bg-red-500";
@@ -21,8 +24,16 @@ export const ItemDisplay: React.FC<{ item: Item }> = ({ item }) => {
         type="items"
         id={item.itemId}
         className="size-16 mx-auto"
-        alt={itemData?.name ?? item.itemId}
+        alt={item.name ?? itemData?.name ?? item.itemId}
       />
+      {isTool && (
+        <span
+          className="absolute top-0 right-0.5 text-[9px] font-bold"
+          style={{ color: "#f0d060", textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}
+        >
+          {item.toolLevel}/{item.maxToolLevel}
+        </span>
+      )}
       {itemEquipmentSlotTag && (
         <p
           className="absolute top-0 left-0.5 text-[9px] italic capitalize"

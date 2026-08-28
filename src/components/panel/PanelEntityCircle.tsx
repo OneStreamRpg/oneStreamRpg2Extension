@@ -23,6 +23,12 @@ function getEntityImageUrl(obj: GameObject): string {
   return PLACEHOLDER_IMG;
 }
 
+// The blurb ships with the NPC on the game state; enemies and job spaces have
+// none.
+function getEntityDescription(obj: GameObject): string | null {
+  return obj.type === "npc" ? obj.description ?? null : null;
+}
+
 function getEntityDisplayName(obj: GameObject): string | null {
   if (obj.type === "npc") {
     return metadataService.getNpcSync(obj.npcId)?.name ?? obj.npcId;
@@ -58,6 +64,7 @@ export const PanelEntityCircle: React.FC<PanelEntityCircleProps> = ({
   const centerY = (obj.hitbox.y / 1080) * 100;
   const borderColor = BORDER_COLORS[obj.type] ?? "#888";
   const displayName = getEntityDisplayName(obj);
+  const description = getEntityDescription(obj);
 
   return (
     <div
@@ -127,7 +134,12 @@ export const PanelEntityCircle: React.FC<PanelEntityCircleProps> = ({
             left: "50%",
             transform: "translateX(-50%)",
             marginBottom: "4px",
-            whiteSpace: "nowrap",
+            // Wraps to a second line rather than truncating; see the world
+            // overlay tooltip, which caps its width the same way.
+            whiteSpace: description ? "normal" : "nowrap",
+            width: description ? "max-content" : undefined,
+            maxWidth: description ? "160px" : undefined,
+            textAlign: "center",
             background: "rgba(0,0,0,0.85)",
             color: obj.type === "npc" ? "#c8a020" : obj.type === "jobSpace" ? "#78dc78" : "#e05050",
             padding: "2px 6px",
@@ -137,6 +149,11 @@ export const PanelEntityCircle: React.FC<PanelEntityCircleProps> = ({
           }}
         >
           {displayName}
+          {description && (
+            <div style={{ color: "#cfc6b0", lineHeight: 1.3, marginTop: "2px" }}>
+              {description}
+            </div>
+          )}
         </div>
       )}
     </div>

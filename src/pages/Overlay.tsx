@@ -6,8 +6,11 @@ import { useAuthStore } from "../hooks/useAuthStore";
 import { useSocketStore } from "../store/socketStore";
 
 export const Overlay = () => {
-  const { isConnected, inGame, isDying, joinStatus, joinError, joinGameFn, lobbyOnline, connectionError } =
-    useSocketStore();
+  const {
+    isConnected, inGame, isDying, joinStatus, joinError, joinGameFn,
+    lobbyOnline, connectionError,
+    capacity, queuePosition, queueLength, queueNotice, canBypassQueue, leaveQueueFn,
+  } = useSocketStore();
   const { profile } = useAuthStore();
 
   if (!isConnected) {
@@ -19,11 +22,25 @@ export const Overlay = () => {
   }
 
   if (!inGame && !isDying) {
+    // Waiting in line outranks the join button: the viewer already asked to
+    // play and there is nothing left for them to press.
     return (
       <JoinGameScreen
-        status={joinStatus === "joining" ? "joining" : "idle"}
+        status={
+          queuePosition !== null
+            ? "queued"
+            : joinStatus === "joining"
+              ? "joining"
+              : "idle"
+        }
         error={joinError}
+        notice={queueNotice}
+        capacity={capacity}
+        queuePosition={queuePosition}
+        queueLength={queueLength}
+        canBypassQueue={canBypassQueue}
         onJoin={() => joinGameFn?.(profile?.login ?? "")}
+        onLeaveQueue={() => leaveQueueFn?.()}
       />
     );
   }

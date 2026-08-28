@@ -680,9 +680,12 @@ export const WorldInteractionLayer: React.FC = () => {
 
       {gameObjects.filter((obj) => obj.hitbox).map((obj) => {
         let displayName: string | null = null;
+        // Static blurb shipped with the NPC on the game state — no round-trip.
+        let description: string | null = null;
         if (obj.type === "npc") {
           const npc = metadataService.getNpcSync(obj.npcId);
           displayName = npc?.name ?? null;
+          description = obj.description ?? null;
         } else if (obj.type === "enemy") {
           const enemy = metadataService.getEnemySync(obj.enemyId);
           displayName = enemy?.name ?? null;
@@ -753,7 +756,12 @@ export const WorldInteractionLayer: React.FC = () => {
                   left: "50%",
                   transform: "translateX(-50%)",
                   marginBottom: "4px",
-                  whiteSpace: "nowrap",
+                  // A blurb is written to wrap onto a second line rather than
+                  // be cut off, so it gets a width cap instead of nowrap.
+                  whiteSpace: description ? "normal" : "nowrap",
+                  width: description ? "max-content" : undefined,
+                  maxWidth: description ? "16vw" : undefined,
+                  textAlign: "center",
                   background: "rgba(0,0,0,0.75)",
                   color: obj.type === "npc" ? "#c8a020" : obj.type === "jobSpace" ? "#78dc78" : "#e05050",
                   padding: "2px 8px",
@@ -763,6 +771,18 @@ export const WorldInteractionLayer: React.FC = () => {
                 }}
               >
                 {displayName}
+                {description && (
+                  <div
+                    style={{
+                      color: "#cfc6b0",
+                      fontSize: "11px",
+                      lineHeight: 1.3,
+                      marginTop: "2px",
+                    }}
+                  >
+                    {description}
+                  </div>
+                )}
               </div>
             )}
           </div>

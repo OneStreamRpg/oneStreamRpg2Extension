@@ -22,6 +22,11 @@ export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
     ? Math.max(...setData.effects.map((e) => e.piecesRequired))
     : 0;
 
+  // The item's own name outranks the static definition: a tool keeps its
+  // itemId as it levels, so the table would be stuck on the level 1 name.
+  const displayName = item.name ?? itemData?.name ?? item.itemId;
+  const isTool = item.toolLevel !== undefined && item.maxToolLevel !== undefined;
+
   const hasDurability =
     item.durability !== undefined && item.maxDurability !== undefined && item.maxDurability > 0;
   const durabilityPct = hasDurability ? item.durability! / item.maxDurability! : 1;
@@ -41,12 +46,17 @@ export const InventoryTooltip: React.FC<{ item: Item }> = ({ item }) => {
       <header className="flex border-b-2 border-gray-500">
         <img
           src={`https://cdn.onestreamrpg.com/images/items/${item.itemId}.png`}
-          alt={itemData.name}
+          alt={displayName}
           className="size-24 m-4"
           style={{ imageRendering: "pixelated" }}
         />
         <section>
-          <h2 className="text-lg font-bold" title={itemData.itemId}>{itemData.name}</h2>
+          <h2 className="text-lg font-bold" title={itemData.itemId}>{displayName}</h2>
+          {isTool && (
+            <p style={{ color: "#f0d060" }}>
+              Tool level {item.toolLevel} / {item.maxToolLevel}
+            </p>
+          )}
           <p>{[itemData.rarity, itemData.type].filter(Boolean).join(" ")}</p>
           {itemData.damageType && <p>{itemData.damageType}</p>}
           {itemData.attackSpeed && <p>{itemData.attackSpeed}</p>}

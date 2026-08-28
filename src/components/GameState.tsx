@@ -11,7 +11,15 @@ import { useNpcStore } from "../store/useNpcStore";
 import { usePathOverlayStore } from "../store/usePathOverlayStore";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { useSyncBarStore } from "../store/useSyncBarStore";
+import { useUIStore } from "../store/useUIStore";
 import { ActionAcknowledgment } from "../types/personalChannel";
+import {
+  InGameEvent,
+  JoinResponseData,
+  LeaveQueueData,
+  QueueUpdateEvent,
+  TownCapacityStatus,
+} from "../types/townCapacity";
 import { getStreamSyncDelay } from "../utils/streamSyncDelay";
 import { API_BASE, fetchLobbyStatus, socketIoPathFor } from "../config/backend";
 
@@ -45,6 +53,11 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     setJoinGameFn,
     setLobbyOnline,
     setConnectionError,
+    setCapacity,
+    setQueueState,
+    setQueueNotice,
+    setCanBypassQueue,
+    setLeaveQueueFn,
   } = useSocketStore();
 
   // The Twitch extension JWT is refreshed periodically by onAuthorized. Keeping
@@ -131,6 +144,10 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       setJoinError(null);
       setConnectionError(null);
       setLobbyOnline(true);
+      // Answers whether we are in-game AND where we stand in the queue, so a
+      // viewer who queued from chat sees the waiting panel on open without
+      // having to click Join first.
+      socketInstance.emit("checkInGame");
     });
 
     socketInstance.on("authenticated", () => {
@@ -154,6 +171,9 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     const joinGame = (loginName: string) => {
       const actionId = `join-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
       setJoinStatus("joining");
+      // Clear the previous attempt's error, or it sits under the spinner and
+      // reads as if this retry had already failed.
+      setJoinError(null);
 
       socketInstance.emit("personalChannel:action", {
         actionId,
@@ -165,21 +185,95 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       const handleJoinAck = (data: ActionAcknowledgment) => {
         if (data.actionId !== actionId) return;
         socketInstance.off("personalState:ack", handleJoinAck);
+        setJoinStatus("idle");
+
+        const payload = data.data as JoinResponseData | undefined;
+        if (payload?.capacity) setCapacity(payload.capacity);
 
         if (data.success || data.error === "Already in game") {
-          setJoinStatus("idle");
           setJoinError(null);
+          setQueueState(null, payload?.capacity?.queueLength ?? 0);
           // Re-subscription is handled by usePersonalChannel watching inGame
-        } else {
-          setJoinStatus("idle");
-          setJoinError(data.error ?? "Failed to join game");
+          return;
         }
+
+        // A full town answers success: false, but `queued` means the viewer
+        // holds a place in line and gets pulled in automatically. That is the
+        // waiting panel, not a red error.
+        if (payload?.type === "queued" && payload.queued) {
+          setJoinError(null);
+          setQueueNotice(null);
+          setQueueState(payload.position, payload.queueLength);
+          return;
+        }
+
+        // queueFull and joinFailed both land here — nothing was reserved, so
+        // the viewer is back to a plain retry.
+        setQueueState(null, payload?.capacity?.queueLength ?? 0);
+        setJoinError(data.error ?? "Failed to join game");
       };
 
       socketInstance.on("personalState:ack", handleJoinAck);
     };
 
     setJoinGameFn(joinGame);
+
+    // Handled ahead of the player lookup server-side, so it works while the
+    // viewer is only waiting and has no Player at all.
+    const leaveQueue = () => {
+      const actionId = `leaveQueue-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+      socketInstance.emit("personalChannel:action", {
+        actionId,
+        seq: 1,
+        type: "leaveQueue",
+        params: {},
+      });
+
+      const handleLeaveAck = (data: ActionAcknowledgment) => {
+        if (data.actionId !== actionId) return;
+        socketInstance.off("personalState:ack", handleLeaveAck);
+
+        const payload = data.data as LeaveQueueData | undefined;
+        if (payload?.capacity) setCapacity(payload.capacity);
+        if (payload?.canBypassQueue !== undefined) {
+          setCanBypassQueue(payload.canBypassQueue);
+        }
+        setQueueState(payload?.position ?? null, payload?.queueLength ?? 0);
+        // They chose to leave, so there is nothing to explain to them.
+        setQueueNotice(null);
+      };
+
+      socketInstance.on("personalState:ack", handleLeaveAck);
+    };
+
+    setLeaveQueueFn(leaveQueue);
+
+    // Pushed to a waiting viewer every time the line moves.
+    socketInstance.on("queueUpdate", (data: QueueUpdateEvent) => {
+      logger.info(TAG, "Queue update", data);
+      if (data.capacity) setCapacity(data.capacity);
+      setQueueState(data.position, data.queueLength);
+
+      if (data.position !== null) {
+        setQueueNotice(null);
+        return;
+      }
+
+      // Out of the line. No reason means they left on purpose and already
+      // know why, so there is nothing to say.
+      setQueueNotice(
+        data.reason === "expired"
+          ? "You waited 30 minutes without a spot opening, so you lost your place. Join again to get back in line."
+          : data.reason === "failed"
+            ? "Something went wrong while pulling you in. Join again to get back in line."
+            : null
+      );
+    });
+
+    // Only fires when occupancy actually changes — not part of the 16Hz delta.
+    socketInstance.on("townCapacity", (capacity: TownCapacityStatus) => {
+      setCapacity(capacity);
+    });
 
     socketInstance.on("connect_error", (err) => {
       // Logger is disabled in production builds, so without this the viewer
@@ -211,8 +305,16 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
       }
     });
 
-    socketInstance.on("inGame", (data) => {
+    socketInstance.on("inGame", (data: InGameEvent) => {
       //logger.info(TAG, `inGame state changed:`, data);
+      // Additive fields: absent on the older shape, and enough on their own to
+      // render the waiting panel for someone who queued from chat.
+      if (data.capacity) setCapacity(data.capacity);
+      if (data.queuePosition !== undefined) {
+        setQueueState(data.queuePosition, data.queueLength ?? 0);
+      }
+      if (data.canBypassQueue !== undefined) setCanBypassQueue(data.canBypassQueue);
+
       if (data.inGame) {
         // `checkInGame` polls every 2s, so this fires repeatedly while alive.
         // Only (re)fetch when we are actually entering the world — after a
@@ -222,6 +324,17 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
         const hasPlayer = !!usePlayerStore.getState().player;
         setIsDying(false);
         setinGame(data.inGame);
+        // Being in the world and being in line are mutually exclusive, and
+        // the promotion event carries no queuePosition to clear it — without
+        // this, a stale position would resurface as a bogus waiting panel the
+        // next time they left the game.
+        setQueueState(null, data.queueLength ?? 0);
+        setQueueNotice(null);
+        // Pulled in off the queue rather than joining directly — worth calling
+        // out, since from the viewer's side it happens with no input at all.
+        if (data.fromQueue && !wasInGame) {
+          useUIStore.getState().setWorldToast("A spot opened up — you're in!");
+        }
         if (!wasInGame || !hasPlayer) {
           logger.info(TAG, `Player is now in-game, requesting initial game state...`, { channelId });
           socketInstance.emit("getGameState");
@@ -376,7 +489,7 @@ export const GameState: React.FC<Props> = ({ token, channelId, children }) => {
     };
     // `token` is deliberately absent: it lives in tokenRef, so a Twitch token
     // refresh no longer rebuilds the socket and wipes the game state.
-  }, [channelId, setSocket, setIsConnected, setGameState, setinGame, setIsDying, setJoinStatus, setJoinError, setJoinGameFn, setLobbyOnline, setConnectionError]);
+  }, [channelId, setSocket, setIsConnected, setGameState, setinGame, setIsDying, setJoinStatus, setJoinError, setJoinGameFn, setLobbyOnline, setConnectionError, setCapacity, setQueueState, setQueueNotice, setCanBypassQueue, setLeaveQueueFn]);
 
   return <>{children}</>;
 };
